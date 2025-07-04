@@ -1,10 +1,15 @@
 ﻿using backend.Dtos.ClientDto;
+using backend.helper;
 using backend.services.interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+
 
 namespace backend.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ClientController : ControllerBase
@@ -16,18 +21,41 @@ namespace backend.Controllers
             _clientService = clientService;
         }
 
+        private string GetUserId() =>
+            User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
+        private string? GetRole() =>
+            User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+
+      
         [HttpPost("create")]
         public async Task<IActionResult> CreateClientAsync([FromBody] CreateClient client)
         {
             try
             {
-                var result = await _clientService.CreateClientAsync(client);
-                return Ok(client);
+                var result = await _clientService.CreateClientAsync(client, GetUserId());
+                return Ok(User.GetUserId());
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("getClient")]
+        public async Task<IActionResult> GetClientAsync([FromQuery] int page=1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm="")
+        {
+            try
+            {
+                var result = await _clientService.GetClientsAsync(GetRole(),GetUserId(), page, pageSize, searchTerm);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        
     }
 }

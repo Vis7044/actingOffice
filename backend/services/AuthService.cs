@@ -59,7 +59,7 @@ namespace backend.services
             }
            
             // Generate JWT token
-            var token = GenerateToken(user);
+            var token = GenerateToken(user.Id,user.Email,user.Role.ToString());
             return token;
         }
 
@@ -74,13 +74,13 @@ namespace backend.services
             return user;
         }
 
-        private string GenerateToken(UserModel user)
+        private string GenerateToken(string id,string email,string role)
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.ToString())
+                new Claim(ClaimTypes.NameIdentifier, id),
+                new Claim(ClaimTypes.Email, email),
+                new Claim(ClaimTypes.Role, role)    
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

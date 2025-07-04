@@ -4,6 +4,8 @@ namespace backend.helper
 {
     public static class ClaimsPrincipalExtensions
     {
+     
+
         public static string GetUserId(this ClaimsPrincipal user)
         {
             return user.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
@@ -12,7 +14,7 @@ namespace backend.helper
 
         public static string GetRole(this ClaimsPrincipal user)
         {
-            return user.FindFirstValue(ClaimTypes.Role) ?? "User"; // Default to "User" if role is not set
+            return user.FindFirstValue(ClaimTypes.Role) ?? string.Empty ; // Default to "User" if role is not set
         }
     }
 }

@@ -23,6 +23,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
 // Register Validator service
 builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<ClientValidator>();
@@ -40,6 +41,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientService, ClientService>();   
 builder.Services.AddScoped<CounterService>();
+builder.Services.AddScoped<ClientHistoryService>();
 
 //  Required to access logged-in user's Claims in services
 builder.Services.AddHttpContextAccessor();

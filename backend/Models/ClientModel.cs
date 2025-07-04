@@ -13,10 +13,19 @@ namespace backend.Models
         public string? ClientId { get; set; } = string.Empty;
         [BsonElement("businessName")]   
         public string BusinessName { get; set; } = string.Empty;
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]
         [BsonElement("type")]
         public BusinessType Type { get; set; } = BusinessType.Individual;
         [BsonElement("address")]
         public required ClientAddress Address { get; set; }
+        [BsonElement("createdOn")]
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+        [BsonElement("userId")]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+        public string UserId { get; set; } = string.Empty;
+        [BsonElement("history")]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+        public required List<string> History { get; set; }
     }
 
     public class ClientAddress
