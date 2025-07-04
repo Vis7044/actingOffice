@@ -1,12 +1,13 @@
 
 import './App.css'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
-import { SideNav } from './components/SideNav'
+
 import Home from './pages/Home'
 import { Client } from './pages/Client'
 import { Quote } from './pages/Quote'
 import { Signup } from './pages/Signup'
-import { Login } from './pages/Login'
+import SideNav from './components/SideNav'
+// import { Login } from './pages/Login'
 
 
 
@@ -23,7 +24,7 @@ function App() {
           <Route path='quote' element={<Quote/>}/> 
           </Route>
           <Route path='/signup' element={<Signup/>}/>
-          <Route path='/login' element={<Login/>}/>
+          {/* <Route path='/login' element={<Login/>}/> */}
           
         </Routes>
 

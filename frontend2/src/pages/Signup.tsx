@@ -6,7 +6,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { useState } from "react";
 import { AxiosError } from "axios";
 import { Toast } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const useStyle = makeStyles({
   form: {
@@ -44,7 +44,7 @@ const useStyle = makeStyles({
     fontSize: "14px",
     borderRadius: "5px",
     backgroundColor: "#E8F0FE",
-    
+    transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
       "&:focus": {
         borderColor: "#0078d4",
         boxShadow: "0 0 0 4px rgb(176, 205, 248)",
@@ -57,7 +57,7 @@ const useStyle = makeStyles({
     borderRadius: "5px",
     backgroundColor: "#E8F0FE",
     fontSize: "14px",
-    
+    transition: 'box-shadow 0.3s ease, border-color 0.3s ease',
       "&:focus": {
         borderColor: "#0078d4",
         boxShadow: "0 0 0 4px rgb(176, 205, 248)",
@@ -79,7 +79,7 @@ const useStyle = makeStyles({
     fontWeight: 600,
     fontSize: "14px",
     alignSelf: "flex-end",
- 
+    
       ":hover": {
         backgroundColor: "#005a9e",
       },
@@ -93,7 +93,7 @@ export const Signup = () => {
   const navigate = useNavigate();
   const toasterId = useId("toaster");
     const { dispatchToast } = useToastController(toasterId);
-    const [position, setPosition] = useState<ToastPosition>("bottom-end");
+    const [position] = useState<ToastPosition>("bottom-end");
     const notify = (type: ToastIntent, message: string) =>
       dispatchToast(
         <Toast>
@@ -271,14 +271,11 @@ export const Signup = () => {
 >
   {formik.isSubmitting ? "Submitting..." : "Submit"}
 </button>
-
+<p style={{textAlign: 'end'}}>Already have an account? <Link style={{color: 'blue'}} to={'/login'}>Login</Link></p>
 </form>
-      <FluentProvider theme={webLightTheme}>
-            
+          
             <Toaster toasterId={toasterId} />
-
-            
-          </FluentProvider>
+    
     </div>
   );
 };

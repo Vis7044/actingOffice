@@ -10,6 +10,7 @@ axiosInstance.interceptors.request.use(
       const token = localStorage.getItem('token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log("Token attached:", config.headers.Authorization);
       }
     }
     return config; 
