@@ -1,7 +1,11 @@
 using backend.Data;
 using backend.services;
 using backend.services.interfaces;
+using backend.Validator;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -19,12 +23,25 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+// Register Validator service
+builder.Services.AddValidatorsFromAssemblyContaining<UserValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ClientValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ClientAddressValidator>();
+
+
+
+
 // Register Database settings
 builder.Services.Configure<DbSetting>(builder.Configuration.GetSection("actingOffice"));
 // Register MongoDB context
 builder.Services.AddSingleton<MongoDbContext>();
 // Register other services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IClientService, ClientService>();   
+builder.Services.AddScoped<CounterService>();
+builder.Services.AddScoped<ClientHistoryService>();
 
 //  Required to access logged-in user's Claims in services
 builder.Services.AddHttpContextAccessor();

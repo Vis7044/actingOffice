@@ -1,5 +1,8 @@
 ﻿using backend.Dtos.UserDto;
+using backend.Models;
 using backend.services.interfaces;
+using backend.Validator;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +15,13 @@ namespace backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        public AuthController(IAuthService authService)
+        private readonly IValidator<RegisterUserDto> _validator;
+        private readonly IValidator<LoginDto> _loginValidator;
+        public AuthController(IAuthService authService, IValidator<RegisterUserDto> validator, IValidator<LoginDto> loginValidator)
         {
             _authService = authService;
+            _validator = validator;
+            _loginValidator = loginValidator;
         }
 
         private string GetUserId() =>
@@ -23,6 +30,15 @@ namespace backend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUserAsync([FromBody] RegisterUserDto userRegister)
         {
+            var resultValid = _validator.ValidateAsync(userRegister);
+            if (!resultValid.Result.IsValid)
+            {   
+                return BadRequest(resultValid.Result.Errors.Select(e => new
+                {
+                    Feild = e.PropertyName,
+                    Message = e.ErrorMessage
+                }));  
+            }
             try
             {
                 var result = await _authService.RegisterUserAsync(userRegister);
@@ -36,6 +52,15 @@ namespace backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDto loginDto)
         {
+            var resultValid = _loginValidator.ValidateAsync(loginDto);
+            if (!resultValid.Result.IsValid)
+            {
+                return BadRequest(resultValid.Result.Errors.Select(e => new
+                {
+                    Field = e.PropertyName,
+                    Message = e.ErrorMessage
+                }));
+            }
             try
             {
                 var token = await _authService.LoginAsync(loginDto);
