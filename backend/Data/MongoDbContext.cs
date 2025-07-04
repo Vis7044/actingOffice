@@ -15,9 +15,12 @@ namespace backend.Data
         }
 
         public IMongoCollection<UserModel> Users => 
-            _database.GetCollection<Models.UserModel>(_dbSetting.UserCollectionName);
+            _database.GetCollection<UserModel>(_dbSetting.UserCollectionName);
 
-        //public IMongoCollection<ClientModel> Clients =>_database
-        //    .GetCollection<ClientModel>(_dbSetting.ClientCollectionName);
+        public IMongoCollection<ClientModel> Clients => _database
+            .GetCollection<ClientModel>(_dbSetting.ClientCollectionName);
+        public IMongoCollection<Counter> Counters => _database
+            .GetCollection<Counter>("Counters");
+
     }
 }
