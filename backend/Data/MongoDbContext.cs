@@ -22,5 +22,8 @@ namespace backend.Data
         public IMongoCollection<Counter> Counters => _database
             .GetCollection<Counter>("Counters");
 
+        public IMongoCollection<ClientHistory> ClientHistory => _database
+            .GetCollection<ClientHistory>("ClientHistory"); 
+
     }
 }
