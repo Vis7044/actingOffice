@@ -12,6 +12,8 @@ namespace backend.Data
             _dbSetting = options.Value;
             var client = new MongoClient(_dbSetting.ConnectionString);
             _database = client.GetDatabase(_dbSetting.DatabaseName);
+
+            CreateIndexes();
         }
 
         public IMongoCollection<UserModel> Users => 
@@ -23,7 +25,21 @@ namespace backend.Data
             .GetCollection<Counter>("Counters");
 
         public IMongoCollection<ClientHistory> ClientHistory => _database
-            .GetCollection<ClientHistory>("ClientHistory"); 
+            .GetCollection<ClientHistory>("ClientHistory");
+
+
+        private void CreateIndexes()
+        {
+            var clientCollection = Clients;
+
+            // Create unique index on BusinessName
+            var businessNameIndex = new CreateIndexModel<ClientModel>(
+                Builders<ClientModel>.IndexKeys.Ascending(c => c.BusinessName),
+                new CreateIndexOptions { Unique = true }
+            );
+
+            clientCollection.Indexes.CreateOne(businessNameIndex);
+        }
 
     }
 }

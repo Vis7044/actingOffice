@@ -97,19 +97,19 @@ namespace backend.services
             if (!string.IsNullOrEmpty(search))
             {
                 filters.Add("$or", new BsonArray
-        {
-            new BsonDocument("businessName", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
-            new BsonDocument("type", new BsonDocument { { "$regex", search }, { "$options", "i" } })
-        });
+                {
+                    new BsonDocument("businessName", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
+                    new BsonDocument("type", new BsonDocument { { "$regex", search }, { "$options", "i" } })
+                });
             }
 
             // MongoDB aggregation pipeline
             var pipeline = new BsonDocument[]
             {
-        new BsonDocument("$match", filters),
-        new BsonDocument("$sort", new BsonDocument("createdOn", -1)),
-        new BsonDocument("$skip", skip),
-        new BsonDocument("$limit", pageSize)
+                new BsonDocument("$match", filters),
+                new BsonDocument("$sort", new BsonDocument("createdOn", -1)),
+                new BsonDocument("$skip", skip),
+                new BsonDocument("$limit", pageSize)
             };
 
             try
