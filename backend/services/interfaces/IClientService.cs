@@ -2,6 +2,7 @@
 using backend.helper;
 using backend.Models;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using MongoDB.Bson;
 
 namespace backend.services.interfaces
 {
@@ -9,6 +10,7 @@ namespace backend.services.interfaces
     {
         Task<string> CreateClientAsync(CreateClient clientDto, string userId);
         Task<PageResult<ClientModel>> GetClientsAsync(string role, string userId,int page, int pageSize, string searchTerm);
+        Task<ClientModelWithHistory> GetClientByIdAsync(string clientId);
         //Task<ClientModel> GetClientByIdAsync(string clientId);
         //Task<List<ClientModel>> GetAllClientsAsync();
         //Task<string> UpdateClientAsync(string clientId, UpdateClient clientDto);
