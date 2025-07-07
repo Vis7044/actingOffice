@@ -8,11 +8,20 @@ export const login = async (credentials: ILogin) => {
   return res.data; // should return: { token: '...' }
 };
 
+export const logout = () => {
+  localStorage.removeItem("token");
+  
+  window.location.href = '/login'; // Adjust the path as necessary
+}
+
 export const fetchUser = async () => {
   const token = localStorage.getItem("token");
-  if (!token) throw new Error("No token found");
+  if (!token) {
+    console.log("No token found, user is not authenticated"); 
+    throw new Error("No token found, user is not authenticated");
+  }
 
   const res = await axiosInstance.get('Auth/me');
-
+  
   return res.data;
 };

@@ -1,12 +1,11 @@
 
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { FluentProvider, makeStyles, Toaster, ToastTitle, useId, useToastController, webLightTheme, type ToastIntent, type ToastPosition } from "@fluentui/react-components";
 import axiosInstance from "../utils/axiosInstance";
-import { useState } from "react";
 import { AxiosError } from "axios";
-import { Toast } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import { makeStyles } from "@fluentui/react";
+import { useAuth } from "../utils/useAuth";
 
 const useStyle = makeStyles({
   form: {
@@ -91,16 +90,11 @@ const useStyle = makeStyles({
 export const Signup = () => {
   const classes = useStyle();
   const navigate = useNavigate();
-  const toasterId = useId("toaster");
-    const { dispatchToast } = useToastController(toasterId);
-    const [position] = useState<ToastPosition>("bottom-end");
-    const notify = (type: ToastIntent, message: string) =>
-      dispatchToast(
-        <Toast>
-          <ToastTitle>{message}</ToastTitle>
-        </Toast>,
-        { position, intent:  type }
-      );
+  const {user} = useAuth()
+
+  if(user) {
+    navigate('/')
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -130,14 +124,14 @@ export const Signup = () => {
     setSubmitting(true);
     const res = await axiosInstance.post("/Auth/register", values);
     console.log(res.data)
-    notify('success', 'user created succesfully')
+    console.log("Registration Successful:", res.data);
     resetForm();
     navigate('/login');
   } catch (error) {
     const axiosError =error as AxiosError;
     console.error("Registration failed:", axiosError);
     if(axiosError.response){
-      notify('error', axiosError.response.data as string)
+      console.error("Response data:", axiosError.response.data);
     }else {
       console.log("unknown error")
     }
@@ -159,6 +153,8 @@ export const Signup = () => {
       }}
     >
       <form onSubmit={formik.handleSubmit} className={classes.form}>
+        <img src="/logo.svg" alt="logo" style={{width: '150px', height: '150px', margin: '0 auto'}}/>
+
         <h1 style={{textAlign: 'center', color: 'darkcyan'}}>Signup</h1>
       <div className={classes.gridContainer}>
 
@@ -274,7 +270,7 @@ export const Signup = () => {
 <p style={{textAlign: 'end'}}>Already have an account? <Link style={{color: 'blue'}} to={'/login'}>Login</Link></p>
 </form>
           
-            <Toaster toasterId={toasterId} />
+
     
     </div>
   );

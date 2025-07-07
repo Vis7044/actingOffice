@@ -1,7 +1,14 @@
-import React from 'react'
 
-export const Client = () => {
+import ClientDetailList from '../components/ClientDetailList'
+
+ const Client = () => {
+  
   return (
-    <div>Client</div>
+    <div>
+      
+      <ClientDetailList/>
+    </div>
   )
 }
+
+export default Client;

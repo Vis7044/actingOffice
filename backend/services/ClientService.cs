@@ -3,29 +3,36 @@ using backend.Dtos.ClientDto;
 using backend.helper;
 using backend.Models;
 using backend.services.interfaces;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace backend.services
 {
-    
-    public class ClientService: IClientService
+
+    public class ClientService : IClientService
     {
         private readonly MongoDbContext _context;
         private readonly IMongoCollection<ClientModel> _client;
+        private readonly IMongoCollection<ClientHistory> _clientHistory;
+        private readonly IMongoCollection<UserModel> _users;
         private readonly CounterService _sequenceService;
         private readonly ClientHistoryService _history;
 
         public ClientService(MongoDbContext context, CounterService sequenceService, ClientHistoryService history)
         {
+            _context = context;
             _client = context.Clients;
+            _clientHistory = context.ClientHistory; // ✅ Add this
+            _users = context.Users;                   // ✅ And this
             _sequenceService = sequenceService;
             _history = history;
-
         }
-        
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -142,6 +149,51 @@ namespace backend.services
                 throw new Exception($"Error fetching clients: {ex.Message}");
             }
         }
+
+
+        public async Task<ClientModelWithHistory> GetClientByIdAsync(string clientId)
+        {
+            var client = await _client.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+
+            if (client == null)
+                throw new Exception("Client not found");
+
+            // Get history records
+            var history = await _clientHistory
+                .Find(h => client.History.Contains(h.Id))
+                .ToListAsync();
+
+            // Get unique userIds from history
+            var userIds = history
+                .Select(h => h.ClientId)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .Distinct()
+                .ToList();
+
+            var users = await _users
+                .Find(u => userIds.Contains(u.Id))
+                .ToListAsync();
+
+            // Join history + user
+            var historyWithUsers = history.Select(h =>
+            {
+                var user = users.FirstOrDefault(u => u.Id == h.ClientId);
+                return new HistoryWithUser
+                {
+                    History = h,
+                    User = user
+                };
+            }).ToList();
+
+            return new ClientModelWithHistory
+            {
+                Client = client,
+                HistoryWithUsers = historyWithUsers
+            };
+        }
+
+
+
 
     }
 }
