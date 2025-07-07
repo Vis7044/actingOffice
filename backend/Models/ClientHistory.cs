@@ -11,7 +11,7 @@ namespace backend.Models
         public DateTime DateTime { get; set; } = DateTime.UtcNow;
 
         public string Type { get; set; } = string.Empty;
-
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string ClientId { get; set; } = string.Empty;    
 
 

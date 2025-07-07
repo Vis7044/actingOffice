@@ -56,6 +56,20 @@ namespace backend.Controllers
             }
         }
 
-        
+        [HttpGet("getClient/{clientId:length(24)}")]
+        public async Task<IActionResult> GetClientByIdAsync([FromRoute] string clientId)
+        {
+            try
+            {
+                var result = await _clientService.GetClientByIdAsync(clientId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
     }
 }
