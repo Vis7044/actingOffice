@@ -102,6 +102,7 @@ namespace backend.services
                     new BsonDocument("type", new BsonDocument { { "$regex", search }, { "$options", "i" } })
                 });
             }
+            
 
             // MongoDB aggregation pipeline
             var pipeline = new BsonDocument[]
@@ -109,7 +110,15 @@ namespace backend.services
                 new BsonDocument("$match", filters),
                 new BsonDocument("$sort", new BsonDocument("createdOn", -1)),
                 new BsonDocument("$skip", skip),
-                new BsonDocument("$limit", pageSize)
+                new BsonDocument("$limit", pageSize),
+                new BsonDocument("$project", new BsonDocument
+                {
+                    { "clientId", 1 },
+                    { "businessName", 1 },
+                    { "type", 1 },
+                    { "createdOn", 1 },
+                    { "userId", 1 },
+                })
             };
 
             try
