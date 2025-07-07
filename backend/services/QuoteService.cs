@@ -21,16 +21,36 @@ namespace backend.services
 
         public async Task<string> CreateQuoteAsync(CreateQuoteDto dto)
         {
+            if (dto.Services == null || !dto.Services.Any())
+            {
+                throw new ArgumentException("At least one service must be provided.");
+            }
+
             int sequence = await _counter.GetNextSequenceAsync("quote");
             string quoteNumber = $"QT-{sequence:D6}";
 
+            // Validate the business ID
+            var businessId = await _context.Clients.Find(c => c.BusinessName == dto.BusinessName).Project(c => c.Id).FirstOrDefaultAsync();
+
+            // Server-side calculations
+            var amountBeforeVat = dto.Services.Sum(s => s.Amount);
+            var vatRate = dto.VatRate; // 0 or 20 (from dropdown)
+            var vatAmount = Math.Round(amountBeforeVat * (vatRate / 100m), 2);
+            var totalAmount = amountBeforeVat + vatAmount;
+
+
+
             var quote = new QuoteModel
             {
-                BusinessId = dto.BusinessId,
+                BusinessId = businessId,
                 BusinessName = dto.BusinessName,
-                FristResponse = dto.FirstResponse,
+                FristResponse = dto.FristResponse,
                 QuoteNumber = quoteNumber,
                 Date = dto.Date,
+                AmountBeforeVat = amountBeforeVat,
+                VatRate = vatRate,
+                VatAmount = vatAmount,
+                TotalAmount = totalAmount,
                 Services = dto.Services.Select(s => new QuoteServiceItem
                 {
                     ServiceName = s.ServiceName,
@@ -43,6 +63,9 @@ namespace backend.services
             return quote.Id;
         }
 
-
+        public async Task<List<QuoteModel>> GetQouteAsync()
+        {
+            return await _quote.Find(_ => true).ToListAsync();
+        } 
     }
 }

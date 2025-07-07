@@ -192,7 +192,18 @@ namespace backend.services
             };
         }
 
+        public async Task<List<ClientModel>> SearchByBusinessNameAsync(string query)
+        {
+            var filter = Builders<ClientModel>.Filter.Regex("businessName", new BsonRegularExpression(query, "i"));
+            var projection = Builders<ClientModel>.Projection.Include(x => x.BusinessName);
+            var result = await _client
+                .Find(filter)
+                .Project<ClientModel>(projection)
+                .Limit(10)
+                .ToListAsync();
 
+            return result;
+        }
 
 
     }

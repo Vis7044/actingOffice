@@ -49,6 +49,11 @@ namespace backend.services
             }
         }
 
+        public async Task<List<UserModel>> GetUsers()
+        {
+            return await _user.Find(_ => true).ToListAsync();   
+
+        }
         public async Task<string> LoginAsync(LoginDto loginDto)
         {
             // Find the user by email

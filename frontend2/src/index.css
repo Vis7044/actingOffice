@@ -9,6 +9,41 @@
   text-decoration: underline;
 }
 
+.error-text {
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -10px;
+  left: 250px;
+}
+.error-service-description {
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -10px;
+  left: 250px;
+}
+
+.error-service-name {
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -10px;
+  left: 2px;
+}
+
+.error-first-response {
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -10px;
+  right: 40px;
+}
+
 .roboto-font {
   font-family: "Roboto", sans-serif;
   font-optical-sizing: auto;

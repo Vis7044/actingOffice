@@ -70,6 +70,18 @@ namespace backend.Controllers
             }
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                return BadRequest("Query string cannot be empty.");
+
+            var results = await _clientService.SearchByBusinessNameAsync(query);
+            return Ok(results.Select(c => new {
+                id = c.Id,
+                name = c.BusinessName
+            }));
+        }
 
     }
 }

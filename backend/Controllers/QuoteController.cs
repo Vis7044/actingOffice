@@ -1,10 +1,12 @@
 ﻿using backend.Dtos.QuoteDto;
 using backend.services.interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
 {
+  
     [Route("api/[controller]")]
     [ApiController]
     public class QuoteController : ControllerBase
@@ -15,7 +17,7 @@ namespace backend.Controllers
             _quoteservice = quoteService;
         }
 
-        [HttpPost]
+        [HttpPost("create")]
         public async Task<IActionResult> CreateQuoteAsync([FromBody] CreateQuoteDto dto)
         {
             try
@@ -27,7 +29,20 @@ namespace backend.Controllers
             {
                 return BadRequest(ex.Message);
             }
-
         }
+
+        [HttpGet("get")]
+        public async Task<IActionResult> GetAsync([FromQuery] string searchTerm="")
+        {
+            try
+            {
+                var quotes = await _quoteservice.GetQouteAsync();   
+                return Ok(quotes);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }   
     }
 }

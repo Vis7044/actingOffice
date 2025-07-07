@@ -26,6 +26,23 @@ namespace backend.Controllers
 
         private string GetUserId() =>
             User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+        [HttpGet("get")]
+        public async Task<IActionResult> GetUsers()
+        {
+             try
+            {
+                var users = await _authService.GetUsers();
+                if (users == null)
+                {
+                    return NotFound("User not found.");
+                }
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUserAsync([FromBody] RegisterUserDto userRegister)
