@@ -27,6 +27,12 @@ namespace backend.Data
         public IMongoCollection<ClientHistory> ClientHistory => _database
             .GetCollection<ClientHistory>("ClientHistory");
 
+        public IMongoCollection<QuoteModel> Quote => _database
+            .GetCollection<QuoteModel>("Quotes");
+
+        public IMongoCollection<Services> QuoteService => _database
+            .GetCollection<Services>("QuoteServices");
+
 
         private void CreateIndexes()
         {
