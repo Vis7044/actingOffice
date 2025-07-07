@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-  DetailsList,
   DetailsListLayoutMode,
   SelectionMode,
   Selection,
+  ShimmeredDetailsList,
   
 } from '@fluentui/react';
 import { ThemeProvider, createTheme } from '@fluentui/react';
@@ -13,6 +13,7 @@ import type { IColumn } from '@fluentui/react/lib/DetailsList';
 import { MarqueeSelection } from '@fluentui/react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
+import { CommandBarNav } from './CommandBarNav';
 
 const customTheme = createTheme({
   palette: {
@@ -43,7 +44,7 @@ const customTheme = createTheme({
 
 
 interface IClient {
-  key: any;
+  key: number;
   id: string;
   clientId: string;
   businessName: string;
@@ -52,15 +53,29 @@ interface IClient {
   status: string;
 }
 
-const ClientDetailList: React.FC = () => {
+const ClientDetailList = () => {
   const [clientsData, setClientsData] = useState<IClient[]>([]);
   const navigate = useNavigate();
+  const [refreshList, setRefreshList] = useState(false);
+  const [refreshIcon, setRefreshIcon] = useState(false);
+  
+  const [search, setSearch] = useState('')
+
+  const updateSearch = (searchTerm:string) => {
+    setSearch(searchTerm);
+    console.log(searchTerm)
+  }
+  const refresh = () => {
+    setRefreshList(!refreshList);
+  }
+
 
   useEffect(() => {
     const fetchClientsData = async () => {
       try {
-        const response = await axiosInstance.get('/Client/getClient');
-        const data = response.data?.data.map((client: any, index: any) => {
+        setRefreshIcon(true)
+        const response = await axiosInstance.get(`/Client/getClient?searchTerm=${search}`);
+        const data = response.data?.data.map((client: Omit<IClient, 'key'>, index: number) => {
           return {
             key: index+1,
             ...client
@@ -69,15 +84,18 @@ const ClientDetailList: React.FC = () => {
         console.log('Fetched clients data:', data);
         // Ensure data is an array before setting state
         setClientsData(data || []);
+        setRefreshIcon(false)
       } catch (error) {
         console.error('Error fetching clients data:', error);
       }
     };
 
-
-
     fetchClientsData();
-  }, []);
+  }, [refreshList,search]);
+
+  if(refreshList == true){
+    console.log('refreshing')
+  }
 
   const columns: IColumn[] = [
     {
@@ -101,6 +119,7 @@ const ClientDetailList: React.FC = () => {
         <span
           
           className="clickable-text"
+          style={{fontSize: '14px'}}
           onClick={() => navigate(`/client/${item.id}`)}
         >
           {item.businessName}
@@ -131,6 +150,11 @@ const ClientDetailList: React.FC = () => {
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
+      onRender: (item: IClient) => (
+        <span style={{color:'black', fontSize:"14px"}}>
+          {item.type}
+        </span>
+      )
     },
     {
       key: 'createdOn',
@@ -150,21 +174,25 @@ const ClientDetailList: React.FC = () => {
   })
   return (
     <ThemeProvider theme={customTheme}>
+    <CommandBarNav refreshLIst={refresh} updateSearch={updateSearch} refreshIcon={refreshIcon}/>
+   
     <MarqueeSelection selection={selection}>
-      <DetailsList
-      items={clientsData}
-      columns={columns}
-      selection={selection}
-      setKey="set"
-      layoutMode={DetailsListLayoutMode.fixedColumns}
-      selectionMode={SelectionMode.single}
-      isHeaderVisible={true}
-      selectionPreservedOnEmptyClick={true}
-      ariaLabelForSelectionColumn="Toggle selection"
-      ariaLabelForSelectAllCheckbox="Toggle selection for all items"
-      checkButtonAriaLabel="select row"
+      <ShimmeredDetailsList
+        items={clientsData}
+        columns={columns}
+        selection={selection}
+        setKey="set"
+        layoutMode={DetailsListLayoutMode.fixedColumns}
+        selectionMode={SelectionMode.single}
+        isHeaderVisible={true}
+        selectionPreservedOnEmptyClick={true}
+        enableShimmer={refreshIcon}
+        ariaLabelForSelectionColumn="Toggle selection"
+        ariaLabelForSelectAllCheckbox="Toggle selection for all items"
+        checkButtonAriaLabel="select row"
     />
     </MarqueeSelection>
+    
     </ThemeProvider>  
   );
 };

@@ -2,10 +2,10 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import axiosInstance from "../utils/axiosInstance";
-import { useState } from "react";
 import { AxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { makeStyles } from "@fluentui/react";
+import { useAuth } from "../utils/useAuth";
 
 const useStyle = makeStyles({
   form: {
@@ -90,7 +90,11 @@ const useStyle = makeStyles({
 export const Signup = () => {
   const classes = useStyle();
   const navigate = useNavigate();
-  
+  const {user} = useAuth()
+
+  if(user) {
+    navigate('/')
+  }
 
   const formik = useFormik({
     initialValues: {

@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
+import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { fetchUser } from './userService';
 import type { User } from '../types/authTypes';
 
@@ -7,6 +7,8 @@ interface IAuthContext {
   user: User | null;
   login: (token: string) => Promise<void>;
   logout: () => void;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+ 
 }
 
 export const AuthContext = createContext<IAuthContext | undefined>(undefined);
@@ -50,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   if (loading) return null; 
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, setUser}}>
       {children}
     </AuthContext.Provider>
   );

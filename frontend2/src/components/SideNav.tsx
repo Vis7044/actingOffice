@@ -53,7 +53,7 @@ export const SideNav: React.FC = () => {
   const toggleSidebar = () => setIsOpen((prev) => !prev);
 
   return (
-    <div style={{ display: "flex" }}>
+    <div style={{ display: "flex" }} className="roboto-font">
       {/* Sidebar */}
       <div
         style={{

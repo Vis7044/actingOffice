@@ -3,7 +3,8 @@ import './App.css'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 
 import Home from './pages/Home'
-import { Client } from './pages/Client'
+import {lazy} from 'react'
+const Client = lazy(() => import('./pages/Client'))
 import { Quote } from './pages/Quote'
 import { Signup } from './pages/Signup'
 import {SideNav} from './components/SideNav'
@@ -21,18 +22,17 @@ function App() {
         
         <Routes>
           <Route path='/' element={<ProtectRoute><SideNav/></ProtectRoute>}>
-          <Route index element={<Home/>}/>
+          <Route index element={
+            <Home/>}/>
           <Route path='client' element={<Client/>}/>
           <Route path='quote' element={<Quote/>}/>
 
-          </Route>
           <Route path="/client/:id" element={<ClientDetails   />} />
+          </Route>
 
           <Route path='signup' element={<Signup/>}/> 
          <Route path='login' element={<Login/>}/>
-          
         </Routes>
-
       </BrowserRouter> 
     </>
   )

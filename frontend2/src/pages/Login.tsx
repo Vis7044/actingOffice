@@ -6,6 +6,7 @@ import { AxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../utils/useAuth";
 import { makeStyles } from "@fluentui/react";
+import { fetchUser } from "../Auth/userService";
 
 const useStyle = makeStyles({
   form: {
@@ -84,9 +85,11 @@ const useStyle = makeStyles({
 export const Login = () => {
   const classes = useStyle();
   const navigate = useNavigate();
-  const {login} =useAuth()
+  const {login, setUser, user} =useAuth();
   
-
+  if(user){
+    navigate('/')
+  }
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -105,7 +108,9 @@ export const Login = () => {
         const token = res?.data?.token;
         if(token) {
           login(token);
-        console.log("Login Successful:", res.data);
+          console.log("Login Successful:", res.data);
+          fetchUser()
+                .then(setUser)
           resetForm();
           navigate("/");
 
