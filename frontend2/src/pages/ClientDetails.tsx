@@ -1,0 +1,204 @@
+import { useParams } from "react-router-dom";
+import axiosInstance from "../utils/axiosInstance";
+import { useEffect, useState } from "react";
+import { FaCircleUser, FaMessage } from "react-icons/fa6";
+import { mergeStyles } from "@fluentui/react";
+import { MdEdit } from "react-icons/md";
+import { FaPlus } from "react-icons/fa";
+import { RiStickyNoteAddLine } from "react-icons/ri";
+import { MdAttachEmail } from "react-icons/md";
+import { LiaFileInvoiceDollarSolid } from "react-icons/lia";
+import { AiOutlineSignature } from "react-icons/ai";
+import { TbNotes } from "react-icons/tb";
+
+
+import {
+  Label,
+  Pivot,
+  PivotItem,
+} from "@fluentui/react";
+import type {
+  IStyleSet,
+  ILabelStyles,
+} from "@fluentui/react";
+
+const labelStyles: Partial<IStyleSet<ILabelStyles>> = {
+  root: { marginTop: 10 },
+};
+
+interface IClient {
+  Id: string;
+  businessName: string;
+  clientId: string;
+  type: string;
+  status: string;
+  address: ClientAddress;
+  history: [];
+  createdOn: Date
+}
+
+interface ClientAddress {
+  building: string;
+  street: string;
+  city: string;
+  state: string;
+  pinCode: string;
+  country: string;
+}
+
+export interface IUser {
+  firstName: string;
+  lastName: string;
+  
+}
+
+export interface IClientHistory {
+  id: string;
+  dateTime: string;           
+  type: string;               
+  clientId: string;
+}
+
+interface IClientHistoryWithUser {
+  history: IClientHistory;
+  user: IUser;
+}
+
+const profileHeader = mergeStyles({
+  display: "flex",
+});
+
+const actionSection = mergeStyles({
+  display: "flex",
+  flexDirection: "column",
+  marginTop: "10px",
+  gap: "5px",
+});
+
+const profileDetail = mergeStyles({
+  width: '1090px',
+  height: '300px',
+  backgroundColor: 'rgba(77, 74, 74, 0.07)',
+  border: '1px solid',
+  borderColor: 'rgba(32, 31, 31, 0.18)',
+  borderRadius: '10px'
+})
+
+export const ClientDetails = () => {
+  const { id } = useParams();
+  const [client, setClient] = useState<IClient | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
+  const [history, setHistory] = useState<IClientHistoryWithUser[]>([])
+
+  const fetchClientDetail = async () => {
+    try {
+      const resp = await axiosInstance.get(`/Client/getClient/${id}`);
+      setClient(resp.data?.client);
+      setHistory(resp.data.historyWithUsers);
+      console.log(resp.data, 'data');
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load client details.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClientDetail();
+  }, []);
+
+  if (loading) return <div>Loading client details...</div>;
+  if (error) return <div>{error}</div>;
+  if (!client) return <div>No client found.</div>;
+
+  return (
+    <div>
+      <div className={profileHeader}>
+        <div style={{ margin: "20px 10px" }}>
+          <FaCircleUser size={48} color="gray" />
+          <FaPlus
+            color="rgb(146, 188, 223)"
+            style={{ position: "relative", bottom: "-15", right: "15" }}
+          />
+        </div>
+        <div className={actionSection}>
+          <div>{client.businessName}</div>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <p
+              style={{
+                backgroundColor: "rgb(255, 231, 178)",
+                padding: "3px 4px",
+                borderRadius: "8px",
+              }}
+            >
+              {client.clientId}
+            </p>
+            <MdEdit color="rgb(146, 188, 223)" style={{ marginTop: "10px" }} />
+            <p style={{ marginTop: "6px" }}>{client.type}</p>
+          </div>
+          <div style={{ display: "flex", gap: "15px" }}>
+            
+            <RiStickyNoteAddLine color="rgb(102, 184, 250)" />
+            <MdAttachEmail color="rgb(102, 184, 250)" />
+            <LiaFileInvoiceDollarSolid color="rgb(102, 184, 250)" />
+            <AiOutlineSignature color="rgb(102, 184, 250)" />
+            <TbNotes color="rgb(116, 187, 245)" />
+            <FaMessage color="rgb(146, 188, 223)" />
+            <FaMessage color="rgb(146, 188, 223)" />
+            <FaMessage color="rgb(146, 188, 223)" />
+            <FaMessage color="rgb(146, 188, 223)" />
+            <FaMessage color="rgb(146, 188, 223)" />
+          </div>
+          <Pivot aria-label="Basic Pivot Example">
+            <PivotItem
+              headerText="Profile"
+              headerButtonProps={{
+                "data-order": 1,
+                "data-title": "Profile",
+              }}
+            >
+              <Label styles={labelStyles}>
+                <div className={profileDetail}>
+                <p style={{borderBottom: '1px solid', borderColor: 'rgba(73, 71, 71, 0.2)', fontSize: '14px', color: 'gray', fontWeight: '400', padding: '2px 4px'}}>Basic Details</p>
+                <div style={{paddingLeft: '10px'}}>
+                  <div>
+                    <p style={{color: 'gray', fontSize: '16px'}}>Incorporated Date</p>
+                    <p>{new Date(client.createdOn).toLocaleDateString()}</p>
+                    
+                  </div>
+                  <div>
+                    <p style={{color: 'gray', fontSize: '16px'}}>Address</p>
+                    <p>{client.address.street} {client.address.pinCode}, {client.address.city} {client.address.state}  {client.address.country}</p>
+                  </div>
+                  <div>
+                    <p style={{color: 'gray',fontSize: '16px'}}>Client Id</p>
+                    <p>{client.clientId}</p>
+                  </div>
+                </div>
+                </div>
+              </Label>
+            </PivotItem>
+            <PivotItem headerText="History">
+              <Label styles={labelStyles}>
+                {history.map((item, index) => (
+                <div key={index}>
+                  <p>
+                    at {new Date(item.history.dateTime).toLocaleString()} by{" "}
+                    <strong>{item.user.firstName} {item.user.lastName}</strong><br />
+                    Action: {item.history.type}
+                  </p>
+                </div>  
+              ))}
+              </Label>
+            </PivotItem>
+            <PivotItem headerText="Billing">
+              <Label styles={labelStyles}>Billing</Label>
+            </PivotItem>  
+          </Pivot>
+        </div>
+      </div>
+    </div>
+  );
+};
