@@ -109,15 +109,25 @@ const ClientDetailList = () => {
   const columns: IColumn[] = [
     {
       key: "sl. No",
-      name: "Sl. No",
+      name: "S.No.",
+      onRenderHeader: () => (
+        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>S.No.</span>
+      ),
       fieldName: "key",
       minWidth: 50,
       maxWidth: 70,
       isResizable: true,
+      onRender: (item: IClient) => (
+        <span style={{ color: "black", fontSize: "14px" }}>{item.key}</span>
+      ),
+
     },
     {
       key: "businessName",
       name: "Business Name",
+      onRenderHeader: () => (
+        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Business Name</span>
+      ),
       fieldName: "businessName",
       minWidth: 150,
       maxWidth: 300,
@@ -136,6 +146,9 @@ const ClientDetailList = () => {
     {
       key: "clientId",
       name: "Client ID",
+      onRenderHeader: () => (
+        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Client Id</span>
+      ),
       fieldName: "clientId",
       minWidth: 100,
       maxWidth: 150,
@@ -158,6 +171,9 @@ const ClientDetailList = () => {
     {
       key: "type",
       name: "Type",
+      onRenderHeader: () => (
+        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Type</span>
+      ),
       fieldName: "type",
       minWidth: 100,
       maxWidth: 150,
@@ -169,6 +185,9 @@ const ClientDetailList = () => {
     {
       key: "createdOn",
       name: "Created On",
+      onRenderHeader: () => (
+        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Create On</span>
+      ),
       fieldName: "createdOn",
       minWidth: 150,
       maxWidth: 200,
@@ -206,12 +225,13 @@ const ClientDetailList = () => {
       <div>
         <div
           style={{
-            maxHeight: `${clientsData.length * 45 + 50}px`,
+            maxHeight: `${clientsData.length * 45 + 70}px`,
             overflowY: "auto",
           }}
         >
           <MarqueeSelection selection={selection}>
             <ShimmeredDetailsList
+            
               items={clientsData}
               columns={columns}
               selection={selection}

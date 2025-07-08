@@ -4,6 +4,12 @@ import { FaHome, FaUser, FaBars, FaSearch } from "react-icons/fa";
 import { Link, Outlet } from "react-router-dom";
 import { mergeStyles } from "@fluentui/react";
 import Breadcrumb from "./BreadCrumb";
+import { LiaStickyNoteSolid } from "react-icons/lia";
+import { TfiHeadphoneAlt } from "react-icons/tfi";
+import { IoBookmarksOutline } from "react-icons/io5";
+import { TfiAnnouncement } from "react-icons/tfi";
+import { VscFileSubmodule } from "react-icons/vsc";
+import { BsGrid3X3Gap } from "react-icons/bs";
 
 interface NavItemProps {
   icon: ReactNode;
@@ -62,7 +68,7 @@ export const SideNav: React.FC = () => {
           color: "black",
           height: "100vh",
           borderRight: "1px solid",
-          borderColor: 'rgba(0, 0, 0, 0.2)',
+          borderColor: 'rgba(0, 0, 0, 0.1)',
           width: isOpen ? 200 : 64,
           transition: "width 0.3s",
         }}
@@ -110,20 +116,26 @@ export const SideNav: React.FC = () => {
       {/* Content Area */}
       <div style={{flex: 1}}>
         <div className={navHeaderStyle}>
-          <h1 style={{ paddingTop: '10px', fontSize: 20 }}>Acting Office</h1>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginLeft: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: '#fff', color: 'black', padding: '2px 10px', borderRadius: 2, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
+          <h1 style={{ paddingTop: '10px', fontSize: 16, paddingLeft: '10px' }}>Acting Office- Dev</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginLeft: "auto",position: 'relative' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: '#fff', color: 'black', padding: '2px 10px', borderRadius: 4, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
               <FaSearch color="gray"  />
               <input placeholder="Ctrl + K" style={{border: 'none', outline: 'none'}}/>
             </div>
-            <div>
-              <p>Profile</p>
+            <BsGrid3X3Gap size={18} style={{}}/>
+            <VscFileSubmodule size={18} style={{}}/>
+            
+            <TfiAnnouncement size={18} style={{}}/>
+            <IoBookmarksOutline size={18} style={{}}/>
+            <TfiHeadphoneAlt size={18} style={{ }}/>
+            <LiaStickyNoteSolid size={22} style={{}}/>
+            <div style={{ borderRadius: '50%', overflow: 'hidden', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',marginRight: '5px' }}>
+                <img src="/profile_logo.jpg" style={{width: '30px',}} alt="profile"/>
             </div>
+              <span style={{width: '12px', height: '12px',borderRadius:'50%',backgroundColor: 'green', position: 'absolute',zIndex: '100', top: '24px', right: '4px', border: '3px solid', borderColor: 'white'}}></span>
           </div>
-        </div>
-        
+        </div> 
           <Breadcrumb/>
-          
         <Outlet />
       </div>
     </div>

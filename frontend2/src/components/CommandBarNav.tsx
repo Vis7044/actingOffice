@@ -17,6 +17,7 @@ import {
 import { useBoolean, useId } from "@fluentui/react-hooks";
 import { DefaultButton, PrimaryButton } from "@fluentui/react/lib/Button";
 import { Field, Form, Formik, type FormikProps } from "formik";
+import { useLocation } from "react-router-dom";
 
 const theme = getTheme();
 
@@ -25,15 +26,13 @@ const commandBarStyle = mergeStyles({
   justifyContent: "space-between",
   alignItems: "center",
   padding: "6px 20px",
-  backgroundColor: theme.palette.neutralLighter,
-  boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
   borderBottom: `1px solid ${theme.palette.neutralQuaternaryAlt}`,
 });
 
 const sectionStyle = mergeStyles({
   display: "flex",
   alignItems: "center",
-  gap: "20px",
+  gap: "10px",
 });
 
 const itemStyle = mergeStyles({
@@ -81,9 +80,7 @@ const styles = mergeStyleSets({
   },
 });
 
-const filterData = [
-  
-]
+const filterData = [];
 
 export const CommandBarNav = ({
   refreshLIst,
@@ -98,6 +95,7 @@ export const CommandBarNav = ({
   const [isCalloutVisible, { toggle: toggleIsCalloutVisible }] =
     useBoolean(false);
   const buttonId = useId("callout-button");
+  const location = useLocation();
 
   return (
     <div className={commandBarStyle}>
@@ -118,8 +116,7 @@ export const CommandBarNav = ({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            backgroundColor: "#fff",
+            gap: 4,
             color: "black",
             padding: "4px 10px",
             borderRadius: 4,
@@ -143,18 +140,34 @@ export const CommandBarNav = ({
             }}
           />
         </div>
+
+       {location.pathname.includes("client") && (
+         <div
+          style={{
+            backgroundColor: "#C7E0F4",
+            padding: "3px 8px",
+            borderRadius: "20px",
+            cursor: "pointer",
+          }}
+        >
+          <span>
+            Status = <span style={{ fontWeight: "bold" }}>Active</span>
+          </span>
+        </div>
+        )}
         <div id={buttonId} onClick={() => toggleIsCalloutVisible()}>
           <div
             style={{
-              backgroundColor: "rgb(87, 192, 241)",
-              padding: "3px 10px",
-              borderRadius: "10px",
+              backgroundColor: "#C7E0F4",
+              padding: "3px 8px",
+              borderRadius: "20px",
               cursor: "pointer",
             }}
           >
-            <CiFilter color="rgb(7, 84, 250)" />
+            <CiFilter size={20} color="rgb(7, 84, 250)" />
             <span>Add Filter</span>
           </div>
+
           {isCalloutVisible ? (
             <FocusTrapCallout
               role="alertdialog"
@@ -177,7 +190,7 @@ export const CommandBarNav = ({
                 }}
               >
                 {(props: FormikProps<any>) => {
-                  console.log(props.values)
+                  console.log(props.values);
                   return (
                     <Form>
                       <div style={{}}>
@@ -199,25 +212,27 @@ export const CommandBarNav = ({
                           <option value="blue">Blue</option>
                         </Field>
                       </div>
-                      {props.values.criteria !=="" && <div style={{ marginTop: "10px" }}>
-                        <div>Value: </div>
-                        <Field
-                          as="select"
-                          name="value"
-                          style={{
-                            width: "100%",
-                            border: "1px solid",
-                            borderColor: "rgba(0,0,0,0.3)",
-                            borderRadius: "5px",
-                            padding: "4px 5px",
-                          }}
-                        >
-                          <option value={""}>Select Value</option>
-                          <option value="red">Red</option>
-                          <option value="green">Green</option>
-                          <option value="blue">Blue</option>
-                        </Field>
-                      </div>}
+                      {props.values.criteria !== "" && (
+                        <div style={{ marginTop: "10px" }}>
+                          <div>Value: </div>
+                          <Field
+                            as="select"
+                            name="value"
+                            style={{
+                              width: "100%",
+                              border: "1px solid",
+                              borderColor: "rgba(0,0,0,0.3)",
+                              borderRadius: "5px",
+                              padding: "4px 5px",
+                            }}
+                          >
+                            <option value={""}>Select Value</option>
+                            <option value="red">Red</option>
+                            <option value="green">Green</option>
+                            <option value="blue">Blue</option>
+                          </Field>
+                        </div>
+                      )}
                     </Form>
                   );
                 }}

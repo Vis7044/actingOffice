@@ -17,7 +17,7 @@ function SideCanvas({name, refreshLIst}: {name: ReactNode, refreshLIst: () => vo
 
   return (
     <>
-       <span onClick={handleShow}><BsPlusLg /> Add</span>
+       <span onClick={handleShow} style={{display: 'flex', alignItems: 'center', gap: '5px'}}><BsPlusLg size={22} /> <span>Add</span></span>
       <Offcanvas style={isQuotePage?{width: '800px'}: {width: '600px'}} show={show} onHide={handleClose} placement={'end'} >
         <Offcanvas.Header closeButton style={{borderBottom: '1px solid', borderColor: 'slate'}}>
           {name}
