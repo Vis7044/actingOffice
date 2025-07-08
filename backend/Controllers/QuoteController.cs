@@ -28,7 +28,7 @@ namespace backend.Controllers
         {
             try
             {
-                var result = await _quoteservice.CreateQuoteAsync(dto);
+                var result = await _quoteservice.CreateQuoteAsync(dto, GetUserId());
                 return Ok(result);
             }
             catch (Exception ex)

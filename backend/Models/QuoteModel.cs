@@ -21,11 +21,17 @@ namespace backend.Models
 
         public List<QuoteServiceItem> Services { get; set; }
 
+        [BsonElement("userId")]
+        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
+        public string UserId { get; set; } = string.Empty;  
+
         public decimal AmountBeforeVat { get; set; } = 0.0m;
 
         public decimal VatAmount { get; set; } = 0.0m;
 
         public decimal VatRate { get; set; } = 0.0m;
+
+
 
         public decimal TotalAmount { get; set; } = 0.0m;
         [BsonIgnore]

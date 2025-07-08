@@ -6,7 +6,7 @@ namespace backend.services.interfaces
 {
     public interface IQuoteService
     {
-        Task<string> CreateQuoteAsync(CreateQuoteDto dto);
+        Task<string> CreateQuoteAsync(CreateQuoteDto dto, string userId);
         Task<PageResult<QuoteModel>> GetQouteAsync(string role, string userId, int page, int pageSize, string searchTerm);
         Task<QuoteModel> GetQuoteById(string id);
     }
