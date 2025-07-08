@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   DetailsListLayoutMode,
   SelectionMode,
@@ -14,6 +14,8 @@ import { MarqueeSelection } from '@fluentui/react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import { CommandBarNav } from './CommandBarNav';
+import QuoteDetailSideCanvas from './QuoteDetailsSideCanvas';
+import { FaShare } from 'react-icons/fa';
 
 const customTheme = createTheme({
   palette: {
@@ -43,15 +45,6 @@ const customTheme = createTheme({
 });
 
 
-interface IClient {
-  key: number;
-  id: string;
-  clientId: string;
-  businessName: string;
-  type: string;
-  createdOn: string;
-  status: string;
-}
 
 interface IService {
     serviceName : string;
@@ -72,7 +65,7 @@ interface IQuote {
 }
 
 const QuoteList = () => {
-  const [quoteData, setQuoteData] = useState<IClient[]>([]);
+  const [quoteData, setQuoteData] = useState<IQuote[]>([]);
   const navigate = useNavigate();
   const [refreshList, setRefreshList] = useState(false);
   const [refreshIcon, setRefreshIcon] = useState(false);
@@ -94,7 +87,8 @@ const QuoteList = () => {
         setRefreshIcon(true)
         const response = await axiosInstance.get(`/Quote/get?searchTerm=${search}`);
         console.log('Response from API:', response.data);
-        const data = response.data?.map((quote: Omit<IQuote, 'key'>, index: number) => {
+        
+        const data = response.data.data?.map((quote: Omit<IQuote, 'key'>, index: number) => {
           return {
             key: index+1,
             ...quote
@@ -133,10 +127,10 @@ const QuoteList = () => {
       isResizable: true,
         onRender: (item: IQuote) => (
         <span
-          style={{ backgroundColor: 'rgb(131, 183, 223)', color: 'white', borderRadius: '8px', padding:'4px 8px', cursor: 'pointer' }}
-        //   onClick={() => navigate(`/client/${item.businessId}`)}
+          style={{ borderRadius: '8px', padding:'4px 8px', cursor: 'pointer' }}
+          
         >
-          {item.quoteNumber}
+          <QuoteDetailSideCanvas id={item.id} item={item.quoteNumber}/>
         </span>
       ),
       
@@ -168,12 +162,37 @@ const QuoteList = () => {
       ),
     },
     {
+      key: 'firstResponse',
+      name: 'First Response',
+      fieldName: 'firstResponse',
+      minWidth: 100,
+      maxWidth: 150,
+      isResizable: true,
+    },
+    {
       key: 'amount',
       name: 'Amount',
       fieldName: 'totalAmount',
       minWidth: 150,
       maxWidth: 200,
       isResizable: true,
+    },
+    {
+      key: 'action',
+      name: '',
+      fieldName: '',
+      minWidth: 150,
+      maxWidth: 300,
+      isResizable: true,
+        onRender: (item: IQuote) => (
+        <span
+          style={{ borderRadius: '8px', padding:'4px 8px', cursor: 'pointer' }}
+          
+        >
+          <QuoteDetailSideCanvas id={item.id} item={""} val={<FaShare/>}/>
+        </span>
+      ),
+      
     },
     
   ];

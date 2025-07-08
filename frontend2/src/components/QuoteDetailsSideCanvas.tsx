@@ -1,10 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import Offcanvas from 'react-bootstrap/Offcanvas';
-import ClientForm from './ClientForm';
-import QuoteForm from './QuoteForm';
-import { BsPlusLg } from 'react-icons/bs';
+import QuoteDetails from './QuoteDetails';
 
-function SideCanvas({name, refreshLIst}: {name: ReactNode, refreshLIst: () => void}) {
+function QuoteDetailSideCanvas({ item, id, val}: { item:string, id: string, val: ReactNode}) {
   const [show, setShow] = useState(false);
 
   const location = window.location.pathname;
@@ -17,18 +15,17 @@ function SideCanvas({name, refreshLIst}: {name: ReactNode, refreshLIst: () => vo
 
   return (
     <>
-       <span onClick={handleShow}><BsPlusLg /> Add</span>
+        <span onClick={handleShow}>{item}{val}</span>
       <Offcanvas style={isQuotePage?{width: '800px'}: {width: '600px'}} show={show} onHide={handleClose} placement={'end'} >
         <Offcanvas.Header closeButton style={{borderBottom: '1px solid', borderColor: 'slate'}}>
-          {name}
+          Quote Details
         </Offcanvas.Header>
         <Offcanvas.Body>
-          {!isQuotePage && (<ClientForm refreshLIst={refreshLIst} handleClose={handleClose}/>)}
-          {isQuotePage && (<QuoteForm refreshLIst={refreshLIst} handleClose={handleClose}/>)}
+          <QuoteDetails id={id}/>
         </Offcanvas.Body>
       </Offcanvas>
     </>
   );
 }
 
-export default SideCanvas;
+export default QuoteDetailSideCanvas;

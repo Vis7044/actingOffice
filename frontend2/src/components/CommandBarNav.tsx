@@ -63,7 +63,7 @@ export const CommandBarNav = ({refreshLIst, updateSearch, refreshIcon}: {refresh
       {/* Left side */}
       <div className={sectionStyle}>
         <div className={itemStyle}>
-          <BsPlusLg />
+          
 
           <SideCanvas name="Add business" refreshLIst = {refreshLIst}/>
         </div>

@@ -80,7 +80,7 @@ export const QuoteForm = ({
         initialValues={{
           businessName: "",
           date: new Date().toISOString().substring(0, 10),
-          fristResponse: "",
+          firstResponse: "",
           vatRate: "0", 
           amountBeforeVat: 0,
           vatAmount: 0,
@@ -93,7 +93,7 @@ export const QuoteForm = ({
           ],
           totalAmount: 0,
         }}
-        validationSchema={validationSchema}
+        // validationSchema={validationSchema}
         onSubmit={async (values) => {
           try {
             const totalBeforeTax = values.services.reduce(
@@ -191,7 +191,7 @@ export const QuoteForm = ({
                     >
                         <option >Select</option>
                         {users && users.map((user) => (
-                          <option key={user.id} value={user.id}>
+                          <option key={user.id} value={`${user.firstName} ${user.lastName}`}>
                             {user.firstName} {user.lastName}
                             </option>
                         ))}
