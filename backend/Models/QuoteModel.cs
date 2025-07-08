@@ -17,7 +17,7 @@ namespace backend.Models
 
         public string QuoteNumber { get; set; } = string.Empty;
 
-        public string FristResponse { get; set; } = string.Empty;
+        public string FirstResponse { get; set; } = string.Empty;
 
         public List<QuoteServiceItem> Services { get; set; }
 
@@ -28,6 +28,9 @@ namespace backend.Models
         public decimal VatRate { get; set; } = 0.0m;
 
         public decimal TotalAmount { get; set; } = 0.0m;
+        [BsonIgnore]
+        [BsonElement("businessDetails")]    
+        public ClientModel BusinessDetails { get; set; }
     }
 
     public class QuoteServiceItem

@@ -30,7 +30,7 @@ namespace backend.Data
         public IMongoCollection<QuoteModel> Quote => _database
             .GetCollection<QuoteModel>("Quotes");
 
-        
+
 
 
         private void CreateIndexes()

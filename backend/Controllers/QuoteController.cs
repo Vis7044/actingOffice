@@ -3,6 +3,7 @@ using backend.services.interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace backend.Controllers
 {
@@ -16,6 +17,11 @@ namespace backend.Controllers
         {
             _quoteservice = quoteService;
         }
+        private string GetUserId() =>
+           User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+
+        private string? GetRole() =>
+            User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateQuoteAsync([FromBody] CreateQuoteDto dto)
@@ -32,17 +38,31 @@ namespace backend.Controllers
         }
 
         [HttpGet("get")]
-        public async Task<IActionResult> GetAsync([FromQuery] string searchTerm="")
+        public async Task<IActionResult> GetAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm="")
         {
             try
             {
-                var quotes = await _quoteservice.GetQouteAsync();   
+                var quotes = await _quoteservice.GetQouteAsync(GetRole(), GetUserId(), page, pageSize,searchTerm);   
                 return Ok(quotes);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-        }   
+        }
+
+        [HttpGet("get/{quoteId:length(24)}")]
+        public async Task<IActionResult> GetQuoteByIdAsync([FromRoute] string quoteId)
+        {
+            try
+            {
+                var quote = await _quoteservice.GetQuoteById(quoteId);
+                return Ok(quote);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

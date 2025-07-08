@@ -7,7 +7,7 @@
         public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
 
 
-        public string FristResponse { get; set; } = string.Empty;
+        public string FirstResponse { get; set; } = string.Empty;
 
         public List<QuoteServiceItemDto> Services { get; set; } = new();
 
