@@ -65,11 +65,20 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
           ] as Client[],
         }}
         onSubmit={async (values) => {
-          values.clients.map(async (client)=> await axiosInstance.post("/Client/create", client))
-          
-          refreshLIst();
-          handleClose()
-        }}
+        try {
+          await Promise.all(
+            values.clients.map((client) =>
+              axiosInstance.post("/Client/create", client)
+            )
+          );
+
+          refreshLIst();  
+          handleClose();  
+        } catch (error) {
+          console.error("Error creating clients:", error);
+        }
+      }}
+
       >
         {({ values }) => (
           <Form>

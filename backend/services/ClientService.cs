@@ -109,6 +109,7 @@ namespace backend.services
                     new BsonDocument("type", new BsonDocument { { "$regex", search }, { "$options", "i" } })
                 });
             }
+            
 
             // MongoDB aggregation pipeline
             var pipeline = new BsonDocument[]
@@ -116,7 +117,15 @@ namespace backend.services
                 new BsonDocument("$match", filters),
                 new BsonDocument("$sort", new BsonDocument("createdOn", -1)),
                 new BsonDocument("$skip", skip),
-                new BsonDocument("$limit", pageSize)
+                new BsonDocument("$limit", pageSize),
+                new BsonDocument("$project", new BsonDocument
+                {
+                    { "clientId", 1 },
+                    { "businessName", 1 },
+                    { "type", 1 },
+                    { "createdOn", 1 },
+                    { "userId", 1 },
+                })
             };
 
             try
@@ -183,7 +192,18 @@ namespace backend.services
             };
         }
 
+        public async Task<List<ClientModel>> SearchByBusinessNameAsync(string query)
+        {
+            var filter = Builders<ClientModel>.Filter.Regex("businessName", new BsonRegularExpression(query, "i"));
+            var projection = Builders<ClientModel>.Projection.Include(x => x.BusinessName);
+            var result = await _client
+                .Find(filter)
+                .Project<ClientModel>(projection)
+                .Limit(10)
+                .ToListAsync();
 
+            return result;
+        }
 
 
     }

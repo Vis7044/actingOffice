@@ -1,7 +1,10 @@
 import React from 'react'
+import QuoteList from '../components/QuoteList'
 
 export const Quote = () => {
   return (
-    <div>Quote</div>
+    <div>
+      <QuoteList/>
+    </div>
   )
 }
