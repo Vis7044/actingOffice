@@ -23,7 +23,7 @@ namespace backend.services
             _client = context.Clients;
         }
 
-        public async Task<string> CreateQuoteAsync(CreateQuoteDto dto)
+        public async Task<string> CreateQuoteAsync(CreateQuoteDto dto, string userId)
         {
             if (dto.Services == null || !dto.Services.Any())
             {
@@ -55,6 +55,7 @@ namespace backend.services
                 VatRate = vatRate,
                 VatAmount = vatAmount,
                 TotalAmount = totalAmount,
+                UserId = userId,
                 Services = dto.Services.Select(s => new QuoteServiceItem
                 {
                     ServiceName = s.ServiceName,
@@ -81,7 +82,7 @@ namespace backend.services
 
             if (role != "Admin")
             {
-                filters.Add("userId", userId);
+                filters.Add("userId", new ObjectId(userId));
             }
 
             if (!string.IsNullOrEmpty(search))

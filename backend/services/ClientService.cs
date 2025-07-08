@@ -42,6 +42,11 @@ namespace backend.services
         /// <exception cref="Exception"></exception>
         public async Task<string> CreateClientAsync(CreateClient client, string userId)
         {
+            var existingClient = await _client.Find(c => c.BusinessName == client.BusinessName).FirstOrDefaultAsync();
+            if (existingClient != null)
+            {
+                throw new Exception("Client with this business name "+client.BusinessName+" already exists ");
+            }
             int sequence = await _sequenceService.GetNextSequenceAsync("client");
             var history = new ClientHistoryDto
             {
@@ -98,7 +103,7 @@ namespace backend.services
 
             if (role != "Admin")
             {
-                filters.Add("userId", userId);
+                filters.Add("userId", new ObjectId(userId));
             }
 
             if (!string.IsNullOrEmpty(search))
