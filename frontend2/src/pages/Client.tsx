@@ -1,13 +1,17 @@
 
 import ClientDetailList from '../components/ClientDetailList'
 
+
  const Client = () => {
+  
   
   return (
     <div>
-      <ClientDetailList/>
+      <ClientDetailList />
+      
     </div>
   )
 }
 
 export default Client;
+

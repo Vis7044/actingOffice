@@ -1,8 +1,9 @@
-import React from "react";
-import { Formik, Form, Field, FieldArray } from "formik";
+import React, { useState } from "react";
+import { Formik, Form, Field, FieldArray, ErrorMessage, validateYupSchema } from "formik";
 import { mergeStyles } from "@fluentui/react";
 import {FaPlus, FaTrash, FaSave} from 'react-icons/fa'
 import axiosInstance from "../utils/axiosInstance";
+import * as Yup from 'yup';
 
 interface IAddress {
   building: string;
@@ -44,7 +45,24 @@ const input = mergeStyles({
 });
 
 export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void, handleClose : () => void}) => {
+  const clientSchema = Yup.object().shape({
+  type: Yup.string().required('Type is required'),
+  businessName: Yup.string().required('Business name is required'),
+  address: Yup.object().shape({
+    building: Yup.string().required('Building is required'),
+    street: Yup.string().required('Street is required'),
+    city: Yup.string().required('City is required'),
+    state: Yup.string().required('State is required'),
+    pinCode: Yup.string().required('Pin Code is required'),
+    country: Yup.string().required('Country is required'),
+    }),
+  });
+
+  const [error,setError] = useState(null)
   
+  const validationSchema = Yup.object().shape({
+  clients: Yup.array().of(clientSchema),
+});
   return (
     <div>
       <Formik
@@ -64,16 +82,22 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
             },
           ] as Client[],
         }}
+        validationSchema={validationSchema}
         onSubmit={async (values) => {
-        try {
-          await Promise.all(
-            values.clients.map((client) =>
-              axiosInstance.post("/Client/create", client)
-            )
-          );
+          try {
+            await Promise.all(
+              values.clients.map((client) =>
+                axiosInstance.post("/Client/create", client)
+              )
+            ).then(()=>{
+              refreshLIst();  
+              handleClose();  
+            })
+            .catch(error => {
+              setError(error.response.data)
+            })
 
-          refreshLIst();  
-          handleClose();  
+          
         } catch (error) {
           console.error("Error creating clients:", error);
         }
@@ -107,6 +131,7 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
                             <option value="Partnership">Partnership</option>
                             <option value="LimitedPartnership">Limited Partnership</option>
                           </Field>
+                          <ErrorMessage name={`clients[${index}].type`} component="div" style={{color: 'red'}}/>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -116,6 +141,7 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
                             name={`clients[${index}].businessName`}
                             placeholder="Business Name"
                           />
+                          <ErrorMessage name={`clients[${index}].businessName`} component="div" style={{color: 'red'}}/>
                         </div>
                         <div style={{display: 'flex', flexDirection: 'column', marginTop: '16px' }}>
                         
@@ -153,22 +179,42 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
 
                       <div style={{marginTop: '8px'}}>
                         <div style={{ display: 'flex', gap: '10px' }} className={firstDiv}>
-                          <Field className={input} name={`clients[${index}].address.building`} placeholder="Building" />
-                          <Field className={input} name={`clients[${index}].address.street`} placeholder="Street" />
+                          <div>
+                            <Field className={input} name={`clients[${index}].address.building`} placeholder="Building" />   
+                          <ErrorMessage name={`clients[${index}].address.building`} component="div" style={{color: 'red'}}/>       
+                            </div>            
+                          <div>
+                            <Field className={input} name={`clients[${index}].address.street`} placeholder="Street" />  
+                          <ErrorMessage name={`clients[${index}].address.street`} component="div" style={{color: 'red'}}/>      
+                            </div>               
                         </div>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }} className={firstDiv}>
-                          <Field className={input} name={`clients[${index}].address.city`} placeholder="City" />
-                          <Field className={input} name={`clients[${index}].address.state`} placeholder="State" />
+                          <div>
+                            <Field className={input} name={`clients[${index}].address.city`} placeholder="City" />
+                          <ErrorMessage name={`clients[${index}].address.city`} component="div" style={{color: 'red'}}/>
+                          </div>
+                          <div>
+                            <Field className={input} name={`clients[${index}].address.state`} placeholder="State" />  
+                          <ErrorMessage name={`clients[${index}].address.state`} component="div" style={{color: 'red'}}/>     
+                            </div>                  
                         </div>
                         <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }} className={firstDiv}>
-                          <Field className={input} name={`clients[${index}].address.pinCode`} placeholder="Pin Code" />
-                          <Field className={input} name={`clients[${index}].address.country`} placeholder="Country" />
+                          <div>
+                            <Field className={input} name={`clients[${index}].address.pinCode`} placeholder="Pin Code" />
+                          <ErrorMessage name={`clients[${index}].address.pinCode`} component="div" style={{color: 'red'}}/>
+                          </div>
+                          <div>
+                            <Field className={input} name={`clients[${index}].address.country`} placeholder="Country" />
+                          <ErrorMessage name={`clients[${index}].address.country`} component="div" style={{color: 'red'}}/> 
+                          </div>
+
                         </div>
                       </div>
 
                       
                     </div>
                   ))}
+                  {error && <div style={{color: 'red'}}>{error}</div>}
                   <button type="submit" style={{position: 'absolute', right: '5px', bottom: '10px', border: 'none', backgroundColor: 'rgb(54, 121, 245)', color: 'white',padding: '4px 8px', borderRadius: '5px'}}> <FaSave/> Submit </button>
                 </div>
               )}

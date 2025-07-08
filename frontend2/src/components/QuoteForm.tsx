@@ -38,41 +38,38 @@ export const QuoteForm = ({
   refreshLIst: () => void;
   handleClose: () => void;
 }) => {
-    const [users, setUsers] = React.useState<any[]>([]);
+  const [users, setUsers] = React.useState<any[]>([]);
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-            const response = await axiosInstance.get("/Auth/get");
-            setUsers(response.data);
-            } catch (error) {
-            console.error("Error fetching users:", error);
-            }
-        };
-    
-        fetchUsers();
-        }
-    , []); // Empty dependency array to run only once on mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axiosInstance.get("/Auth/get");
+        setUsers(response.data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
 
-    const validationSchema = Yup.object().shape({
-  businessName: Yup.string().required("Business Name is required"),
-  date: Yup.date().required("Date is required"),
-  fristResponse: Yup.string()
-  .required("First Response is required")
-  .notOneOf([""], "Please select a valid response"),
-  vatRate: Yup.number().required("VAT rate is required"),
-  services: Yup.array()
-    .of(
-      Yup.object().shape({
-        serviceName: Yup.string().required("Service name is required"),
-        description: Yup.string().required("Description is required"),
-        amount: Yup.number()
-          .required("Amount is required")
-          .min(0, "Amount must be at least 0"),
-      })
-    )
-    .min(1, "At least one service is required"),
-});
+    fetchUsers();
+  }, []); // Empty dependency array to run only once on mount
+
+  const validationSchema = Yup.object().shape({
+    businessName: Yup.string().required("Business Name is required"),
+    date: Yup.date().required("Date is required"),
+    firstResponse: Yup.string().required(),
+    vatRate: Yup.number().required("VAT rate is required"),
+    services: Yup.array()
+      .of(
+        Yup.object().shape({
+          serviceName: Yup.string().required("Service name is required"),
+          description: Yup.string().required("Description is required"),
+          amount: Yup.number()
+            .required("Amount is required")
+            .min(0, "Amount must be at least 0"),
+        })
+      )
+      .min(1, "At least one service is required"),
+  });
 
   return (
     <div>
@@ -81,7 +78,7 @@ export const QuoteForm = ({
           businessName: "",
           date: new Date().toISOString().substring(0, 10),
           firstResponse: "",
-          vatRate: "0", 
+          vatRate: "0",
           amountBeforeVat: 0,
           vatAmount: 0,
           services: [
@@ -93,7 +90,7 @@ export const QuoteForm = ({
           ],
           totalAmount: 0,
         }}
-        // validationSchema={validationSchema}
+        validationSchema={validationSchema}
         onSubmit={async (values) => {
           try {
             const totalBeforeTax = values.services.reduce(
@@ -121,9 +118,9 @@ export const QuoteForm = ({
           }
         }}
       >
-        {({ values, setFieldValue }) => {   
-            // Recalculate total amount whenever services or VAT rate changes
-            // This effect will run on initial render and whenever services or vatRate changes
+        {({ values, setFieldValue }) => {
+          // Recalculate total amount whenever services or VAT rate changes
+          // This effect will run on initial render and whenever services or vatRate changes
           useEffect(() => {
             const totalBeforeTax = values.services.reduce(
               (sum, s) => sum + Number(s.amount),
@@ -160,7 +157,7 @@ export const QuoteForm = ({
                     name="businessName"
                     component="div"
                     className="error-text"
-                    />
+                  />
                 </div>
 
                 <div
@@ -174,33 +171,36 @@ export const QuoteForm = ({
                     <label>Date</label>
                     <Field className={input} type="date" name="date" />
                     <ErrorMessage
-                    name="date"
-                    component="div"
-                    className="error-text"
+                      name="date"
+                      component="div"
+                      className="error-text"
                     />
                   </div>
                   <div className={firstDiv}>
                     <div>
-                        <label>First Response</label>
-                    <Field
-                      as="select"
-                      className={input}
-                      name="firstResponse"
-
-                      style={{ width: "200px", marginLeft: "10px" }}
-                    >
-                        <option >Select</option>
-                        {users && users.map((user) => (
-                          <option key={user.id} value={`${user.firstName} ${user.lastName}`}>
-                            {user.firstName} {user.lastName}
+                      <label>First Response</label>
+                      <Field
+                        as="select"
+                        className={input}
+                        name="firstResponse"
+                        style={{ width: "200px", marginLeft: "10px" }}
+                      >
+                        <option>Select</option>
+                        {users &&
+                          users.map((user) => (
+                            <option
+                              key={user.id}
+                              value={`${user.firstName} ${user.lastName}`}
+                            >
+                              {user.firstName} {user.lastName}
                             </option>
-                        ))}
-                    </Field>
-                    <ErrorMessage
+                          ))}
+                      </Field>
+                      <ErrorMessage
                         name="firstResponse"
                         component="div"
                         className="error-first-response"
-                    />
+                      />
                     </div>
                   </div>
                 </div>
@@ -209,68 +209,75 @@ export const QuoteForm = ({
                   {({ insert, remove }) => (
                     <>
                       {values.services.map((_, index) => (
-                        <div
-                          key={index}
-                          
-                        >
-                        <div>
-                        <div style={{ display: "flex", gap: "10px",alignItems: 'center', width: "96%" }}>
-                            <div className={firstDiv}
-                          style={{
-                            gap: "10px",
-                            alignItems: "center",
-                            paddingTop: "10px",
-                          }}>
-                                <Field
-                            className={input}
-                            name={`services[${index}].serviceName`}
-                            placeholder="Service Name"
-                          />
-                            <ErrorMessage
-                            name={`services[${index}].serviceName`}
-                            component="div"
-                            className="error-service-name"
-                            /> 
-                          <Field
-                            className={input}
-                            name={`services[${index}].description`}
-                            placeholder="Description"
-                          />
-                                <ErrorMessage
-                            name={`services[${index}].description`}
-                            component="div"
-                            className="error-service-description"
-                            /> 
-                    
-                          <Field
-                            className={input}
-                            name={`services[${index}].amount`}
-                            placeholder="Amount"
-                            type="number"
-                          />   
-                          <ErrorMessage
-                    name={`services[${index}].amount`}
-                    component="div"
-                    className="error-service-amount"
-                    /> 
-                            </div>
-                          {index > 0 && (
-                            <span onClick={() => remove(index)}>
-                              <FaTrash color="red" />
-                            </span>
-                          )}
-                          </div>
-                          <div style={{marginTop: '20px'}}>
-                            {index === 0 && (
-                            <span
+                        <div key={index}>
+                          <div>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "10px",
+                                alignItems: "center",
+                                width: "96%",
+                              }}
+                            >
+                              <div
+                                className={firstDiv}
                                 style={{
-                                    cursor: "pointer",
-                                    backgroundColor: "rgb(54, 121, 245)",
-                                    color: "white",
-                                    padding: "4px 8px",
-                                    borderRadius: "5px",
-                                    
+                                  gap: "10px",
+                                  alignItems: "center",
+                                  paddingTop: "10px",
                                 }}
+                              >
+                                <Field
+                                  className={input}
+                                  name={`services[${index}].serviceName`}
+                                  placeholder="Service Name"
+                                />
+                                <ErrorMessage
+                                  name={`services[${index}].serviceName`}
+                                  component="div"
+                                  className="error-service-name"
+                                />
+                                <Field
+                                  className={input}
+                                  name={`services[${index}].description`}
+                                  placeholder="Description"
+                                />
+                                <ErrorMessage
+                                  name={`services[${index}].description`}
+                                  component="div"
+                                  className="error-service-description"
+                                />
+
+                                <Field
+                                  className={input}
+                                  name={`services[${index}].amount`}
+                                  placeholder="Amount"
+                                  type="number"
+                                />
+                                <ErrorMessage
+                                  name={`services[${index}].amount`}
+                                  component="div"
+                                  className="error-service-amount"
+                                />
+                              </div>
+                              {index > 0 && (
+                                <span onClick={() => remove(index)}>
+                                  <FaTrash color="red" />
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ marginTop: "20px" }}>
+                            </div>
+                          </div>
+                          {index === values.services.length-1 && (
+                            <span
+                              style={{
+                                cursor: "pointer",
+                                backgroundColor: "rgb(54, 121, 245)",
+                                color: "white",
+                                padding: "4px 8px",
+                                borderRadius: "5px",
+                              }}
                               onClick={() =>
                                 insert(index + 1, {
                                   serviceName: "",
@@ -282,9 +289,6 @@ export const QuoteForm = ({
                               <FaPlus color="white" /> Add
                             </span>
                           )}
-                          </div>
-                        </div>
-                          
                         </div>
                       ))}
                     </>
@@ -327,7 +331,6 @@ export const QuoteForm = ({
                     </Field>
                     <div
                       style={{
-                        
                         display: "flex",
                         alignItems: "center",
                         gap: "6px",
@@ -342,7 +345,15 @@ export const QuoteForm = ({
                       />
                     </div>
                   </div>
-                  <div style={{position: 'absolute',top: '120px', right: '50px', display: "flex", alignItems: "center" }}>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "120px",
+                      right: "50px",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
                     <span style={{ paddingRight: "6px" }}>€</span>
                     <input
                       className={input}

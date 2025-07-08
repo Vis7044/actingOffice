@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { FaHome, FaUser, FaBars, FaSearch } from "react-icons/fa";
 import { Link, Outlet } from "react-router-dom";
 import { mergeStyles } from "@fluentui/react";
+import Breadcrumb from "./BreadCrumb";
 
 interface NavItemProps {
   icon: ReactNode;
@@ -28,7 +29,7 @@ const navItemStyle = mergeStyles({
 const navHeaderStyle = mergeStyles({
   backgroundColor: "#0078D4",
   color: "white",
-  padding: "16px",
+  padding: "2px",
   display: "flex",
 });
 
@@ -109,9 +110,9 @@ export const SideNav: React.FC = () => {
       {/* Content Area */}
       <div style={{flex: 1}}>
         <div className={navHeaderStyle}>
-          <h1 style={{ margin: 0, fontSize: 20 }}>Acting Office</h1>
+          <h1 style={{ paddingTop: '10px', fontSize: 20 }}>Acting Office</h1>
           <div style={{ display: "flex", alignItems: "center", gap: 16, marginLeft: "auto" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: '#fff', color: 'black', padding: '6px 10px', borderRadius: 2, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, backgroundColor: '#fff', color: 'black', padding: '2px 10px', borderRadius: 2, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}>
               <FaSearch color="gray"  />
               <input placeholder="Ctrl + K" style={{border: 'none', outline: 'none'}}/>
             </div>
@@ -120,6 +121,9 @@ export const SideNav: React.FC = () => {
             </div>
           </div>
         </div>
+        
+          <Breadcrumb/>
+          
         <Outlet />
       </div>
     </div>

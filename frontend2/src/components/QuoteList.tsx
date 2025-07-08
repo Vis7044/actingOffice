@@ -206,8 +206,9 @@ const QuoteList = () => {
   return (
     <ThemeProvider theme={customTheme}>
     <CommandBarNav refreshLIst={refresh} updateSearch={updateSearch} refreshIcon={refreshIcon}/>
+      {quoteData.length==0 && <div style={{position: 'absolute', top:'50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '20px'}}>No Data Found Add a Quote</div>}
    
-    <MarqueeSelection selection={selection}>
+    {quoteData.length>0 && <MarqueeSelection selection={selection}>
       <ShimmeredDetailsList
         items={quoteData}
         columns={columns}
@@ -222,7 +223,7 @@ const QuoteList = () => {
         ariaLabelForSelectAllCheckbox="Toggle selection for all items"
         checkButtonAriaLabel="select row"
     />
-    </MarqueeSelection>
+    </MarqueeSelection>}
     
     </ThemeProvider>  
   );
