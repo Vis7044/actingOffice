@@ -1,11 +1,16 @@
-import React, { act, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import {
   DetailsListLayoutMode,
   SelectionMode,
   Selection,
   ShimmeredDetailsList,
+  Pivot,
+  PivotItem,
+  makeStyles,
+  mergeStyles,
+  
 } from "@fluentui/react";
-import { ThemeProvider, createTheme } from "@fluentui/react";
+import { ThemeProvider } from "@fluentui/react";
 
 import "@fluentui/react/dist/css/fabric.css";
 import type { IColumn } from "@fluentui/react/lib/DetailsList";
@@ -14,34 +19,9 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { CommandBarNav } from "./CommandBarNav";
 import { Pagination } from "react-bootstrap";
-import { number } from "yup";
+import { MdDelete, MdOutlineEdit } from "react-icons/md";
+import SideCanvas from "./SideCanvas";
 
-const customTheme = createTheme({
-  palette: {
-    themePrimary: "#0078d4",
-    themeLighterAlt: "#f3f9fd",
-    themeLighter: "#d0e7f8",
-    themeLight: "#a9d3f2",
-    themeTertiary: "#5ca9e5",
-    themeSecondary: "#1a86d9",
-    themeDarkAlt: "#006cbe",
-    themeDark: "#005ba1",
-    themeDarker: "#004377",
-    neutralLighterAlt: "#f8f8f8",
-    neutralLighter: "#f4f4f4",
-    neutralLight: "#eaeaea",
-    neutralQuaternaryAlt: "#dadada",
-    neutralQuaternary: "#d0d0d0",
-    neutralTertiaryAlt: "#c8c8c8",
-    neutralTertiary: "#a6a6a6",
-    neutralSecondary: "#666666",
-    neutralPrimaryAlt: "#3c3c3c",
-    neutralPrimary: "#333333",
-    neutralDark: "#212121",
-    black: "#1c1c1c",
-    white: "#ffffff",
-  },
-});
 
 interface IClient {
   key: number;
@@ -53,6 +33,30 @@ interface IClient {
   status: string;
 }
 
+const actions = mergeStyles({
+  display: 'flex',
+  alignItems:'center',
+  gap: '5px'
+})
+
+const iconButtons = mergeStyles({
+  cursor: 'pointer',
+  selectors: {
+    ":hover": {
+      color: 'rgb(36, 115, 160)'
+    }
+  }
+})
+const deleteButtons = mergeStyles({
+  cursor: 'pointer',
+  selectors: {
+    ":hover": {
+      color: 'rgb(160, 65, 36)'
+    }
+  }
+})
+
+
 const ClientDetailList = () => {
   const [clientsData, setClientsData] = useState<IClient[]>([]);
   const navigate = useNavigate();
@@ -60,25 +64,34 @@ const ClientDetailList = () => {
   const [refreshIcon, setRefreshIcon] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [error, setError] = useState(null)
+  const [filter, setFilter] = useState({})
+
 
   const updateSearch = (searchTerm: string) => {
     setSearch(searchTerm);
     console.log(searchTerm);
   };
+
+  const updateFilter = (filterValue: {criteria: string,value:string}) =>{
+    setFilter(filterValue);
+  }
   const refresh = () => {
     setRefreshList(!refreshList);
   };
 
+  
+
   const [activePage, setActivePage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [pageSize, setPageSize] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     const fetchClientsData = async () => {
       try {
         setRefreshIcon(true);
         const response = await axiosInstance.get(
-          `/Client/getClient?searchTerm=${search}&page=${activePage}&pageSize=${pageSize}`
+          `/Client/getClient?searchTerm=${search}&page=${activePage}&pageSize=${pageSize}&filter=${filter}`
         );
         const data = response.data?.data.map(
           (client: Omit<IClient, "key">, index: number) => {
@@ -104,6 +117,21 @@ const ClientDetailList = () => {
 
   if (refreshList == true) {
     console.log("refreshing");
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const resp = await axiosInstance.delete(`/Client/delete/${id}`);
+      if(resp.data){
+        console.log(resp.data);
+        refresh()
+      }
+      else {
+        setError(resp.data)
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const columns: IColumn[] = [
@@ -156,10 +184,10 @@ const ClientDetailList = () => {
       onRender: (item: IClient) => (
         <span
           style={{
-            backgroundColor: "rgb(131, 183, 223)",
-            color: "white",
-            borderRadius: "8px",
-            padding: "4px 8px",
+            backgroundColor: "rgb(180, 208, 230)",
+            color: "rgb(5, 64, 153)",
+            borderRadius: "3px",
+            padding: "2px 6px",
             cursor: "pointer",
           }}
           onClick={() => navigate(`/client/${item.id}`)}
@@ -202,6 +230,23 @@ const ClientDetailList = () => {
         </span>
       ),
     },
+    {
+      key: "Actions",
+      name: "actions",
+      onRenderHeader: () => (
+        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Actions</span>
+      ),
+      fieldName: "createdOn",
+      minWidth: 150,
+      maxWidth: 200,
+      isResizable: true,
+      onRender: (item:IClient) => (
+        <div className={actions}>
+           <SideCanvas name={<span className={iconButtons}><MdOutlineEdit size={18} /></span>} refreshLIst={refresh} isEdit={true} businessId={item.id}  />
+           <span className={deleteButtons} onClick={() => handleDelete(item.id)}><MdDelete size={18}/></span>
+        </div>
+      ),
+    },
   ];
 
   const selection = new Selection({
@@ -214,11 +259,20 @@ const ClientDetailList = () => {
 
 
   return (
-    <ThemeProvider theme={customTheme}>
-      <CommandBarNav
+    <ThemeProvider >
+      <Pivot aria-label="Basic Pivot Example">
+      <PivotItem
+        headerText="Businesses"
+        headerButtonProps={{
+          'data-order': 1,
+          'data-title': 'Businesses',
+        }}
+      >
+        <CommandBarNav
         refreshLIst={refresh}
         updateSearch={updateSearch}
         refreshIcon={refreshIcon}
+        updateFilter={updateFilter}
       />
       {clientsData.length==0 && <div style={{position: 'absolute', top:'50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '20px'}}>No Data Found Add a business</div>}
       {clientsData.length>0 && 
@@ -259,9 +313,9 @@ const ClientDetailList = () => {
               padding: "2px 2px",
             }}
           >
-            <option value={1}>1</option>
-            <option value={5}>5</option>
             <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={30}>30</option>
           </select>
         </div>
         <Pagination style={{ float: "right", marginRight: "4px" }}>
@@ -271,10 +325,7 @@ const ClientDetailList = () => {
           />
 
           {Array.from({ length: totalPages }, (_, i) => i + 1)
-            .slice(
-              Math.min(activePage - 1, totalPages - 3),
-              Math.min(activePage + 2, totalPages)
-            )
+            
             .map((val) => (
               <Pagination.Item
                 key={val}
@@ -293,6 +344,18 @@ const ClientDetailList = () => {
           <Pagination.Last onClick={() => setActivePage(totalPages)} />
         </Pagination>
       </div>}
+      </PivotItem>
+      <PivotItem headerText="Contacts">
+        <CommandBarNav
+        refreshLIst={refresh}
+        updateSearch={updateSearch}
+        refreshIcon={refreshIcon}
+      />
+      <div style={{margin: '50px 100px'}}>No contacts</div>
+      </PivotItem>
+      
+    </Pivot>
+      
     </ThemeProvider>
   );
 };

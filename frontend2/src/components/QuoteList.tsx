@@ -4,6 +4,7 @@ import {
   SelectionMode,
   Selection,
   ShimmeredDetailsList,
+  mergeStyles,
   
 } from '@fluentui/react';
 import { ThemeProvider, createTheme } from '@fluentui/react';
@@ -16,6 +17,9 @@ import axiosInstance from '../utils/axiosInstance';
 import { CommandBarNav } from './CommandBarNav';
 import QuoteDetailSideCanvas from './QuoteDetailsSideCanvas';
 import { FaShare } from 'react-icons/fa';
+import SideCanvas from './SideCanvas';
+import { MdDelete, MdOutlineEdit } from 'react-icons/md';
+import type {IQuote} from '../types/projectTypes'
 
 const customTheme = createTheme({
   palette: {
@@ -44,25 +48,31 @@ const customTheme = createTheme({
   },
 });
 
+const actions = mergeStyles({
+  display: 'flex',
+  alignItems:'center',
+  gap: '5px'
+})
+
+const iconButtons = mergeStyles({
+  cursor: 'pointer',
+  selectors: {
+    ":hover": {
+      color: 'rgb(36, 115, 160)'
+    }
+  }
+})
+
+const deleteButtons = mergeStyles({
+  cursor: 'pointer',
+  selectors: {
+    ":hover": {
+      color: 'rgb(160, 65, 36)'
+    }
+  }
+})
 
 
-interface IService {
-    serviceName : string;
-    description : string;
-    amount: number
-}
-
-interface IQuote {
-    key: number;
-    id: string;
-    businessId :string;
-    businessName : string;
-    quoteNumber: string;    
-    date: string;
-    firstResponse: string;
-    services: IService[]
-    totalAmount: number;
-}
 
 const QuoteList = () => {
   const [quoteData, setQuoteData] = useState<IQuote[]>([]);
@@ -71,6 +81,7 @@ const QuoteList = () => {
   const [refreshIcon, setRefreshIcon] = useState(false);
   
   const [search, setSearch] = useState('')
+  const [error,setError] = useState(null)
 
   const updateSearch = (searchTerm:string) => {
     setSearch(searchTerm);
@@ -78,6 +89,21 @@ const QuoteList = () => {
   }
   const refresh = () => {
     setRefreshList(!refreshList);
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const resp = await axiosInstance.delete(`/Quote/delete/${id}`);
+      if(resp.data){
+        console.log(resp.data);
+        refresh()
+      }
+      else {
+        setError(resp.data)
+      }
+    } catch (error) {
+      console.log(error)
+    }
   }
 
 
@@ -130,7 +156,7 @@ const QuoteList = () => {
           style={{ borderRadius: '8px', padding:'4px 8px', cursor: 'pointer' }}
           
         >
-          <QuoteDetailSideCanvas id={item.id} item={item.quoteNumber}/>
+          <QuoteDetailSideCanvas id={item.id} item={item.quoteNumber} val=""/>
         </span>
       ),
       
@@ -186,10 +212,12 @@ const QuoteList = () => {
       isResizable: true,
         onRender: (item: IQuote) => (
         <span
-          style={{ borderRadius: '8px', padding:'4px 8px', cursor: 'pointer' }}
-          
-        >
-          <QuoteDetailSideCanvas id={item.id} item={""} val={<FaShare/>}/>
+        > 
+          <div  className={actions}>
+            <span className={iconButtons}> <QuoteDetailSideCanvas id={item.id} item={""} val={<FaShare/>}/></span>
+           <SideCanvas name={<span className={iconButtons}><MdOutlineEdit size={18} /></span>} refreshLIst={refresh} isEdit={true} quoteId={item.id}  />
+           <span className={deleteButtons} onClick={() => handleDelete(item.id)}><MdDelete size={18}/></span>
+        </div>
         </span>
       ),
       

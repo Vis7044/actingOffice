@@ -11,6 +11,7 @@ import {SideNav} from './components/SideNav'
 import { Login } from './pages/Login'
 import { ClientDetails } from './pages/ClientDetails'
 import ProtectRoute from './helper/ProtectRoute'
+import { Profile } from './pages/Profile'
 
 
 
@@ -28,6 +29,7 @@ function App() {
           <Route path='quote' element={<Quote/>}/>
 
           <Route path="/client/:id" element={<ClientDetails   />} />
+          <Route path='profile' element={<Profile/>}/>
           </Route>
 
           <Route path='signup' element={<Signup/>}/> 

@@ -1,5 +1,5 @@
 
-import type { ILogin } from "../types/authTypes";
+import type { ILogin } from "../types/projectTypes";
 import axiosInstance from "../utils/axiosInstance";
 
 

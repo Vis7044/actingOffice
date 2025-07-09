@@ -25,7 +25,7 @@ const commandBarStyle = mergeStyles({
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  padding: "6px 20px",
+  padding: "0px 20px 3px 20px",
   borderBottom: `1px solid ${theme.palette.neutralQuaternaryAlt}`,
 });
 
@@ -80,12 +80,17 @@ const styles = mergeStyleSets({
   },
 });
 
-const filterData = [];
+const filterData = {
+  
+    businessType: ['LimitedPartnership','LLp','Limited','Individual','Partnership']
+  
+}
 
 export const CommandBarNav = ({
   refreshLIst,
   updateSearch,
   refreshIcon,
+  updateFilter
 }: {
   refreshLIst: () => void;
   updateSearch: (search: string) => void;
@@ -186,7 +191,9 @@ export const CommandBarNav = ({
                   value: "",
                 }}
                 onSubmit={(values) => {
-                  console.log(values);
+                  updateFilter(values);
+                  refreshLIst();
+                  
                 }}
               >
                 {(props: FormikProps<any>) => {
@@ -207,7 +214,7 @@ export const CommandBarNav = ({
                           }}
                         >
                           <option value={""}>Select Category</option>
-                          <option value="type">Business Type</option>
+                          <option value="businessType">Business Type</option>
                           <option value="green">Green</option>
                           <option value="blue">Blue</option>
                         </Field>
@@ -227,9 +234,9 @@ export const CommandBarNav = ({
                             }}
                           >
                             <option value={""}>Select Value</option>
-                            <option value="red">Red</option>
-                            <option value="green">Green</option>
-                            <option value="blue">Blue</option>
+                            {filterData.businessType.map(val => {
+                              return <option value={val}>{val}</option>
+                            })}
                           </Field>
                         </div>
                       )}

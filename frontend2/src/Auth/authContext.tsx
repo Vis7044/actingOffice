@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { fetchUser } from './userService';
-import type { User } from '../types/authTypes';
+import type { User } from '../types/projectTypes';
 
 interface IAuthContext {
   user: User | null;

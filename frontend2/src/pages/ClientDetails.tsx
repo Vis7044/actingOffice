@@ -66,6 +66,7 @@ interface IClientHistoryWithUser {
 
 const profileHeader = mergeStyles({
   display: "flex",
+  gap: '10px'
 });
 
 const actionSection = mergeStyles({
@@ -116,27 +117,29 @@ export const ClientDetails = () => {
   return (
     <div>
       <div className={profileHeader}>
-        <div style={{ margin: "20px 10px" }}>
-          <FaCircleUser size={48} color="gray" />
-          <FaPlus
-            color="rgb(146, 188, 223)"
-            style={{ position: "relative", bottom: "-15", right: "15" }}
+        <div style={{ margin: "20px 10px", position: 'relative' }}>
+          <FaCircleUser size={48} color="rgba(104, 102, 102, 0.45)" />
+          <div style={{ position: "absolute", top: '31px', right: '0' , backgroundColor: 'white', borderRadius: '50%',width: '17px', height: '17px',display: 'flex',alignItems: 'center',justifyContent: 'center', overflow: 'auto'}}>
+            <FaPlus
+            color="rgb(71, 162, 236)"
+            size={12}
           />
+          </div>
         </div>
         <div className={actionSection}>
-          <div>{client.businessName}</div>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <p
+          <div style={{fontSize: '24px', color: 'rgb(80, 79, 79)'}}>{client.businessName}</div>
+          <div style={{ display: "flex", gap: "10px", alignItems: 'center', }}>
+            <span
               style={{
-                backgroundColor: "rgb(255, 231, 178)",
-                padding: "3px 4px",
+                backgroundColor: "#FFF4CE",
+                padding: "1px 5px",
                 borderRadius: "8px",
               }}
             >
               {client.clientId}
-            </p>
-            <MdEdit color="rgb(146, 188, 223)" style={{ marginTop: "10px" }} />
-            <p style={{ marginTop: "6px" }}>{client.type}</p>
+            </span>
+            <MdEdit color="rgb(106, 176, 233)" style={{ }} />
+            <span style={{ color: 'rgba(124, 122, 122, 0.81)' }}>{client.type}</span>
           </div>
           <div style={{ display: "flex", gap: "15px" }}>
             

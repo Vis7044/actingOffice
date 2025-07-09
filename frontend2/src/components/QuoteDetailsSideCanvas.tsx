@@ -15,7 +15,7 @@ function QuoteDetailSideCanvas({ item, id, val}: { item:string, id: string, val:
 
   return (
     <>
-        <span onClick={handleShow}>{item}{val}</span>
+      <span onClick={handleShow}>{item}{val}</span>
       <Offcanvas style={isQuotePage?{width: '800px'}: {width: '600px'}} show={show} onHide={handleClose} placement={'end'} >
         <Offcanvas.Header closeButton style={{borderBottom: '1px solid', borderColor: 'slate'}}>
           Quote Details
