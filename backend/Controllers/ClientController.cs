@@ -27,7 +27,7 @@ namespace backend.Controllers
         private string? GetRole() =>
             User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
 
-      
+
         [HttpPost("create")]
         public async Task<IActionResult> CreateClientAsync([FromBody] CreateClient client)
         {
@@ -43,11 +43,11 @@ namespace backend.Controllers
         }
 
         [HttpGet("getClient")]
-        public async Task<IActionResult> GetClientAsync([FromQuery] int page=1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm="")
+        public async Task<IActionResult> GetClientAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "")
         {
             try
             {
-                var result = await _clientService.GetClientsAsync(GetRole(),GetUserId(), page, pageSize, searchTerm);
+                var result = await _clientService.GetClientsAsync(GetRole(), GetUserId(), page, pageSize, searchTerm);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -77,11 +77,48 @@ namespace backend.Controllers
                 return BadRequest("Query string cannot be empty.");
 
             var results = await _clientService.SearchByBusinessNameAsync(query);
-            return Ok(results.Select(c => new {
+            return Ok(results.Select(c => new
+            {
                 id = c.Id,
                 name = c.BusinessName
             }));
         }
 
+        [HttpPut("update/{businessId}")]
+        public async Task<IActionResult> UpdateClientAsync([FromRoute] string businessId, [FromBody] CreateClient client)
+        {
+            if (string.IsNullOrEmpty(businessId))
+            {
+                return BadRequest("Client ID cannot be null or empty.");
+            }
+            try
+            {
+                var result = await _clientService.UpdateClientAsync(client, GetUserId(), GetRole(), businessId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("delete/{businessId}")]
+        public async Task<IActionResult> DeleteClientAsync([FromRoute] string businessId)
+        {
+            if (string.IsNullOrEmpty(businessId))
+            {
+                return BadRequest("Client ID cannot be null or empty.");
+            }
+            try
+            {
+                var result = await _clientService.DeleteClientAsync(businessId, GetUserId(), GetRole());
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
     }
 }

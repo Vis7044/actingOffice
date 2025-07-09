@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using System.Data;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -210,6 +211,79 @@ namespace backend.services
             return result;
         }
 
+
+        public async Task<string> UpdateClientAsync(CreateClient client, string userId,string role, string businessId)
+        {
+            try
+            {
+                if(role != "Admin" )
+                {
+                    var existingClient = await _client.Find(c => c.Id == businessId && c.UserId == userId).FirstOrDefaultAsync();
+                    if (existingClient == null)
+                    {
+                        return "You do not have permission to update this client.";
+                    }
+                }
+
+                var filter = Builders<ClientModel>.Filter.Eq(
+                  c => c.Id, businessId
+                );
+
+                var history = new ClientHistoryDto
+                {
+                    Type = "created",
+                    ClientId = userId
+
+                };
+                var historyId = await _history.CreateClientHistoryAsync(history);
+
+                
+                var update = Builders<ClientModel>.Update
+                    .Set(c => c.BusinessName, client.BusinessName)
+                    .Set(c => c.Type, client.Type)
+                    .Set(c => c.Address, client.Address)
+                    .Push(c => c.History, historyId);
+
+                var result = await _client.UpdateOneAsync(filter, update);
+
+                if (result.MatchedCount == 0)
+                {
+                    return "No client found to update.";
+                }
+
+                return "Client updated successfully";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating client: {ex.Message}");
+            }
+        }
+
+        public async Task<string> DeleteClientAsync(string businessId, string userId, string role)
+        {
+            try
+            {
+                if (role != "Admin")
+                {
+                    var existingClient = await _client.Find(c => c.Id == businessId && c.UserId == userId).FirstOrDefaultAsync();
+                    if (existingClient == null)
+                    {
+                        return "You do not have permission to update this client.";
+                    }
+                }
+                var filter = Builders<ClientModel>.Filter.Eq(c => c.Id, businessId);
+                var result = await _client.DeleteOneAsync(filter);
+                if (result.DeletedCount == 0)
+                {
+                    throw new Exception("No client found to delete.");
+                }
+                return "deleted Successfully";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error deleting client: {ex.Message}");
+            }
+        }
 
     }
 }
