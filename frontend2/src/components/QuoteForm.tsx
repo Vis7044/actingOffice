@@ -1,15 +1,17 @@
-import React, { useEffect } from "react";
-import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
+import React, { useEffect, useState } from "react";
+import { Formik, Form, Field, FieldArray, ErrorMessage, useFormikContext } from "formik";
 import { mergeStyles } from "@fluentui/react";
 import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
 import { BusinessAutocomplete } from "./BusinessAutocomplete";
+import { AxiosError } from "axios";
+import type { IQuote } from "../types/projectTypes";
 
 const firstDiv = mergeStyles({
   display: "flex",
   gap: "10px",
-  justifyContent: "space-evenly",
+  justifyContent: "space-between",
   alignItems: "center",
   width: "100%",
   position: "relative",
@@ -31,14 +33,55 @@ const input = mergeStyles({
   },
 });
 
+interface IClient {
+    id: string;
+    name: string;
+}
+
+interface Quote extends IQuote {
+  vatRate: number,
+  amountBeforeVat: number
+  vatAmount: number
+}
+
+
 export const QuoteForm = ({
   refreshLIst,
   handleClose,
+  initialQuoteData,
+  isEdit
 }: {
   refreshLIst: () => void;
   handleClose: () => void;
+  initialQuoteData?: Quote;
+  isEdit: boolean
 }) => {
   const [users, setUsers] = React.useState<any[]>([]);
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<IClient[]>([]);
+  const [error, setError] = useState<string | null>()
+ 
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (query.length < 2) {
+        setSuggestions([]);
+        return;
+      }
+
+      try {
+        const res = await axiosInstance.get(`/Client/search?query=${query}`);
+        setSuggestions(res.data);
+        console.log("Suggestions fetched:", res.data);  
+      } catch (err) {
+        console.error("Error fetching suggestions", err);
+        
+      }
+    };
+
+    const delayDebounce = setTimeout(fetchSuggestions, 300); // debounce 300ms
+    return () => clearTimeout(delayDebounce);
+  }, [query]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -71,24 +114,26 @@ export const QuoteForm = ({
       .min(1, "At least one service is required"),
   });
 
+  
+
   return (
     <div>
       <Formik
         initialValues={{
-          businessName: "",
-          date: new Date().toISOString().substring(0, 10),
-          firstResponse: "",
-          vatRate: "0",
-          amountBeforeVat: 0,
-          vatAmount: 0,
-          services: [
+          businessName: initialQuoteData?.businessName || "",
+          date: initialQuoteData?.date || new Date().toISOString().split('T')[0],
+          firstResponse: initialQuoteData?.firstResponse,
+          vatRate: initialQuoteData?.vatRate || "0",
+          amountBeforeVat: initialQuoteData?.amountBeforeVat || 0,
+          vatAmount: initialQuoteData?.vatAmount || 0,
+          services: initialQuoteData?.services || [
             {
               serviceName: "",
               description: "",
               amount: 0,
             },
           ],
-          totalAmount: 0,
+          totalAmount: initialQuoteData?.totalAmount || 0,
         }}
         validationSchema={validationSchema}
         onSubmit={async (values) => {
@@ -109,10 +154,24 @@ export const QuoteForm = ({
               amountBeforeVat: totalBeforeTax,
             };
             console.log("Payload to be sent:", payload);
-            await axiosInstance.post("/Quote/create", payload);
-            console.log("Quote created successfully:", payload);
-            refreshLIst();
-            handleClose();
+            try {
+              if(!isEdit) {
+                await axiosInstance.post("/Quote/create", payload);
+              console.log("Quote created successfully:", payload);
+              }
+              if(isEdit) {
+                await axiosInstance.put(`/Quote/update/${initialQuoteData?.id}`, payload)
+                console.log("quote updated successfully")
+              }
+              
+              refreshLIst();
+              handleClose();
+            } catch (error) {
+              const axiosError:AxiosError<unknown, unknown> = error as AxiosError;
+              console.log(axiosError.response?.data)
+              setError(axiosError.response?.data as string)
+            }
+            
           } catch (error) {
             console.error("Error creating quote:", error);
           }
@@ -148,11 +207,67 @@ export const QuoteForm = ({
                   display: "flex",
                   flexDirection: "column",
                   gap: "10px",
+                  width: '95%',
+                  margin: '0 auto'
                 }}
               >
                 <div className={firstDiv}>
                   <label>Business Name</label>
-                  <BusinessAutocomplete />
+                  <div style={{ position: "relative" }}>
+                    <Field
+                      name="businessName"
+                      placeholder="Business Name"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setQuery(value);
+                        setFieldValue("businessName", value);
+                      }}
+                      className={input}
+                      style={{
+                        width: "600px",
+                        border: "none",
+                        borderBottom: "1px solid",
+                        borderColor: "rgba(0,0,0,0.1)",
+                        borderRadius: '0',
+                      }}
+                    />
+
+                    {suggestions.length > 0 && (
+                      <ul
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          left: 0,
+                          right: 0,
+                          background: "#fff",
+                          border: "1px solid #ccc",
+                          zIndex: 10,
+                          listStyle: "none",
+                          margin: 0,
+                          padding: "0",
+                          maxHeight: "150px",
+                          overflowY: "auto",
+                        }}
+                      >
+                        {suggestions.map((s) => (
+                          <li
+                            key={s.id}
+                            onClick={() => {
+                              setFieldValue("businessName", s.name);
+                              setSuggestions([]);
+                            }}
+                            style={{
+                              padding: "8px",
+                              cursor: "pointer",
+                              borderBottom: "1px solid #eee",
+                            }}
+                          >
+                            {s.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                   <ErrorMessage
                     name="businessName"
                     component="div"
@@ -161,13 +276,13 @@ export const QuoteForm = ({
                 </div>
 
                 <div
-                  className={firstDiv}
+                className={firstDiv}
                   style={{
                     borderBottom: "1px solid rgba(0,0,0,0.2)",
                     paddingBottom: "30px",
                   }}
                 >
-                  <div className={firstDiv}>
+                  <div style={{display: 'flex' , alignItems: 'center', gap: '5px'}}>
                     <label>Date</label>
                     <Field className={input} type="date" name="date" />
                     <ErrorMessage
@@ -176,7 +291,7 @@ export const QuoteForm = ({
                       className="error-text"
                     />
                   </div>
-                  <div className={firstDiv}>
+                  <div >
                     <div>
                       <label>First Response</label>
                       <Field
@@ -216,7 +331,7 @@ export const QuoteForm = ({
                                 display: "flex",
                                 gap: "10px",
                                 alignItems: "center",
-                                width: "96%",
+                                
                               }}
                             >
                               <div
@@ -266,10 +381,9 @@ export const QuoteForm = ({
                                 </span>
                               )}
                             </div>
-                            <div style={{ marginTop: "20px" }}>
-                            </div>
+                            <div style={{ marginTop: "20px" }}></div>
                           </div>
-                          {index === values.services.length-1 && (
+                          {index === values.services.length - 1 && (
                             <span
                               style={{
                                 cursor: "pointer",
@@ -299,7 +413,7 @@ export const QuoteForm = ({
                   <div
                     style={{
                       position: "absolute",
-                      right: "50px",
+                      right: "0px",
                       marginLeft: "20px",
                     }}
                   >
@@ -315,8 +429,9 @@ export const QuoteForm = ({
                     style={{
                       position: "absolute",
                       top: "70px",
-                      right: "50px",
+                      right: "0px",
                       display: "flex",
+                      gap: '5px',
                       alignItems: "center",
                     }}
                   >
@@ -349,7 +464,7 @@ export const QuoteForm = ({
                     style={{
                       position: "absolute",
                       top: "120px",
-                      right: "50px",
+                      right: "0px",
                       display: "flex",
                       alignItems: "center",
                     }}
@@ -363,6 +478,7 @@ export const QuoteForm = ({
                     />
                   </div>
                 </div>
+                {error && <div style={{color: 'red'}}>{error}</div>}
 
                 <button
                   type="submit"
@@ -377,7 +493,7 @@ export const QuoteForm = ({
                     borderRadius: "5px",
                   }}
                 >
-                  <FaSave /> Submit
+                  <FaSave /> {isEdit? 'Update': 'Submit'}
                 </button>
               </div>
             </Form>

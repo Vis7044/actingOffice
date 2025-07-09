@@ -1,30 +1,70 @@
-import { useState, type ReactNode } from 'react';
+import { use, useEffect, useState, type ReactNode } from 'react';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import ClientForm from './ClientForm';
 import QuoteForm from './QuoteForm';
 import { BsPlusLg } from 'react-icons/bs';
+import axiosInstance from '../utils/axiosInstance';
+import EditClientForm from './EditClientForm';
+import type { Client } from '../types/projectTypes';
+import type {IQuote} from '../types/projectTypes'
 
-function SideCanvas({name, refreshLIst}: {name: ReactNode, refreshLIst: () => void}) {
+interface ClientWithId extends Client {
+  id: string
+}
+
+interface Quote extends IQuote {
+  vatRate: number
+  amountBeforeVat: number
+  vatAmount: number
+}
+
+function SideCanvas({name, refreshLIst, isEdit, businessId, quoteId}: {name: ReactNode, refreshLIst: () => void, isEdit?:boolean,  businessId?: string, quoteId?: string}) {
   const [show, setShow] = useState(false);
 
   const location = window.location.pathname;
   const isQuotePage = location.includes('quote');
   const handleClose = () => {
     setShow(false);
+    
   }
+  const [updateClientData, setUpdateClientData] = useState<ClientWithId | null>(null);
+  const [updatedQuoteData, setUpdateQuoteData] = useState<Quote | null>(null)
+    const handleFetch = async () => {
+      try {
+        const clientData = await axiosInstance.get(`/Client/getClient/${businessId}`)
+        setUpdateClientData(clientData.data.client)
+      } catch (error) {
+        console.log(error)
+      }
+    }
 
+    const handleQuoteFetch = async () => {
+      try {
+        const quoteData = await axiosInstance.get(`/Quote/get/${quoteId}`);
+        setUpdateQuoteData(quoteData.data)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    useEffect(() => {
+      if(quoteId) handleQuoteFetch()
+      if(businessId) handleFetch()
+    },[])
+  
   const handleShow = () => setShow(true);
 
   return (
     <>
-       <span onClick={handleShow} style={{display: 'flex', alignItems: 'center', gap: '5px'}}><BsPlusLg size={22} /> <span>Add</span></span>
+       <span onClick={handleShow} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>{isEdit ? name: <div ><BsPlusLg size={22} /> <span>Add</span></div>}</span>
       <Offcanvas style={isQuotePage?{width: '800px'}: {width: '600px'}} show={show} onHide={handleClose} placement={'end'} >
-        <Offcanvas.Header closeButton style={{borderBottom: '1px solid', borderColor: 'slate'}}>
-          {name}
+        <Offcanvas.Header closeButton style={{borderBottom: '1px solid', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
+          {isEdit ? <div>Edit Details</div>: <div>{quoteId? 'Create Quote': 'Add Business'}</div>}
         </Offcanvas.Header>
         <Offcanvas.Body>
-          {!isQuotePage && (<ClientForm refreshLIst={refreshLIst} handleClose={handleClose}/>)}
-          {isQuotePage && (<QuoteForm refreshLIst={refreshLIst} handleClose={handleClose}/>)}
+          {!isQuotePage && !isEdit && (<ClientForm refreshLIst={refreshLIst} handleClose={handleClose}/>)}
+          {isQuotePage && !isEdit && !quoteId && (<QuoteForm isEdit={false} refreshLIst={refreshLIst} handleClose={handleClose}/>)}
+          {!isQuotePage && isEdit && updateClientData &&  <EditClientForm refreshLIst={refreshLIst} handleClose={handleClose} initialClientData={updateClientData}/>}
+          {isQuotePage && isEdit  && updatedQuoteData && (<QuoteForm refreshLIst={refreshLIst} handleClose={handleClose} initialQuoteData={updatedQuoteData} isEdit={isEdit}/>)}
         </Offcanvas.Body>
       </Offcanvas>
     </>

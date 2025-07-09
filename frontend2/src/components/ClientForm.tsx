@@ -4,28 +4,29 @@ import { mergeStyles } from "@fluentui/react";
 import {FaPlus, FaTrash, FaSave} from 'react-icons/fa'
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from 'yup';
+import type { Client } from "../types/projectTypes";
 
-interface IAddress {
-  building: string;
-  street: string;
-  city: string;
-  state: string;
-  pinCode: string;
-  country: string;
-}
+// interface IAddress {
+//   building: string;
+//   street: string;
+//   city: string;
+//   state: string;
+//   pinCode: string;
+//   country: string;
+// }
 
-interface Client {
-  businessName: string;
-  type: string;
-  address: IAddress;
-}
+// interface Client {
+//   businessName: string;
+//   type: string;
+//   address: IAddress;
+// }
 
 const firstDiv = mergeStyles({
   display: 'flex',
   gap: '10px',
   justifyContent: 'space-evenly',
   alignItems: 'center',
-  width: '100%',
+  padding: '0px 5px'
 });
 
 const input = mergeStyles({
@@ -44,7 +45,7 @@ const input = mergeStyles({
   }
 });
 
-export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void, handleClose : () => void}) => {
+export const ClientForm = ({refreshLIst, handleClose,}: {refreshLIst: () => void, handleClose : () => void}) => {
   const clientSchema = Yup.object().shape({
   type: Yup.string().required('Type is required'),
   businessName: Yup.string().required('Business name is required'),
@@ -118,6 +119,7 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
                         gap: '10px',
                         padding: "10px",
                         marginBottom: "10px",
+                        width: '90%'
                       }}
                     >
                       <div className={firstDiv}>
@@ -145,16 +147,18 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
                         </div>
                         <div style={{display: 'flex', flexDirection: 'column', marginTop: '16px' }}>
                         
-                          {index > 0 && (
-                            <span
+                         
+                            { values.clients.length>1 && 
+                              <span
                               onClick={() => remove(index)}
                               style={{cursor: 'pointer'}}
                             >
-                              <FaTrash color="red"/>
+                              <FaTrash color="rgb(247, 75, 75)"/>
                             </span>
+                            }
                             
-                          )}
-                          <span
+                          
+                          {index === values.clients.length-1 && <span
                           style={{cursor: 'pointer'}}
                             onClick={() =>
                               insert(index + 1, {
@@ -171,14 +175,14 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
                               })
                             }
                           >
-                            <FaPlus color="blue"/>
-                          </span>
+                            <FaPlus size={18} color="rgb(47, 131, 228)"/>
+                          </span> }
                       </div>
                         
                       </div>
 
-                      <div style={{marginTop: '8px'}}>
-                        <div style={{ display: 'flex', gap: '10px' }} className={firstDiv}>
+                      <div style={{marginTop: '19px'}}>
+                        <div style={{ display: 'flex', gap: '35px' }} className={firstDiv}>
                           <div>
                             <Field className={input} name={`clients[${index}].address.building`} placeholder="Building" />   
                           <ErrorMessage name={`clients[${index}].address.building`} component="div" style={{color: 'red'}}/>       
@@ -188,7 +192,7 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
                           <ErrorMessage name={`clients[${index}].address.street`} component="div" style={{color: 'red'}}/>      
                             </div>               
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }} className={firstDiv}>
+                        <div style={{ display: 'flex', gap: '35px', marginTop: '10px' }} className={firstDiv}>
                           <div>
                             <Field className={input} name={`clients[${index}].address.city`} placeholder="City" />
                           <ErrorMessage name={`clients[${index}].address.city`} component="div" style={{color: 'red'}}/>
@@ -198,7 +202,7 @@ export const ClientForm = ({refreshLIst, handleClose}: {refreshLIst: () => void,
                           <ErrorMessage name={`clients[${index}].address.state`} component="div" style={{color: 'red'}}/>     
                             </div>                  
                         </div>
-                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }} className={firstDiv}>
+                        <div style={{ display: 'flex', gap: '35px', marginTop: '10px' }} className={firstDiv}>
                           <div>
                             <Field className={input} name={`clients[${index}].address.pinCode`} placeholder="Pin Code" />
                           <ErrorMessage name={`clients[${index}].address.pinCode`} component="div" style={{color: 'red'}}/>

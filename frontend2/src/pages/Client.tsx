@@ -8,7 +8,6 @@ import ClientDetailList from '../components/ClientDetailList'
   return (
     <div>
       <ClientDetailList />
-      
     </div>
   )
 }
