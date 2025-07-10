@@ -65,7 +65,7 @@ export const EditClientForm = ({refreshLIst, handleClose, initialClientData}: {r
   const [error,setError] = useState(null)
   console.log(initialClientData)
 
-  if(initialClientData === null) return <div>loading</div>
+  // if(initialClientData === null) return <div>loading</div>
   
   console.log(initialClientData)
   return (

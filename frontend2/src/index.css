@@ -22,8 +22,8 @@
   font-size: 12px;
   margin-top: 2px;
   position: absolute;
-  bottom: -10px;
-  left: 250px;
+  bottom: -14px;
+  left: 209px;
 }
 
 .shimmer {
@@ -35,8 +35,8 @@
   font-size: 12px;
   margin-top: 2px;
   position: absolute;
-  bottom: -10px;
-  left: 2px;
+  bottom: -14px;
+  left: -20px;
 }
 
 .error-first-response {
@@ -44,8 +44,8 @@
   font-size: 12px;
   margin-top: 2px;
   position: absolute;
-  bottom: -10px;
-  right: 40px;
+  bottom: -20px;
+  right: 84px;
 }
 
 .lato-thin {

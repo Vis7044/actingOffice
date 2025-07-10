@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../utils/axiosInstance';
+import { Stack, StackItem, Text } from '@fluentui/react';
 
 
 interface IAddress {
@@ -52,10 +53,10 @@ export default function QuoteDetails({id}: {id: string}) {
   return (
     <div>
         <p>To,</p>
-        <div style={{paddingLeft: '10px', borderBottom: '1px solid', borderColor: 'rgba(0,0,0,0.3)'}}>
+        <Stack style={{paddingLeft: '10px', borderBottom: '1px solid', borderColor: 'rgba(0,0,0,0.3)'}}>
             <div style={{display:'flex', justifyContent: 'space-between'}}>
-                <p>{quote?.businessName}</p>
-                <p><span>quote data: </span>{quote?.date}</p>
+                <Text styles={{root :{fontWeight : 500}}}>{quote?.businessName}</Text>
+                <Text><span>quote data: </span>{quote?.date}</Text>
             </div>
             <div style={{color: 'gray'}}>
                 <p>{quote?.businessDetails?.address.building}</p>
@@ -65,14 +66,12 @@ export default function QuoteDetails({id}: {id: string}) {
                 <p>{quote?.businessDetails?.address.state}</p>
                 <p>{quote?.businessDetails?.address.country}</p>
             </div>
-        </div>
-        <div style={{display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid', borderColor: 'rgba(0,0,0,0.3)' }}>
-           <div style={{display: 'flex', gap: '20px'}}>
-             <p>Sr. No</p>
-            <p>Description</p>
-           </div>
-            <p>Amount</p>
-        </div>
+        </Stack>
+           <Stack horizontal tokens={{childrenGap : 20}}>
+             <Text styles={{root:{width : '15%'}}}>Sr. No</Text>
+            <Text styles={{root:{width : '40%'}}}>Description</Text>
+            <Text styles={{root:{width : '45%', textAlign : 'right'}}}>Amount</Text>
+        </Stack>
         <div>
             {quote?.services.map((service,index) => {
                 return (

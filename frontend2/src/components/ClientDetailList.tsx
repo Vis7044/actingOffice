@@ -6,8 +6,9 @@ import {
   ShimmeredDetailsList,
   Pivot,
   PivotItem,
-  makeStyles,
   mergeStyles,
+  Text,
+  Stack,
   
 } from "@fluentui/react";
 import { ThemeProvider } from "@fluentui/react";
@@ -33,11 +34,6 @@ interface IClient {
   status: string;
 }
 
-const actions = mergeStyles({
-  display: 'flex',
-  alignItems:'center',
-  gap: '5px'
-})
 
 const iconButtons = mergeStyles({
   cursor: 'pointer',
@@ -65,7 +61,7 @@ const ClientDetailList = () => {
 
   const [search, setSearch] = useState("");
   const [error, setError] = useState(null)
-  const [filter, setFilter] = useState({})
+  const [filter, setFilter] = useState({criteria: '', value: ''})
 
 
   const updateSearch = (searchTerm: string) => {
@@ -75,6 +71,7 @@ const ClientDetailList = () => {
 
   const updateFilter = (filterValue: {criteria: string,value:string}) =>{
     setFilter(filterValue);
+    console.log(filterValue)
   }
   const refresh = () => {
     setRefreshList(!refreshList);
@@ -91,7 +88,7 @@ const ClientDetailList = () => {
       try {
         setRefreshIcon(true);
         const response = await axiosInstance.get(
-          `/Client/getClient?searchTerm=${search}&page=${activePage}&pageSize=${pageSize}&filter=${filter}`
+          `/Client/getClient?searchTerm=${search}&page=${activePage}&pageSize=${pageSize}&criteria=${filter.criteria}&value=${filter.value}`
         );
         const data = response.data?.data.map(
           (client: Omit<IClient, "key">, index: number) => {
@@ -104,6 +101,7 @@ const ClientDetailList = () => {
         setPageSize(response.data.pageSize);
         setTotalPages(Math.ceil(response.data.totalCount / pageSize));
         setActivePage(response.data.page);
+        
         console.log("Fetched clients data:", response.data);
         setClientsData(data || []);
         setRefreshIcon(false);
@@ -113,7 +111,7 @@ const ClientDetailList = () => {
     };
 
     fetchClientsData();
-  }, [refreshList, search, activePage, pageSize]);
+  }, [refreshList, search, activePage, pageSize,filter]);
 
   if (refreshList == true) {
     console.log("refreshing");
@@ -139,14 +137,14 @@ const ClientDetailList = () => {
       key: "sl. No",
       name: "S.No.",
       onRenderHeader: () => (
-        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>S.No.</span>
+        <Text variant="mediumPlus" styles={{root: { color: "rgb(2, 91, 150)", fontWeight: 500}}}>S.No.</Text>
       ),
       fieldName: "key",
       minWidth: 50,
       maxWidth: 70,
       isResizable: true,
       onRender: (item: IClient) => (
-        <span style={{ color: "black", fontSize: "14px" }}>{item.key}</span>
+        <Text variant="medium">{item.key}</Text>
       ),
 
     },
@@ -154,7 +152,7 @@ const ClientDetailList = () => {
       key: "businessName",
       name: "Business Name",
       onRenderHeader: () => (
-        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Business Name</span>
+        <Text variant="mediumPlus" styles={{root: { color: "rgb(2, 91, 150)", fontWeight: 500}}}>Business Name</Text>
       ),
       fieldName: "businessName",
       minWidth: 150,
@@ -162,89 +160,90 @@ const ClientDetailList = () => {
       isResizable: true,
 
       onRender: (item: IClient) => (
-        <span
+        <Text
           className="clickable-text"
-          style={{ fontSize: "14px" }}
+          variant="medium"
           onClick={() => navigate(`/client/${item.id}`)}
         >
           {item.businessName}
-        </span>
+        </Text>
       ),
     },
     {
       key: "clientId",
       name: "Client ID",
       onRenderHeader: () => (
-        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Client Id</span>
+        <Text variant="mediumPlus" styles={{root: { color: "rgb(2, 91, 150)", fontWeight: 500}}}>Client Id</Text>
       ),
       fieldName: "clientId",
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
       onRender: (item: IClient) => (
-        <span
-          style={{
+        <Text
+        variant="medium"
+          styles={{root: {
             backgroundColor: "rgb(180, 208, 230)",
             color: "rgb(5, 64, 153)",
             borderRadius: "3px",
             padding: "2px 6px",
             cursor: "pointer",
-          }}
+          }}}
           onClick={() => navigate(`/client/${item.id}`)}
         >
           {item.clientId}
-        </span>
+        </Text>
       ),
     },
     {
       key: "type",
       name: "Type",
       onRenderHeader: () => (
-        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Type</span>
+        <Text variant="mediumPlus" styles={{root: { color: "rgb(2, 91, 150)", fontWeight: 500}}}>Type</Text>
       ),
       fieldName: "type",
       minWidth: 100,
       maxWidth: 150,
       isResizable: true,
       onRender: (item: IClient) => (
-        <span style={{ color: "black", fontSize: "14px" }}>{item.type}</span>
+        <Text variant="medium">{item.type}</Text>
       ),
     },
     {
       key: "createdOn",
       name: "Created On",
       onRenderHeader: () => (
-        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Create On</span>
+        <Text variant="mediumPlus" styles={{root: { color: "rgb(2, 91, 150)", fontWeight: 500}}}>Create On</Text>
       ),
       fieldName: "createdOn",
       minWidth: 150,
       maxWidth: 200,
       isResizable: true,
       onRender: (item: IClient) => (
-        <span>
+        <Text variant="medium">
           {new Date(item.createdOn).toLocaleDateString("en-IN", {
             day: "2-digit",
             month: "short",
             year: "numeric",
           })}
-        </span>
+        </Text>
       ),
     },
     {
       key: "Actions",
       name: "actions",
       onRenderHeader: () => (
-        <span style={{ color: "rgb(2, 91, 150)", fontSize: "14px" }}>Actions</span>
+        <Text variant="mediumPlus" styles={{root: { color: "rgb(2, 91, 150)", fontWeight: 500}}}>Actions</Text>
       ),
       fieldName: "createdOn",
       minWidth: 150,
       maxWidth: 200,
       isResizable: true,
       onRender: (item:IClient) => (
-        <div className={actions}>
-           <SideCanvas name={<span className={iconButtons}><MdOutlineEdit size={18} /></span>} refreshLIst={refresh} isEdit={true} businessId={item.id}  />
-           <span className={deleteButtons} onClick={() => handleDelete(item.id)}><MdDelete size={18}/></span>
-        </div>
+        <Stack horizontal verticalAlign="center" tokens={{childrenGap: 5}}>
+           <SideCanvas name={<Text className={iconButtons}><MdOutlineEdit size={18} /></Text>} refreshLIst={refresh} isEdit={true} businessId={item.id}  />
+           <Text className={deleteButtons} onClick={() => handleDelete(item.id)}><MdDelete size={18}/></Text>
+        </Stack>
       ),
     },
   ];
@@ -274,14 +273,14 @@ const ClientDetailList = () => {
         refreshIcon={refreshIcon}
         updateFilter={updateFilter}
       />
-      {clientsData.length==0 && <div style={{position: 'absolute', top:'50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '20px'}}>No Data Found Add a business</div>}
+      {clientsData.length==0 && <Text style={{position: 'absolute', top:'50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '20px'}}>No Data Found Add a business</Text>}
       {clientsData.length>0 && 
-      <div>
-        <div
-          style={{
+      <Stack>
+        <Stack
+          styles={{root:{
             maxHeight: `${clientsData.length * 45 + 70}px`,
             overflowY: "auto",
-          }}
+          }}}
         >
           <MarqueeSelection selection={selection}>
             <ShimmeredDetailsList
@@ -300,9 +299,10 @@ const ClientDetailList = () => {
               checkButtonAriaLabel="select row"
             />
           </MarqueeSelection>
-        </div>
+        </Stack>
 
-        <div style={{ marginLeft: "60px", marginTop: "15px" }}>
+        <Stack horizontal verticalAlign="center" horizontalAlign="space-between">
+          <Text styles={{root:{ marginLeft: "60px"} }}>
           <select
             onChange={(e) => setPageSize(Number(e.target.value))}
             style={{
@@ -317,8 +317,8 @@ const ClientDetailList = () => {
             <option value={15}>15</option>
             <option value={30}>30</option>
           </select>
-        </div>
-        <Pagination style={{ float: "right", marginRight: "4px" }}>
+        </Text>
+        <Pagination style={{ marginRight: "60px", paddingTop: "15px"} }>
           <Pagination.First onClick={() => setActivePage(1)} />
           <Pagination.Prev
             onClick={() => setActivePage((prev) => Math.max(prev - 1, 1))}
@@ -343,15 +343,17 @@ const ClientDetailList = () => {
           />
           <Pagination.Last onClick={() => setActivePage(totalPages)} />
         </Pagination>
-      </div>}
+        </Stack>
+      </Stack>}
       </PivotItem>
       <PivotItem headerText="Contacts">
         <CommandBarNav
         refreshLIst={refresh}
         updateSearch={updateSearch}
         refreshIcon={refreshIcon}
+        updateFilter={updateFilter}
       />
-      <div style={{margin: '50px 100px'}}>No contacts</div>
+      <Text styles={{root: {margin: '50px 100px'}}}>No contacts</Text>
       </PivotItem>
       
     </Pivot>

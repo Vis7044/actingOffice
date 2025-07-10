@@ -7,6 +7,7 @@ import axiosInstance from '../utils/axiosInstance';
 import EditClientForm from './EditClientForm';
 import type { Client } from '../types/projectTypes';
 import type {IQuote} from '../types/projectTypes'
+import { Stack, Text } from '@fluentui/react';
 
 interface ClientWithId extends Client {
   id: string
@@ -33,6 +34,7 @@ function SideCanvas({name, refreshLIst, isEdit, businessId, quoteId}: {name: Rea
       try {
         const clientData = await axiosInstance.get(`/Client/getClient/${businessId}`)
         setUpdateClientData(clientData.data.client)
+        
       } catch (error) {
         console.log(error)
       }
@@ -55,10 +57,10 @@ function SideCanvas({name, refreshLIst, isEdit, businessId, quoteId}: {name: Rea
 
   return (
     <>
-       <span onClick={handleShow} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>{isEdit ? name: <div ><BsPlusLg size={22} /> <span>Add</span></div>}</span>
-      <Offcanvas style={isQuotePage?{width: '800px'}: {width: '600px'}} show={show} onHide={handleClose} placement={'end'} >
+       <Text onClick={handleShow} style={{display: 'flex', alignItems: 'center', gap: '5px'}}>{isEdit ? name: <Text ><BsPlusLg size={22} /> <Text>Add</Text></Text>}</Text>
+      <Offcanvas style={isQuotePage?{width: '740px'}: {width: '600px'}} show={show} onHide={handleClose} placement={'end'} >
         <Offcanvas.Header closeButton style={{borderBottom: '1px solid', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
-          {isEdit ? <div>Edit Details</div>: <div>{quoteId? 'Create Quote': 'Add Business'}</div>}
+          {isEdit ? <Text>Edit Details</Text>: <Text>{quoteId? 'Create Quote': 'Add Business'}</Text>}
         </Offcanvas.Header>
         <Offcanvas.Body>
           {!isQuotePage && !isEdit && (<ClientForm refreshLIst={refreshLIst} handleClose={handleClose}/>)}
