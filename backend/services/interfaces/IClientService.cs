@@ -10,7 +10,7 @@ namespace backend.services.interfaces
     public interface IClientService
     {
         Task<string> CreateClientAsync(CreateClient clientDto, string userId);
-        Task<PageResult<ClientModel>> GetClientsAsync(string role, string userId,int page, int pageSize, string searchTerm);
+        Task<PageResult<ClientModel>> GetClientsAsync(string role, string userId,int page, int pageSize, string searchTerm, string criteria, string value);
         Task<ClientModelWithHistory> GetClientByIdAsync(string clientId);
         Task<List<ClientModel>> SearchByBusinessNameAsync(string query);
 

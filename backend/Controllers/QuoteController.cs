@@ -38,11 +38,11 @@ namespace backend.Controllers
         }
 
         [HttpGet("get")]
-        public async Task<IActionResult> GetAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "")
+        public async Task<IActionResult> GetAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "",[FromQuery] string criteria = "",[FromQuery] string value = "")
         {
             try
             {
-                var quotes = await _quoteservice.GetQouteAsync(GetRole(), GetUserId(), page, pageSize, searchTerm);
+                var quotes = await _quoteservice.GetQouteAsync(GetRole(), GetUserId(), page, pageSize, searchTerm,criteria,value);
                 return Ok(quotes);
             }
             catch (Exception ex)

@@ -74,7 +74,7 @@ namespace backend.services
             return quote.Id;
         }
 
-        public async Task<PageResult<QuoteModel>> GetQouteAsync(string role, string userId, int page, int pageSize, string searchTerm)
+        public async Task<PageResult<QuoteModel>> GetQouteAsync(string role, string userId, int page, int pageSize, string searchTerm, string criteria, string value)
         {
             if (page < 1 || pageSize < 1)
             {
@@ -90,13 +90,19 @@ namespace backend.services
             {
                 filters.Add("userId", new ObjectId(userId));
             }
+            if (!string.IsNullOrEmpty(criteria) && !string.IsNullOrEmpty(value))
+            {
+
+                filters.Add(criteria, new BsonDocument { { "$regex", value }, { "$options", "i" } });
+
+            }
 
             if (!string.IsNullOrEmpty(search))
             {
                 filters.Add("$or", new BsonArray
                 {
-                    new BsonDocument("businessName", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
-                    new BsonDocument("firstResponse", new BsonDocument { { "$regex", search }, { "$options", "i" } })
+                    new BsonDocument("BusinessName", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
+                    new BsonDocument("FirstResponse", new BsonDocument { { "$regex", search }, { "$options", "i" } })
                 });
             }
 

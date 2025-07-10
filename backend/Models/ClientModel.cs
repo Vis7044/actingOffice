@@ -23,9 +23,7 @@ namespace backend.Models
         [BsonElement("userId")]
         [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
         public string UserId { get; set; } = string.Empty;
-        [BsonElement("history")]
-        [BsonRepresentation(MongoDB.Bson.BsonType.ObjectId)]
-        public required List<string> History { get; set; }
+       
     }
 
     public class ClientAddress

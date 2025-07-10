@@ -18,19 +18,19 @@ namespace backend.services
     {
         private readonly MongoDbContext _context;
         private readonly IMongoCollection<ClientModel> _client;
-        private readonly IMongoCollection<ClientHistory> _clientHistory;
         private readonly IMongoCollection<UserModel> _users;
         private readonly CounterService _sequenceService;
-        private readonly ClientHistoryService _history;
+        private readonly HistoryService _history;
+        private readonly IMongoCollection<History> _historyDb;
 
-        public ClientService(MongoDbContext context, CounterService sequenceService, ClientHistoryService history)
+        public ClientService(MongoDbContext context, CounterService sequenceService, HistoryService history)
         {
             _context = context;
             _client = context.Clients;
-            _clientHistory = context.ClientHistory; // ✅ Add this
             _users = context.Users;                   // ✅ And this
             _sequenceService = sequenceService;
             _history = history;
+            _historyDb = context.History;
         }
 
 
@@ -49,13 +49,7 @@ namespace backend.services
                 throw new Exception("Client with this business name "+client.BusinessName+" already exists ");
             }
             int sequence = await _sequenceService.GetNextSequenceAsync("client");
-            var history = new ClientHistoryDto
-            {
-                Type = "created",
-                ClientId = userId
-
-            };
-            var historyId = await _history.CreateClientHistoryAsync(history);
+            
 
             // Create a new client model from the DTO
             var clientData = new ClientModel
@@ -64,12 +58,26 @@ namespace backend.services
                 BusinessName = client.BusinessName,
                 Type = client.Type,
                 Address = client.Address,
-                UserId = userId,
-                History = new List<string> { historyId }
+                UserId = userId
             };
+            
             try
             {
                 await _client.InsertOneAsync(clientData);
+                var history = new History
+                {
+                    Action = "created",
+                    DateTime = DateTime.UtcNow,
+                    UserId = userId,
+                    Description = $"Client {client.BusinessName} created",
+                    Target =
+                    {
+                        Id = clientData.Id,
+                        Name = clientData.BusinessName,
+                    }
+
+                };
+                var historyId = await _history.CreateClientHistoryAsync(history);
                 return "Client created successfully";
             }
             catch (Exception ex)
@@ -89,7 +97,7 @@ namespace backend.services
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<PageResult<ClientModel>> GetClientsAsync(string role, string userId, int page, int pageSize, string searchTerm)
+        public async Task<PageResult<ClientModel>> GetClientsAsync(string role, string userId, int page, int pageSize, string searchTerm, string criteria, string value)
         {
             if (page < 1 || pageSize < 1)
             {
@@ -106,13 +114,20 @@ namespace backend.services
             {
                 filters.Add("userId", new ObjectId(userId));
             }
+            if (!string.IsNullOrEmpty(criteria) && !string.IsNullOrEmpty(value))
+            {
+                
+                 filters.Add(criteria, new BsonDocument { { "$regex", value }, { "$options", "i" } });
+                    
+            }
 
             if (!string.IsNullOrEmpty(search))
             {
                 filters.Add("$or", new BsonArray
                 {
                     new BsonDocument("businessName", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
-                    new BsonDocument("type", new BsonDocument { { "$regex", search }, { "$options", "i" } })
+                    new BsonDocument("type", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
+                   
                 });
             }
             
@@ -165,25 +180,14 @@ namespace backend.services
                 throw new Exception("Client not found");
 
             // Get history records
-            var history = await _clientHistory
-                .Find(h => client.History.Contains(h.Id))
+            var history = await _historyDb
+                .Find(h => h.Target.Id == clientId)
                 .ToListAsync();
 
-            // Get unique userIds from history
-            var userIds = history
-                .Select(h => h.ClientId)
-                .Where(id => !string.IsNullOrEmpty(id))
-                .Distinct()
-                .ToList();
 
-            var users = await _users
-                .Find(u => userIds.Contains(u.Id))
-                .ToListAsync();
-
-            // Join history + user
             var historyWithUsers = history.Select(h =>
             {
-                var user = users.FirstOrDefault(u => u.Id == h.ClientId);
+                var user = _users.Find(u => u.Id == h.UserId).FirstOrDefault();
                 return new HistoryWithUser
                 {
                     History = h,
@@ -229,22 +233,72 @@ namespace backend.services
                   c => c.Id, businessId
                 );
 
-                var history = new ClientHistoryDto
+
+                var clientBeforeUpdate = await _client.Find(c => c.Id == businessId).FirstOrDefaultAsync();
+                if (clientBeforeUpdate == null)
                 {
-                    Type = "created",
-                    ClientId = userId
+                    return "No client found to update.";
+                }
 
-                };
-                var historyId = await _history.CreateClientHistoryAsync(history);
-
-                
                 var update = Builders<ClientModel>.Update
                     .Set(c => c.BusinessName, client.BusinessName)
                     .Set(c => c.Type, client.Type)
-                    .Set(c => c.Address, client.Address)
-                    .Push(c => c.History, historyId);
+                    .Set(c => c.Address, client.Address);
 
                 var result = await _client.UpdateOneAsync(filter, update);
+
+                var chengedClient = await _client.Find(c => c.Id == businessId).FirstOrDefaultAsync();
+
+
+                var changes = new Dictionary<string, string>();
+
+                if (clientBeforeUpdate.BusinessName != chengedClient.BusinessName)
+                {
+                    changes["BusinessName"] = $"'{clientBeforeUpdate.BusinessName}' → '{chengedClient.BusinessName}'";
+                }
+
+                if (clientBeforeUpdate.Type != chengedClient.Type)
+                {
+                    changes["Type"] = $"'{clientBeforeUpdate.Type}' → '{chengedClient.Type}'";
+                }
+
+                // Compare address sub-fields
+                if (clientBeforeUpdate.Address.Street != chengedClient.Address.Street)
+                {
+                    changes["Address.Street"] = $"'{clientBeforeUpdate.Address.Street}' → '{chengedClient.Address.Street}'";
+                }
+
+                if (clientBeforeUpdate.Address.City != chengedClient.Address.City)
+                {
+                    changes["Address.City"] = $"'{clientBeforeUpdate.Address.City}' → '{chengedClient.Address.City}'";
+                }
+                if (clientBeforeUpdate.Address.Country != chengedClient.Address.Country)
+                {
+                    changes["Address.Country"] = $"'{clientBeforeUpdate.Address.Country}' → '{chengedClient.Address.Country}'";
+                }
+                if (clientBeforeUpdate.Address.Building != chengedClient.Address.Building)
+                {
+                    changes["Address.Building"] = $"'{clientBeforeUpdate.Address.Building}' → '{chengedClient.Address.Building}'";
+                }
+
+                var changesSummary = changes.Count > 0
+                    ? string.Join("; ", changes.Select(c => $"{c.Key}: {c.Value}"))
+                    : "No significant changes detected";
+
+                var history = new History
+                {
+                    Action = "updated",
+                    DateTime = DateTime.UtcNow,
+                    UserId = userId,
+                    Description = $"Client updated: {changesSummary}",
+                    Target = new TargetDto
+                    {
+                        Id = clientBeforeUpdate.Id,
+                        Name = clientBeforeUpdate.BusinessName
+                    }
+                };
+
+                var historyId = await _history.CreateClientHistoryAsync(history);
 
                 if (result.MatchedCount == 0)
                 {
@@ -272,6 +326,16 @@ namespace backend.services
                     }
                 }
                 var filter = Builders<ClientModel>.Filter.Eq(c => c.Id, businessId);
+                var client = await _client.Find(filter).FirstOrDefaultAsync();
+
+                if (client == null)
+                {
+                    return "Client not found.";
+                }
+
+                var historyFilter = Builders<History>.Filter.Eq(h => h.Target.Id, client.Id);
+                await _historyDb.DeleteManyAsync(historyFilter);
+
                 var result = await _client.DeleteOneAsync(filter);
                 if (result.DeletedCount == 0)
                 {

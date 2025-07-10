@@ -42,12 +42,13 @@ namespace backend.Controllers
             }
         }
 
+
         [HttpGet("getClient")]
-        public async Task<IActionResult> GetClientAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "")
+        public async Task<IActionResult> GetClientAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "", string criteria="", string value="")
         {
             try
             {
-                var result = await _clientService.GetClientsAsync(GetRole(), GetUserId(), page, pageSize, searchTerm);
+                var result = await _clientService.GetClientsAsync(GetRole(), GetUserId(), page, pageSize, searchTerm,criteria, value);
                 return Ok(result);
             }
             catch (Exception ex)
