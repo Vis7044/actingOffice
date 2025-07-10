@@ -41,7 +41,7 @@ builder.Services.AddSingleton<MongoDbContext>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IClientService, ClientService>();   
 builder.Services.AddScoped<CounterService>();
-builder.Services.AddScoped<ClientHistoryService>();
+builder.Services.AddScoped<HistoryService>();
 builder.Services.AddScoped<IQuoteService, QuoteService>();
 
 //  Required to access logged-in user's Claims in services
