@@ -178,15 +178,19 @@ export const SideNav: React.FC = () => {
             to={"/quote"}
             style={{ textDecoration: "none", color: "inherit" }}
           >
-            <NavItem icon={<BsCardList size={18}  />} label="Task" isOpen={isOpen} />
+            <NavItem
+              icon={<HiOutlineCalendarDays size={18}  />}
+              label="Quotes"
+              isOpen={isOpen}
+            />
           </Link>
           <Link
-            to={"/quote"}
+            to={"/items"}
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <NavItem
               icon={<PiUserList size={18}  />}
-              label="E-Signatures"
+              label="Item"
               isOpen={isOpen}
             />
           </Link>
@@ -221,15 +225,12 @@ export const SideNav: React.FC = () => {
               isOpen={isOpen}
             />
           </Link>
+          
           <Link
             to={"/quote"}
             style={{ textDecoration: "none", color: "inherit" }}
           >
-            <NavItem
-              icon={<HiOutlineCalendarDays size={18}  />}
-              label="Quotes"
-              isOpen={isOpen}
-            />
+            <NavItem icon={<BsCardList size={18}  />} label="Task" isOpen={isOpen} />
           </Link>
           <Link
             to={"/quote"}

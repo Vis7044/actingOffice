@@ -26,6 +26,10 @@
   left: 209px;
 }
 
+.offCanvasBody {
+  padding: 0px !important;
+}
+
 .shimmer {
   background-color: red;
 }

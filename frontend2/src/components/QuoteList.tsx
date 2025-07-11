@@ -13,7 +13,7 @@ import { ThemeProvider, createTheme } from "@fluentui/react";
 import "@fluentui/react/dist/css/fabric.css";
 import type { IColumn } from "@fluentui/react/lib/DetailsList";
 import { MarqueeSelection } from "@fluentui/react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { CommandBarNav } from "./CommandBarNav";
 import QuoteDetailSideCanvas from "./QuoteDetailsSideCanvas";
@@ -21,6 +21,7 @@ import { FaShare } from "react-icons/fa";
 import SideCanvas from "./SideCanvas";
 import { MdDelete, MdOutlineEdit } from "react-icons/md";
 import type { IQuote } from "../types/projectTypes";
+import { HiOutlineExternalLink } from "react-icons/hi";
 
 const customTheme = createTheme({
   palette: {
@@ -72,6 +73,12 @@ const deleteButtons = mergeStyles({
     },
   },
 });
+
+const quoteStatusColor = {
+  Accepted: 'rgba(95, 235, 76, 0.56)',
+  Drafted: 'rgba(0,0,0,0.4)',
+  Rejected: 'rgba(177, 54, 54, 0.7)',
+}
 
 const QuoteList = () => {
   const [quoteData, setQuoteData] = useState<IQuote[]>([]);
@@ -171,7 +178,8 @@ const QuoteList = () => {
       maxWidth: 300,
       isResizable: true,
       onRender: (item: IQuote) => (
-        <Text
+        <Stack horizontal verticalAlign="center">
+          <Text
           variant="mediumPlus"
           styles={{
             root: {
@@ -181,8 +189,11 @@ const QuoteList = () => {
             },
           }}
         >
-          <QuoteDetailSideCanvas id={item.id} item={item.quoteNumber} val="" />
+          <QuoteDetailSideCanvas id={item.id} item={item.quoteNumber} val="" refreshList={refresh}/>
+          
         </Text>
+        <Link style={{marginLeft: '2rem'}} to={`/quote/${item.id}`}><HiOutlineExternalLink size={16} /></Link>
+        </Stack>
       ),
     },
     {
@@ -267,6 +278,31 @@ const QuoteList = () => {
       ),
     },
     {
+      key: "Status",
+      name: "status",
+      onRenderHeader: () => (
+        <Text
+          variant="mediumPlus"
+          styles={{ root: { color: "rgb(2, 91, 150)", fontWeight: 500 } }}
+        >
+          Status
+        </Text>
+      ),
+      fieldName: "quoteStatus",
+      minWidth: 150,
+      maxWidth: 200,
+      isResizable: true,
+      onRender: (item: IQuote) => (
+        <Text variant="mediumPlus" styles={{root: {
+          padding: '3px 6px',
+          color: 'rgb(29, 32, 32)',
+          backgroundColor: quoteStatusColor[item.quoteStatus as 'Accepted' | 'Rejected' | 'Drafted'],
+          borderRadius: 6,
+          fontWeight: 500
+        }}}>{item.quoteStatus}</Text>
+      ),
+    },
+    {
       key: "action",
       name: "",
       fieldName: "",
@@ -285,7 +321,7 @@ const QuoteList = () => {
         <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 5 }}>
           <Text className={iconButtons}>
             {" "}
-            <QuoteDetailSideCanvas id={item.id} item={""} val={<FaShare />} />
+            <QuoteDetailSideCanvas id={item.id} item={""} val={<FaShare /> } refreshList={refresh} />
           </Text>
           <SideCanvas
             name={

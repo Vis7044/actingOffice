@@ -50,4 +50,5 @@ export interface IQuote {
     firstResponse: string;
     services: IService[]
     totalAmount: number;
+    quoteStatus: string
 }

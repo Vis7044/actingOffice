@@ -124,9 +124,7 @@ const ClientDetailList = () => {
         console.log(resp.data);
         refresh()
       }
-      else {
-        setError(resp.data)
-      }
+      
     } catch (error) {
       console.log(error)
     }

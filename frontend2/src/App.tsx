@@ -12,6 +12,8 @@ import { Login } from './pages/Login'
 import { ClientDetails } from './pages/ClientDetails'
 import ProtectRoute from './helper/ProtectRoute'
 import { Profile } from './pages/Profile'
+import Item from './pages/Item'
+import AnonymousQuote from './pages/AnonymousQuote'
 
 
 
@@ -27,13 +29,16 @@ function App() {
             <Home/>}/>
           <Route path='client' element={<Client/>}/>
           <Route path='quote' element={<Quote/>}/>
+          <Route path='items' element={<Item/>}/>
 
           <Route path="/client/:id" element={<ClientDetails   />} />
+          
           <Route path='profile' element={<Profile/>}/>
           </Route>
 
           <Route path='signup' element={<Signup/>}/> 
          <Route path='login' element={<Login/>}/>
+         <Route path="/quote/:id" element={<AnonymousQuote   />} />
         </Routes>
       </BrowserRouter> 
     </>

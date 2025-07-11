@@ -15,18 +15,9 @@ import { BusinessAutocomplete } from "./BusinessAutocomplete";
 import { AxiosError } from "axios";
 import type { IQuote } from "../types/projectTypes";
 
-const firstDiv = mergeStyles({
-  display: "flex",
-  gap: "10px",
-  justifyContent: "space-between",
-  alignItems: "center",
-  width: "100%",
-  position: "relative",
-  padding: "10px 0",
-});
-
 const input = mergeStyles({
-  border: "1px solid #909090",
+  border: "1px solid ",
+  borderColor: "rgba(0,0,0,0.2)",
   outline: "none",
   padding: "4px",
   fontSize: "14px",
@@ -40,6 +31,15 @@ const input = mergeStyles({
     },
   },
 });
+
+interface IService {
+    key: number;
+    name: string;
+    description: string;
+    amount: number;
+    userId: string
+}
+
 
 interface IClient {
   id: string;
@@ -67,6 +67,13 @@ export const QuoteForm = ({
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<IClient[]>([]);
   const [error, setError] = useState<string | null>();
+
+  const [servicesData, setServices] = useState<IService[]>([]);
+
+    const fetchService = async () => {
+      const resp = await axiosInstance.get('/Service/get');
+      setServices(resp.data);
+    }
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -216,7 +223,7 @@ export const QuoteForm = ({
                   horizontalAlign="space-between"
                 >
                   <Text>Business Name</Text>
-                  <Stack style={{ position: "relative" }}>
+                  <Stack style={{ position: "relative", width: "70%" }}>
                     <Field
                       name="businessName"
                       placeholder="Business Name"
@@ -227,7 +234,7 @@ export const QuoteForm = ({
                       }}
                       className={input}
                       style={{
-                        width: "600px",
+                        width: "100%",
                         border: "none",
                         borderBottom: "1px solid",
                         borderColor: "rgba(0,0,0,0.1)",
@@ -368,7 +375,7 @@ export const QuoteForm = ({
                 </Stack>
 
                 <FieldArray name="services">
-                  {({ insert, remove }) => (
+                  {({ insert, remove, replace}) => (
                     <>
                       {values.services.map((_, index) => (
                         <Stack tokens={{ childrenGap: 10 }} key={index}>
@@ -393,12 +400,35 @@ export const QuoteForm = ({
                                   },
                                 }}
                               >
-                                <Field
+                                <select
                                   className={input}
                                   style={{ width: "30%" }}
                                   name={`services[${index}].serviceName`}
-                                  placeholder="Service Name"
-                                />
+                                  onClick={fetchService} // no need for arrow function if no arguments
+                                  onChange={(e) => {
+                                    const selectedIndex = Number(e.target.value);
+                                    const selectedService = servicesData[selectedIndex];
+
+                                    replace(index, {
+                                      serviceName: selectedService.name,
+                                      description: selectedService.description,
+                                      amount: selectedService.amount,
+                                    });
+                                  }}
+                                >
+                                  <option value="">Select</option>
+
+                                  {!servicesData?.length && (
+                                    <option disabled>Loading...</option>
+                                  )}
+
+                                  {servicesData?.map((service: IService, i: number) => (
+                                    <option key={i} value={i}>
+                                      {service.name}
+                                    </option>
+                                  ))}
+                                </select>
+
                                 <ErrorMessage
                                   name={`services[${index}].serviceName`}
                                   component="div"
@@ -409,6 +439,7 @@ export const QuoteForm = ({
                                   style={{ width: "30%" }}
                                   name={`services[${index}].description`}
                                   placeholder="Description"
+                                  
                                 />
                                 <ErrorMessage
                                   name={`services[${index}].description`}
@@ -437,14 +468,13 @@ export const QuoteForm = ({
                             )}
                           </Stack>
                           {index === values.services.length - 1 && (
-                            
+                            <Stack styles={{ root: { width: "95%" } }}>
                               <Stack
-                              styles={{root: {width: '98%'}}}
-                            >
-                              <Stack horizontal
+                                horizontal
                                 horizontalAlign="space-between"
-                                verticalAlign="center">
-                                <Stack styles={{root: {width: '30%'}}}>
+                                verticalAlign="center"
+                              >
+                                <Stack>
                                   <Text
                                     styles={{
                                       root: {
@@ -467,13 +497,8 @@ export const QuoteForm = ({
                                     <FaPlus color="white" /> Add
                                   </Text>
                                 </Stack>
-                                
-                                <Stack
-                                  styles={{root: {width: '30%'}}}
-                                  horizontal
-                                  verticalAlign="center"
-                                  
-                                >
+
+                                <Stack horizontal verticalAlign="center" styles={{root: {width: '34%'}}}>
                                   <Text style={{ paddingRight: "6px" }}>€</Text>
                                   <input
                                     className={input}
@@ -481,33 +506,29 @@ export const QuoteForm = ({
                                     readOnly
                                     style={{
                                       backgroundColor: "#f0f0f0",
-                                      width: '190px',
+                                      width: "100%",
                                     }}
                                   />
                                 </Stack>
                               </Stack>
-                              
-                             
 
-                            <Stack
+                              <Stack
                                 styles={{
                                   root: {
-                                    paddingTop: "20px"
+                                    paddingTop: "10px",
                                   },
                                 }}
+                                horizontal
+                                verticalAlign="center"
+                                horizontalAlign="end"
+                                tokens={{ childrenGap: 5 }}
                               >
-                                <Stack
-                                  horizontal
-                                  verticalAlign="center"
-                                  horizontalAlign="end"
-                                  tokens={{ childrenGap: 5 }}
-                                  
-                                >
+                                
                                   <Field
                                     as="select"
                                     className={input}
                                     name="vatRate"
-                                    style={{ width: "100px" }}
+                                    style={{ width: "13%" }}
                                   >
                                     <option value="0">Vat 0%</option>
                                     <option value="20">Vat 20%</option>
@@ -515,46 +536,44 @@ export const QuoteForm = ({
                                   <Stack
                                     horizontal
                                     verticalAlign="center"
-                                    styles={{root: {
-                                      width: '30%'
-                                    }}}
                                     tokens={{ childrenGap: 3 }}
+                                    styles={{root: {width:'35%'}}}
                                   >
                                     <Text style={{ paddingRight: "6px" }}>
                                       €
                                     </Text>
-                                    <input
+                                    <Field
                                       className={input}
                                       value={vatAmount.toFixed(2)}
                                       readOnly
                                       style={{
                                         backgroundColor: "#f0f0f0",
-                                        width: "210px",
+                                        width: '100%'
                                       }}
                                     />
                                   </Stack>
-                                </Stack>
-                                
                               </Stack>
                               <Stack
-                                  horizontal
-                                  verticalAlign="center"
-                                  horizontalAlign="end"
-                                  styles={{root: {
-                                    marginTop: '10px',
-                                  }}}
-                                >
-                                  <Text style={{ paddingRight: "6px" }}>€</Text>
-                                  <input
-                                    className={input}
-                                    value={totalWithTax.toFixed(2)}
-                                    readOnly
-                                    style={{
-                                      backgroundColor: "#f0f0f0",
-                                      width: "192px",
-                                    }}
-                                  />
-                                </Stack>
+                                horizontal
+                                verticalAlign="center"
+                                horizontalAlign="end"
+                                styles={{
+                                  root: {
+                                    marginTop: "10px",
+                                  },
+                                }}
+                              >
+                                <Text style={{ paddingRight: "6px" }}>€</Text>
+                                <Field
+                                  className={input}
+                                  value={totalWithTax.toFixed(2)}
+                                  readOnly
+                                  style={{
+                                    backgroundColor: "#f0f0f0",
+                                    width: "32%",
+                                  }}
+                                />
+                              </Stack>
                             </Stack>
                           )}
                         </Stack>

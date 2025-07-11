@@ -1,7 +1,8 @@
+import { Stack } from '@fluentui/react'
 import React from 'react'
 
 export const Profile = () => {
   return (
-    <div>Profile</div>
+    <Stack>Profile</Stack>
   )
 }
