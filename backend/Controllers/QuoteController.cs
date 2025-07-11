@@ -8,6 +8,7 @@ using System.Security.Claims;
 namespace backend.Controllers
 {
 
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class QuoteController : ControllerBase
