@@ -3,7 +3,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { useEffect, useState } from "react";
 import { FaCircleUser, FaMessage } from "react-icons/fa6";
 import { mergeStyles } from "@fluentui/react";
-import { MdEdit } from "react-icons/md";
+import { MdEdit, MdOutlineEdit } from "react-icons/md";
 import { FaPlus } from "react-icons/fa";
 import { RiStickyNoteAddLine } from "react-icons/ri";
 import { MdAttachEmail } from "react-icons/md";
@@ -21,13 +21,14 @@ import type {
   IStyleSet,
   ILabelStyles,
 } from "@fluentui/react";
+import SideCanvas from "../components/SideCanvas";
 
 const labelStyles: Partial<IStyleSet<ILabelStyles>> = {
   root: { marginTop: 10 },
 };
 
 interface IClient {
-  Id: string;
+  id: string;
   businessName: string;
   clientId: string;
   type: string;
@@ -55,8 +56,12 @@ export interface IUser {
 export interface IClientHistory {
   id: string;
   dateTime: string;           
-  type: string;               
-  clientId: string;
+  action: string;               
+  description: string;
+  target: {
+    id:string,
+    name: string
+  }
 }
 
 interface IClientHistoryWithUser {
@@ -75,6 +80,15 @@ const actionSection = mergeStyles({
   marginTop: "10px",
   gap: "5px",
 });
+
+const iconButtons = mergeStyles({
+  cursor: 'pointer',
+  selectors: {
+    ":hover": {
+      color: 'rgb(36, 115, 160)'
+    }
+  }
+})
 
 const profileDetail = mergeStyles({
   width: '1090px',
@@ -96,7 +110,7 @@ export const ClientDetails = () => {
     try {
       const resp = await axiosInstance.get(`/Client/getClient/${id}`);
       setClient(resp.data?.client);
-      setHistory(resp.data.historyWithUsers);
+      setHistory(resp.data?.historyWithUsers);
       console.log(resp.data, 'data');
     } catch (err) {
       console.error(err);
@@ -164,7 +178,11 @@ export const ClientDetails = () => {
             >
               <Label styles={labelStyles}>
                 <div className={profileDetail}>
-                <p style={{borderBottom: '1px solid', borderColor: 'rgba(73, 71, 71, 0.2)', fontSize: '14px', color: 'gray', fontWeight: '400', padding: '2px 4px'}}>Basic Details</p>
+                <div style={{borderBottom: '1px solid', borderColor: 'rgba(73, 71, 71, 0.2)',display:'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1px 3px'}}>
+                  <span style={{ fontSize: '14px', color: 'gray', fontWeight: '400',}}>Basic Details</span>
+                  <SideCanvas name={<span className={iconButtons}><MdOutlineEdit size={18} /></span>} refreshLIst={fetchClientDetail} isEdit={true} businessId={client.id}  />
+                </div>
+
                 <div style={{paddingLeft: '10px'}}>
                   <div>
                     <p style={{color: 'gray', fontSize: '16px'}}>Incorporated Date</p>
@@ -186,11 +204,11 @@ export const ClientDetails = () => {
             <PivotItem headerText="History">
               <Label styles={labelStyles}>
                 {history.map((item, index) => (
-                <div key={index}>
-                  <p>
+                <div key={index} style={{width: '300px'}}>
+                  <p >
                     at {new Date(item.history.dateTime).toLocaleString()} by{" "}
-                    <strong>{item.user.firstName} {item.user.lastName}</strong><br />
-                    Action: {item.history.type}
+                    <strong >{item.user.firstName} {item.user.lastName}</strong><br />
+                    Action: <span style={{width: '300px'}}>{item.history.description}</span>
                   </p>
                 </div>  
               ))}

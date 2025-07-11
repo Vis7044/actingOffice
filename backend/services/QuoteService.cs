@@ -171,6 +171,7 @@ namespace backend.services
                 VatRate = result.VatRate,
                 VatAmount = result.VatAmount,
                 TotalAmount = result.TotalAmount,
+                QuoteStatus = result.QuoteStatus,   
                 Services = result.Services.Select(s => new QuoteServiceItem
                 {
                     ServiceName = s.ServiceName,
@@ -210,6 +211,7 @@ namespace backend.services
                     .Set(c => c.VatRate, quote.VatRate)
                     .Set(c => c.VatAmount, quote.VatAmount)
                     .Set(c => c.TotalAmount, quote.TotalAmount)
+                    .Set(c => c.QuoteStatus, quote.QuoteStatus)
                     .Set(c => c.Services, quote.Services.Select(s => new QuoteServiceItem
                     {
                         ServiceName = s.ServiceName,

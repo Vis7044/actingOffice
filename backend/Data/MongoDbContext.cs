@@ -30,6 +30,9 @@ namespace backend.Data
         public IMongoCollection<QuoteModel> Quote => _database
             .GetCollection<QuoteModel>("Quotes");
 
+        public IMongoCollection<Service> Service => _database
+            .GetCollection<Service>("Services");
+
 
 
 

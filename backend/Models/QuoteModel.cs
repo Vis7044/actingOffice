@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+﻿using backend.Enums;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace backend.Models
 {
@@ -30,9 +31,8 @@ namespace backend.Models
         public decimal VatAmount { get; set; } = 0.0m;
 
         public decimal VatRate { get; set; } = 0.0m;
-
-
-
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]
+        public QuoteStatus QuoteStatus { get; set; } = QuoteStatus.Drafted;
         public decimal TotalAmount { get; set; } = 0.0m;
         [BsonIgnore]
         [BsonElement("businessDetails")]    

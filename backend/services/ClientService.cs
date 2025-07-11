@@ -27,7 +27,7 @@ namespace backend.services
         {
             _context = context;
             _client = context.Clients;
-            _users = context.Users;                   // ✅ And this
+            _users = context.Users;                   
             _sequenceService = sequenceService;
             _history = history;
             _historyDb = context.History;
@@ -265,20 +265,24 @@ namespace backend.services
                 // Compare address sub-fields
                 if (clientBeforeUpdate.Address.Street != chengedClient.Address.Street)
                 {
-                    changes["Address.Street"] = $"'{clientBeforeUpdate.Address.Street}' → '{chengedClient.Address.Street}'";
+                    changes[".Street"] = $"'{clientBeforeUpdate.Address.Street}' → '{chengedClient.Address.Street}'";
                 }
 
                 if (clientBeforeUpdate.Address.City != chengedClient.Address.City)
                 {
-                    changes["Address.City"] = $"'{clientBeforeUpdate.Address.City}' → '{chengedClient.Address.City}'";
+                    changes["City"] = $"'{clientBeforeUpdate.Address.City}' → '{chengedClient.Address.City}'";
                 }
                 if (clientBeforeUpdate.Address.Country != chengedClient.Address.Country)
                 {
-                    changes["Address.Country"] = $"'{clientBeforeUpdate.Address.Country}' → '{chengedClient.Address.Country}'";
+                    changes["Country"] = $"'{clientBeforeUpdate.Address.Country}' → '{chengedClient.Address.Country}'";
                 }
                 if (clientBeforeUpdate.Address.Building != chengedClient.Address.Building)
                 {
-                    changes["Address.Building"] = $"'{clientBeforeUpdate.Address.Building}' → '{chengedClient.Address.Building}'";
+                    changes["Building"] = $"'{clientBeforeUpdate.Address.Building}' → '{chengedClient.Address.Building}'";
+                }
+                if (clientBeforeUpdate.Address.PinCode != chengedClient.Address.PinCode)
+                {
+                    changes["Building"] = $"'{clientBeforeUpdate.Address.PinCode}' → '{chengedClient.Address.PinCode}'";
                 }
 
                 var changesSummary = changes.Count > 0

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { FaBars, FaSearch } from "react-icons/fa";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { Callout,  mergeStyles } from "@fluentui/react";
+import { Callout,  mergeStyles, Text } from "@fluentui/react";
 import Breadcrumb from "./BreadCrumb";
 import { LiaStickyNoteSolid } from "react-icons/lia";
 import { TfiHeadphoneAlt } from "react-icons/tfi";
@@ -56,7 +56,7 @@ const navItemStyle = mergeStyles({
 });
 const styles = mergeStyleSets({
   callout: {
-    width: 320,
+    width: 250,
     padding: "20px 24px",
   },
   title: {
@@ -84,28 +84,16 @@ const buttonStyle = mergeStyles({
   },
 });
 
-const navHeaderStyle = mergeStyles({
-  backgroundColor: "#0078D4",
-  color: "white",
-  padding: "2px",
-  display: "flex",
-  justifyContent: "space-between",
-});
 
-const iconStyle = mergeStyles({
-  fontSize: 18,
-  paddingBottom: "6px",
-});
 
-const labelStyle = mergeStyles({
-  fontSize: 14,
-});
 
 const NavItem: React.FC<NavItemProps> = ({ icon, label, isOpen }) => (
-  <div className={navItemStyle}>
-    <div className={iconStyle}>{icon}</div>
-    {isOpen && <span className={labelStyle}>{label}</span>}
-  </div>
+  <Stack horizontal horizontalAlign="start" verticalAlign="center" styles={{root: {
+    padding: '0px 0 10px 20px',
+  }}}  tokens={{childrenGap : 20}}>
+    <Text>{icon}</Text>
+    {isOpen && <Text variant="mediumPlus">{label}</Text>}
+  </Stack>
 );
 
 export const SideNav: React.FC = () => {
@@ -128,9 +116,9 @@ export const SideNav: React.FC = () => {
   const toggleSidebar = () => setIsOpen((prev) => !prev);
 
   return (
-    <div style={{ display: "flex" }} className="lato-thin">
+    <Stack horizontal className="lato-thin">
       {/* Sidebar */}
-      <div
+      <Stack
         style={{
           background: "#fff",
           color: "black",
@@ -141,66 +129,63 @@ export const SideNav: React.FC = () => {
           transition: "width 0.3s",
         }}
       >
-        <div
-          style={{
-            borderBottom: "1px solid",
-            borderColor: "rgba(133, 129, 129, 0.1)",
-          }}
+        <Stack
+          verticalAlign="start"
+          styles={{root: {
+            
+            borderBottom: '1px solid',
+            borderColor: 'rgba(0,0,0,0.1)'
+          }}}
+          tokens={{childrenGap: 25}}
         >
-          <button
+          <Stack
             onClick={toggleSidebar}
-            style={{
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "black",
-              opacity: 0.6,
-              fontSize: 20,
-              paddingLeft: 16,
-              paddingTop: 16,
-              paddingBottom: 16,
-            }}
             aria-label="Toggle sidebar"
+            styles={{root: {
+              padding: '10px 0 0px 20px',
+            }}}
           >
-            <FaBars />
-          </button>
+            <Text styles={{root: {
+              cursor: 'pointer'
+            }}}><FaBars size={18} /></Text>
+          </Stack>
           <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
             <NavItem
-              icon={<RiDashboardHorizontalLine size={20} color={"black"} />}
+              icon={<RiDashboardHorizontalLine size={18} />}
               label="Dashboard"
               isOpen={isOpen}
             />
           </Link>
-        </div>
+        </Stack>
 
-        <nav
-          style={{
+        <Stack
+          styles={{root: {
             marginTop: "10px",
             borderBottom: "1px solid",
             borderColor: "rgba(133, 129, 129, 0.1)",
-          }}
+          }}}
         >
           {isOpen && (
-            <p style={{ paddingLeft: "10px", fontWeight: "600" }}>Operations</p>
+            <Text styles={{root: { paddingLeft: "10px", fontWeight: 700, paddingBottom: '10px' }}}>Operations</Text>
           )}
           <Link
             to={"/client"}
             style={{ textDecoration: "none", color: "inherit" }}
           >
-            <NavItem icon={<TfiBag />} label="Client" isOpen={isOpen} />
+            <NavItem icon={<TfiBag size={18}  />} label="Client" isOpen={isOpen} />
           </Link>
           <Link
             to={"/quote"}
             style={{ textDecoration: "none", color: "inherit" }}
           >
-            <NavItem icon={<BsCardList />} label="Task" isOpen={isOpen} />
+            <NavItem icon={<BsCardList size={18}  />} label="Task" isOpen={isOpen} />
           </Link>
           <Link
             to={"/quote"}
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <NavItem
-              icon={<PiUserList />}
+              icon={<PiUserList size={18}  />}
               label="E-Signatures"
               isOpen={isOpen}
             />
@@ -210,28 +195,28 @@ export const SideNav: React.FC = () => {
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <NavItem
-              icon={<PiCalendarDots />}
+              icon={<PiCalendarDots size={18}  />}
               label="Deadlines"
               isOpen={isOpen}
             />
           </Link>
-        </nav>
-        <nav
-          style={{
+        </Stack>
+        <Stack
+          styles={{root: {
             marginTop: "10px",
             borderBottom: "1px solid",
             borderColor: "rgba(133, 129, 129, 0.1)",
-          }}
+          }}}
         >
           {isOpen && (
-            <p style={{ paddingLeft: "10px", fontWeight: "600" }}>Sales</p>
+            <Text styles={{root: { paddingLeft: "10px", fontWeight: 700,paddingBottom: '10px' }}} >Sales</Text>
           )}
           <Link
             to={"/quote"}
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <NavItem
-              icon={<LiaUserCheckSolid />}
+              icon={<LiaUserCheckSolid size={18}  />}
               label="Leads"
               isOpen={isOpen}
             />
@@ -241,7 +226,7 @@ export const SideNav: React.FC = () => {
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <NavItem
-              icon={<HiOutlineCalendarDays />}
+              icon={<HiOutlineCalendarDays size={18}  />}
               label="Quotes"
               isOpen={isOpen}
             />
@@ -251,7 +236,7 @@ export const SideNav: React.FC = () => {
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <NavItem
-              icon={<PiUserList />}
+              icon={<PiUserList size={18} />}
               label="E-Signatures"
               isOpen={isOpen}
             />
@@ -261,45 +246,54 @@ export const SideNav: React.FC = () => {
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <NavItem
-              icon={<LiaCalendarSolid />}
+              icon={<LiaCalendarSolid size={18} />}
               label="Deadlines"
               isOpen={isOpen}
             />
           </Link>
-        </nav>
-      </div>
+        </Stack>
+      </Stack>
 
       {/* Content Area */}
-      <div style={{ flex: 1 }}>
-        <div className={navHeaderStyle}>
-          <h1 style={{ paddingTop: "10px", fontSize: 16, paddingLeft: "10px" }}>
+      <Stack style={{ flex: 1 }}>
+        <Stack horizontal horizontalAlign="space-between" styles={{root: {
+            backgroundColor: "#0078D4",
+            color: "white",
+            padding: "4px",
+            
+            
+          }}}>
+          <Text variant="large" styles={{root: {
+            paddingLeft: "10px" ,
+            color: 'white',
+            fontWeight: 500
+          }}}>
             Acting Office- Dev
-          </h1>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-            }}
+          </Text>
+          <Stack
+            horizontal
+            verticalAlign="center"
+            tokens={{childrenGap: 16}}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
+            <Stack
+              horizontal
+              tokens={{childrenGap: 8}}
+              verticalAlign="center"
+              styles={{root: {
+                
                 backgroundColor: "#fff",
                 color: "black",
                 padding: "2px 10px",
                 borderRadius: 4,
                 boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-              }}
+              }}}
             >
               <FaSearch color="gray" />
               <input
                 placeholder="Ctrl + K"
                 style={{ border: "none", outline: "none" }}
               />
-            </div>
+            </Stack>
 
             <BsGrid3X3Gap size={18} style={{}} />
             <VscFileSubmodule size={18} style={{}} />
@@ -309,20 +303,20 @@ export const SideNav: React.FC = () => {
             <TfiHeadphoneAlt size={18} style={{}} />
             <LiaStickyNoteSolid size={22} style={{}} />
 
-            <div
+            <Stack
               id={buttonId}
               onClick={toggleIsCalloutVisible}
-              style={{
+              horizontal
+              horizontalAlign="center"
+              verticalAlign="center"
+              styles={{root: {
                 borderRadius: "50%",
                 overflow: "hidden",
                 width: "30px",
                 height: "30px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
                 cursor: "pointer",
                 marginRight: "5px",
-              }}
+              }}}
             >
               <img
                 src="/profile_logo.jpg"
@@ -343,9 +337,9 @@ export const SideNav: React.FC = () => {
                   borderColor: "white",
                 }}
               ></span>
-            </div>
-          </div>
-        </div>
+            </Stack>
+          </Stack>
+        </Stack>
         <Breadcrumb />
         {isCalloutVisible ? (
           <Callout
@@ -356,21 +350,20 @@ export const SideNav: React.FC = () => {
             onDismiss={toggleIsCalloutVisible}
             setInitialFocus
           >
-            <div style={{ display: "flex", gap: '5px',height: '40px'  }}>
-              <div
+            <Stack horizontal  tokens={{childrenGap: 5}}>
+              <Stack
+                horizontal
+                horizontalAlign="center"
+                verticalAlign="center"
                 id={buttonId}
                 onClick={toggleIsCalloutVisible}
-                style={{
+                styles={{root: {
                   borderRadius: "50%",
                   overflow: "hidden",
                   width: "50px",
-                  height: "50px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
                   cursor: "pointer",
                   marginRight: "5px",
-                }}
+                }}}
               >
                 <img
                   src="/profile_logo.jpg"
@@ -391,12 +384,14 @@ export const SideNav: React.FC = () => {
                     borderColor: "white",
                   }}
                 ></span>
-              </div>
-              <div style={{ color: "black", display:'flex', flexDirection: 'column'}}>
-                <span style={{fontSize: '20px'}}>{user?.firstName}</span>
-                <span style={{color: 'grey', fontSize:"16px"}}>{user?.role}</span>
-              </div>
-            </div>
+              </Stack>
+              <Stack verticalAlign="space-between" styles={{root: { color: "black"}}}>
+                <Text variant="large">{user?.firstName}</Text>
+                <Text styles={{root: {
+                  color: 'grey'
+                }}} >{user?.role}</Text>
+              </Stack>
+            </Stack>
 
             <FocusZone
               handleTabKey={FocusZoneTabbableElements.all}
@@ -409,21 +404,21 @@ export const SideNav: React.FC = () => {
                 style={{display: 'flex', justifyContent: 'space-between'}}
                 horizontal
               >
-                <div className={buttonStyle} onClick={() => navigate("/profile")}><IoKeyOutline /> Profile</div>
-                <div
+                <Text className={buttonStyle} onClick={() => navigate("/profile")}><IoKeyOutline /> Profile</Text>
+                <Text
                 className={buttonStyle}
                   onClick={() => {
                     logout()
                   }}
                 >
                  <RxExit /> logout
-                </div>
+                </Text>
               </Stack>
             </FocusZone>
           </Callout>
         ) : null}
         <Outlet />
-      </div>
-    </div>
+      </Stack>
+    </Stack>
   );
 };

@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Formik, Form, Field, FieldArray, ErrorMessage, useFormikContext } from "formik";
-import { mergeStyles } from "@fluentui/react";
+import {
+  Formik,
+  Form,
+  Field,
+  FieldArray,
+  ErrorMessage,
+  useFormikContext,
+} from "formik";
+import { mergeStyles, Stack, Text } from "@fluentui/react";
 import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
@@ -24,7 +31,8 @@ const input = mergeStyles({
   padding: "4px",
   fontSize: "14px",
   borderRadius: "5px",
-  width: "250px",
+  color: "rgba(0,0,0,0.7)",
+  width: "150px",
   selectors: {
     ":hover": {
       border: "1px solid",
@@ -34,33 +42,31 @@ const input = mergeStyles({
 });
 
 interface IClient {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 interface Quote extends IQuote {
-  vatRate: number,
-  amountBeforeVat: number
-  vatAmount: number
+  vatRate: number;
+  amountBeforeVat: number;
+  vatAmount: number;
 }
-
 
 export const QuoteForm = ({
   refreshLIst,
   handleClose,
   initialQuoteData,
-  isEdit
+  isEdit,
 }: {
   refreshLIst: () => void;
   handleClose: () => void;
   initialQuoteData?: Quote;
-  isEdit: boolean
+  isEdit: boolean;
 }) => {
   const [users, setUsers] = React.useState<any[]>([]);
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<IClient[]>([]);
-  const [error, setError] = useState<string | null>()
- 
+  const [error, setError] = useState<string | null>();
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -72,10 +78,9 @@ export const QuoteForm = ({
       try {
         const res = await axiosInstance.get(`/Client/search?query=${query}`);
         setSuggestions(res.data);
-        console.log("Suggestions fetched:", res.data);  
+        console.log("Suggestions fetched:", res.data);
       } catch (err) {
         console.error("Error fetching suggestions", err);
-        
       }
     };
 
@@ -114,14 +119,13 @@ export const QuoteForm = ({
       .min(1, "At least one service is required"),
   });
 
-  
-
   return (
-    <div>
+    <Stack>
       <Formik
         initialValues={{
           businessName: initialQuoteData?.businessName || "",
-          date: initialQuoteData?.date || new Date().toISOString().split('T')[0],
+          date:
+            initialQuoteData?.date || new Date().toISOString().split("T")[0],
           firstResponse: initialQuoteData?.firstResponse,
           vatRate: initialQuoteData?.vatRate || "0",
           amountBeforeVat: initialQuoteData?.amountBeforeVat || 0,
@@ -155,23 +159,26 @@ export const QuoteForm = ({
             };
             console.log("Payload to be sent:", payload);
             try {
-              if(!isEdit) {
+              if (!isEdit) {
                 await axiosInstance.post("/Quote/create", payload);
-              console.log("Quote created successfully:", payload);
+                console.log("Quote created successfully:", payload);
               }
-              if(isEdit) {
-                await axiosInstance.put(`/Quote/update/${initialQuoteData?.id}`, payload)
-                console.log("quote updated successfully")
+              if (isEdit) {
+                await axiosInstance.put(
+                  `/Quote/update/${initialQuoteData?.id}`,
+                  payload
+                );
+                console.log("quote updated successfully");
               }
-              
+
               refreshLIst();
               handleClose();
             } catch (error) {
-              const axiosError:AxiosError<unknown, unknown> = error as AxiosError;
-              console.log(axiosError.response?.data)
-              setError(axiosError.response?.data as string)
+              const axiosError: AxiosError<unknown, unknown> =
+                error as AxiosError;
+              console.log(axiosError.response?.data);
+              setError(axiosError.response?.data as string);
             }
-            
           } catch (error) {
             console.error("Error creating quote:", error);
           }
@@ -202,18 +209,14 @@ export const QuoteForm = ({
 
           return (
             <Form>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                  width: '95%',
-                  margin: '0 auto'
-                }}
-              >
-                <div className={firstDiv}>
-                  <label>Business Name</label>
-                  <div style={{ position: "relative" }}>
+              <Stack tokens={{ childrenGap: 10 }}>
+                <Stack
+                  horizontal
+                  verticalAlign="center"
+                  horizontalAlign="space-between"
+                >
+                  <Text>Business Name</Text>
+                  <Stack style={{ position: "relative" }}>
                     <Field
                       name="businessName"
                       placeholder="Business Name"
@@ -228,7 +231,7 @@ export const QuoteForm = ({
                         border: "none",
                         borderBottom: "1px solid",
                         borderColor: "rgba(0,0,0,0.1)",
-                        borderRadius: '0',
+                        borderRadius: "0",
                       }}
                     />
 
@@ -267,38 +270,58 @@ export const QuoteForm = ({
                         ))}
                       </ul>
                     )}
-                  </div>
+                  </Stack>
                   <ErrorMessage
                     name="businessName"
                     component="div"
                     className="error-text"
                   />
-                </div>
+                </Stack>
 
-                <div
-                className={firstDiv}
-                  style={{
-                    borderBottom: "1px solid rgba(0,0,0,0.2)",
-                    paddingBottom: "30px",
+                <Stack
+                  horizontal
+                  tokens={{ childrenGap: 8 }}
+                  verticalAlign="center"
+                  styles={{
+                    root: {
+                      width: "100%",
+                      position: "relative",
+                      padding: "10px 0",
+                      borderBottom: "1px solid rgba(0,0,0,0.2)",
+                      paddingBottom: "15px",
+                    },
                   }}
                 >
-                  <div style={{display: 'flex' , alignItems: 'center', gap: '5px'}}>
-                    <label>Date</label>
+                  <Stack
+                    horizontal
+                    verticalAlign="center"
+                    styles={{ root: { width: "50%" } }}
+                    tokens={{ childrenGap: 5 }}
+                  >
+                    <Text>Date</Text>
                     <Field className={input} type="date" name="date" />
                     <ErrorMessage
                       name="date"
                       component="div"
                       className="error-text"
                     />
-                  </div>
-                  <div >
-                    <div>
-                      <label>First Response</label>
+                  </Stack>
+                  <Stack styles={{ root: { width: "50%" } }}>
+                    <Stack
+                      horizontal
+                      verticalAlign="center"
+                      styles={{
+                        root: {
+                          position: "relative",
+                        },
+                      }}
+                    >
+                      <Text>First Response</Text>
                       <Field
                         as="select"
                         className={input}
                         name="firstResponse"
-                        style={{ width: "200px", marginLeft: "10px" }}
+                        style={{ width: "150px", marginLeft: "10px" }}
                       >
                         <option>Select</option>
                         {users &&
@@ -316,34 +339,63 @@ export const QuoteForm = ({
                         component="div"
                         className="error-first-response"
                       />
-                    </div>
-                  </div>
-                </div>
+                    </Stack>
+                  </Stack>
+                </Stack>
+                <Stack
+                  horizontal
+                  verticalAlign="center"
+                  horizontalAlign="space-between"
+                  styles={{
+                    root: {
+                      borderBottom: "3px solid",
+                      borderColor: "rgba(0,0,0,0.2)",
+                    },
+                  }}
+                >
+                  <Text
+                    variant="medium"
+                    styles={{ root: { width: "30%", fontWeight: 700 } }}
+                  >
+                    Service
+                  </Text>
+                  <Text styles={{ root: { width: "30%", fontWeight: 700 } }}>
+                    Description
+                  </Text>
+                  <Text styles={{ root: { width: "30%", fontWeight: 700 } }}>
+                    Amount
+                  </Text>
+                </Stack>
 
                 <FieldArray name="services">
                   {({ insert, remove }) => (
                     <>
                       {values.services.map((_, index) => (
-                        <div key={index}>
-                          <div>
-                            <div
-                              style={{
-                                display: "flex",
-                                gap: "10px",
-                                alignItems: "center",
-                                
+                        <Stack tokens={{ childrenGap: 10 }} key={index}>
+                          <Stack horizontal>
+                            <Stack
+                              horizontal
+                              styles={{
+                                root: {
+                                  width: "98%",
+                                },
                               }}
+                              verticalAlign="center"
                             >
-                              <div
-                                className={firstDiv}
-                                style={{
-                                  gap: "10px",
-                                  alignItems: "center",
-                                  paddingTop: "10px",
+                              <Stack
+                                horizontal
+                                verticalAlign="center"
+                                tokens={{ childrenGap: 20 }}
+                                styles={{
+                                  root: {
+                                    width: "100%",
+                                    position: "relative",
+                                  },
                                 }}
                               >
                                 <Field
                                   className={input}
+                                  style={{ width: "30%" }}
                                   name={`services[${index}].serviceName`}
                                   placeholder="Service Name"
                                 />
@@ -354,6 +406,7 @@ export const QuoteForm = ({
                                 />
                                 <Field
                                   className={input}
+                                  style={{ width: "30%" }}
                                   name={`services[${index}].description`}
                                   placeholder="Description"
                                 />
@@ -365,6 +418,7 @@ export const QuoteForm = ({
 
                                 <Field
                                   className={input}
+                                  style={{ width: "30%" }}
                                   name={`services[${index}].amount`}
                                   placeholder="Amount"
                                   type="number"
@@ -374,111 +428,142 @@ export const QuoteForm = ({
                                   component="div"
                                   className="error-service-amount"
                                 />
-                              </div>
-                              {index > 0 && (
-                                <span onClick={() => remove(index)}>
-                                  <FaTrash color="red" />
-                                </span>
-                              )}
-                            </div>
-                            <div style={{ marginTop: "20px" }}></div>
-                          </div>
+                              </Stack>
+                            </Stack>
+                            {index > 0 && (
+                              <Text onClick={() => remove(index)}>
+                                <FaTrash color="red" />
+                              </Text>
+                            )}
+                          </Stack>
                           {index === values.services.length - 1 && (
-                            <span
-                              style={{
-                                cursor: "pointer",
-                                backgroundColor: "rgb(54, 121, 245)",
-                                color: "white",
-                                padding: "4px 8px",
-                                borderRadius: "5px",
-                              }}
-                              onClick={() =>
-                                insert(index + 1, {
-                                  serviceName: "",
-                                  description: "",
-                                  amount: 0,
-                                })
-                              }
+                            
+                              <Stack
+                              styles={{root: {width: '98%'}}}
                             >
-                              <FaPlus color="white" /> Add
-                            </span>
+                              <Stack horizontal
+                                horizontalAlign="space-between"
+                                verticalAlign="center">
+                                <Stack styles={{root: {width: '30%'}}}>
+                                  <Text
+                                    styles={{
+                                      root: {
+                                        cursor: "pointer",
+                                        width: "70px",
+                                        backgroundColor: "rgb(54, 121, 245)",
+                                        color: "white",
+                                        padding: "4px 8px",
+                                        borderRadius: "5px",
+                                      },
+                                    }}
+                                    onClick={() =>
+                                      insert(index + 1, {
+                                        serviceName: "",
+                                        description: "",
+                                        amount: 0,
+                                      })
+                                    }
+                                  >
+                                    <FaPlus color="white" /> Add
+                                  </Text>
+                                </Stack>
+                                
+                                <Stack
+                                  styles={{root: {width: '30%'}}}
+                                  horizontal
+                                  verticalAlign="center"
+                                  
+                                >
+                                  <Text style={{ paddingRight: "6px" }}>€</Text>
+                                  <input
+                                    className={input}
+                                    value={totalBeforeTax.toFixed(2)}
+                                    readOnly
+                                    style={{
+                                      backgroundColor: "#f0f0f0",
+                                      width: '190px',
+                                    }}
+                                  />
+                                </Stack>
+                              </Stack>
+                              
+                             
+
+                            <Stack
+                                styles={{
+                                  root: {
+                                    paddingTop: "20px"
+                                  },
+                                }}
+                              >
+                                <Stack
+                                  horizontal
+                                  verticalAlign="center"
+                                  horizontalAlign="end"
+                                  tokens={{ childrenGap: 5 }}
+                                  
+                                >
+                                  <Field
+                                    as="select"
+                                    className={input}
+                                    name="vatRate"
+                                    style={{ width: "100px" }}
+                                  >
+                                    <option value="0">Vat 0%</option>
+                                    <option value="20">Vat 20%</option>
+                                  </Field>
+                                  <Stack
+                                    horizontal
+                                    verticalAlign="center"
+                                    styles={{root: {
+                                      width: '30%'
+                                    }}}
+                                    tokens={{ childrenGap: 3 }}
+                                  >
+                                    <Text style={{ paddingRight: "6px" }}>
+                                      €
+                                    </Text>
+                                    <input
+                                      className={input}
+                                      value={vatAmount.toFixed(2)}
+                                      readOnly
+                                      style={{
+                                        backgroundColor: "#f0f0f0",
+                                        width: "210px",
+                                      }}
+                                    />
+                                  </Stack>
+                                </Stack>
+                                
+                              </Stack>
+                              <Stack
+                                  horizontal
+                                  verticalAlign="center"
+                                  horizontalAlign="end"
+                                  styles={{root: {
+                                    marginTop: '10px',
+                                  }}}
+                                >
+                                  <Text style={{ paddingRight: "6px" }}>€</Text>
+                                  <input
+                                    className={input}
+                                    value={totalWithTax.toFixed(2)}
+                                    readOnly
+                                    style={{
+                                      backgroundColor: "#f0f0f0",
+                                      width: "192px",
+                                    }}
+                                  />
+                                </Stack>
+                            </Stack>
                           )}
-                        </div>
+                        </Stack>
                       ))}
                     </>
                   )}
                 </FieldArray>
 
-                <div style={{ position: "relative", paddingTop: "20px" }}>
-                  <div
-                    style={{
-                      position: "absolute",
-                      right: "0px",
-                      marginLeft: "20px",
-                    }}
-                  >
-                    <span style={{ paddingRight: "6px" }}>€</span>
-                    <input
-                      className={input}
-                      value={totalBeforeTax.toFixed(2)}
-                      readOnly
-                      style={{ backgroundColor: "#f0f0f0", width: "150px" }}
-                    />
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "70px",
-                      right: "0px",
-                      display: "flex",
-                      gap: '5px',
-                      alignItems: "center",
-                    }}
-                  >
-                    <Field
-                      as="select"
-                      className={input}
-                      name="vatRate"
-                      style={{ width: "150px" }}
-                    >
-                      <option value="0">Vat 0%</option>
-                      <option value="20">Vat 20%</option>
-                    </Field>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      <span style={{ paddingRight: "6px" }}>€</span>
-                      <input
-                        className={input}
-                        value={vatAmount.toFixed(2)}
-                        readOnly
-                        style={{ backgroundColor: "#f0f0f0", width: "150px" }}
-                      />
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "120px",
-                      right: "0px",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <span style={{ paddingRight: "6px" }}>€</span>
-                    <input
-                      className={input}
-                      value={totalWithTax.toFixed(2)}
-                      readOnly
-                      style={{ backgroundColor: "#f0f0f0", width: "150px" }}
-                    />
-                  </div>
-                </div>
-                {error && <div style={{color: 'red'}}>{error}</div>}
+                {error && <div style={{ color: "red" }}>{error}</div>}
 
                 <button
                   type="submit"
@@ -493,14 +578,14 @@ export const QuoteForm = ({
                     borderRadius: "5px",
                   }}
                 >
-                  <FaSave /> {isEdit? 'Update': 'Submit'}
+                  <FaSave /> {isEdit ? "Update" : "Submit"}
                 </button>
-              </div>
+              </Stack>
             </Form>
           );
         }}
       </Formik>
-    </div>
+    </Stack>
   );
 };
 
