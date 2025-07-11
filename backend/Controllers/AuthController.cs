@@ -27,6 +27,10 @@ namespace backend.Controllers
         private string GetUserId() =>
             User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         [HttpGet("get")]
+
+       
+
+        
         public async Task<IActionResult> GetUsers()
         {
              try

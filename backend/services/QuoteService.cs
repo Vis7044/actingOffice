@@ -1,4 +1,5 @@
 ﻿using backend.Data;
+using backend.Dtos.ClientDto;
 using backend.Dtos.QuoteDto;
 using backend.helper;
 using backend.Models;
@@ -36,6 +37,11 @@ namespace backend.services
             // Validate the business ID
             var businessId = await _context.Clients.Find(c => c.BusinessName == dto.BusinessName).Project(c => c.Id).FirstOrDefaultAsync();
 
+            if( businessId == null)
+            {
+                throw new ArgumentException("Business not found.");
+            }
+
             // Server-side calculations
             var amountBeforeVat = dto.Services.Sum(s => s.Amount);
             var vatRate = dto.VatRate; // 0 or 20 (from dropdown)
@@ -68,7 +74,7 @@ namespace backend.services
             return quote.Id;
         }
 
-        public async Task<PageResult<QuoteModel>> GetQouteAsync(string role, string userId, int page, int pageSize, string searchTerm)
+        public async Task<PageResult<QuoteModel>> GetQouteAsync(string role, string userId, int page, int pageSize, string searchTerm, string criteria, string value)
         {
             if (page < 1 || pageSize < 1)
             {
@@ -84,13 +90,19 @@ namespace backend.services
             {
                 filters.Add("userId", new ObjectId(userId));
             }
+            if (!string.IsNullOrEmpty(criteria) && !string.IsNullOrEmpty(value))
+            {
+
+                filters.Add(criteria, new BsonDocument { { "$regex", value }, { "$options", "i" } });
+
+            }
 
             if (!string.IsNullOrEmpty(search))
             {
                 filters.Add("$or", new BsonArray
                 {
-                    new BsonDocument("businessName", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
-                    new BsonDocument("firstResponse", new BsonDocument { { "$regex", search }, { "$options", "i" } })
+                    new BsonDocument("BusinessName", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
+                    new BsonDocument("FirstResponse", new BsonDocument { { "$regex", search }, { "$options", "i" } })
                 });
             }
 
@@ -169,6 +181,81 @@ namespace backend.services
             };
 
             return quote;
+        }
+
+        public async Task<string> UpdateQuoteAsync(CreateQuoteDto quote, string userId, string role, string quoteId)
+        {
+            try
+            {
+                if (role != "Admin")
+                {
+                    var existingClient = await _client.Find(c => c.Id == quoteId && c.UserId == userId).FirstOrDefaultAsync();
+                    if (existingClient == null)
+                    {
+                        return "You do not have permission to update this client.";
+                    }
+                }
+
+                var filter = Builders<QuoteModel>.Filter.Eq(
+                  c => c.Id, quoteId
+                );
+
+  
+
+                var update = Builders<QuoteModel>.Update
+                    .Set(c => c.BusinessName, quote.BusinessName)
+                    .Set(c => c.FirstResponse, quote.FirstResponse)
+                    .Set(c => c.Date, quote.Date)
+                    .Set(c => c.AmountBeforeVat, quote.AmountBeforeVat)
+                    .Set(c => c.VatRate, quote.VatRate)
+                    .Set(c => c.VatAmount, quote.VatAmount)
+                    .Set(c => c.TotalAmount, quote.TotalAmount)
+                    .Set(c => c.Services, quote.Services.Select(s => new QuoteServiceItem
+                    {
+                        ServiceName = s.ServiceName,
+                        Description = s.Description,
+                        Amount = s.Amount
+                    }).ToList());
+
+                var result = await _quote.UpdateOneAsync(filter, update);
+
+                if (result.MatchedCount == 0)
+                {
+                    return "No client found to update.";
+                }
+
+                return "Client updated successfully";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error updating client: {ex.Message}");
+            }
+        }
+
+        public async Task<string> DeleteClientAsync(string quoteId, string userId, string role)
+        {
+            try
+            {
+                if (role != "Admin")
+                {
+                    var existingClient = await _quote.Find(c => c.Id == quoteId && c.UserId == userId).FirstOrDefaultAsync();
+                    if (existingClient == null)
+                    {
+                        return "You do not have permission to update this client.";
+                    }
+                }
+                var filter = Builders<QuoteModel>.Filter.Eq(c => c.Id, quoteId);
+                var result = await _quote.DeleteOneAsync(filter);
+                if (result.DeletedCount == 0)
+                {
+                    throw new Exception("No client found to delete.");
+                }
+                return "deleted Successfully";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error deleting client: {ex.Message}");
+            }
         }
     }
 }
