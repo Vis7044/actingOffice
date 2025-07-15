@@ -1,4 +1,7 @@
-﻿namespace backend.Dtos.QuoteDto
+﻿using backend.Enums;
+using backend.services;
+
+namespace backend.Dtos.QuoteDto
 {
     public class CreateQuoteDto
     {
@@ -18,5 +21,6 @@
         public decimal VatAmount { get; set; }
 
         public decimal TotalAmount { get; set; }
+        public QuoteStatus QuoteStatus { get; set; } = QuoteStatus.Drafted;
     }
 }
