@@ -13,7 +13,6 @@ namespace backend.services
             _context = context;
         }
 
-
         public async Task<int> GetNextSequenceAsync(string sequenceName)
         {
             var filter = Builders<Counter>.Filter.Eq(c => c.Id, sequenceName);
