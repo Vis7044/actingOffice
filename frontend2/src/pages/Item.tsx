@@ -37,6 +37,7 @@ export default function Item() {
         })
         setRefreshIcon(false)
         setItemData(valuewithkey)
+        console.log(resp.data)
     }
     useEffect(() => {
         getData();

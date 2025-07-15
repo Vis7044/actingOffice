@@ -87,6 +87,7 @@ const ClientDetailList = () => {
     const fetchClientsData = async () => {
       try {
         setRefreshIcon(true);
+        console.log(filter)
         const response = await axiosInstance.get(
           `/Client/getClient?searchTerm=${search}&page=${activePage}&pageSize=${pageSize}&criteria=${filter.criteria}&value=${filter.value}`
         );

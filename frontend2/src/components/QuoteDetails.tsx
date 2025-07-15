@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../utils/axiosInstance';
 import { Stack, StackItem, Text } from '@fluentui/react';
+import type { IQuote } from '../types/projectTypes';
 
 
 interface IAddress {
@@ -16,28 +17,20 @@ interface IClient {
   businessName: string;
   type: string;
   address: IAddress;
+  id: string
 } 
-interface IService {
-    serviceName : string;
-    description : string;
-    amount: number
-}
 
-interface IQuote {
-    key: number;
-    id: string;
-    businessId :string;
-    businessName : string;
-    quoteNumber: string;    
-    date: string;
-    firstResponse: string;
-    services: IService[]
-    totalAmount: number;
-    businessDetails: IClient
-    amountBeforeVat: number,
-    vatAmount: number
-    vatRate: number
-    quoteStatus:string
+
+interface Quote extends IQuote {
+  vatRate: number;
+  amountBeforeVat: number;
+  vatAmount: number;
+  businessDetails: {
+      address: IAddress,
+      businessName:string,
+      id: string,
+      type: string
+    }
 }
 
 const quoteStatusColor = {
@@ -46,19 +39,19 @@ const quoteStatusColor = {
   Rejected: 'rgba(177, 54, 54, 0.7)',
 }
 
-export default function QuoteDetails({id,handleClose,refreshList}: {id: string, handleClose: () => void,refreshList: () => {}}) {
-    const [quote, setQuoteData] = useState<IQuote>();
+export default function QuoteDetails({id,handleClose,refreshList}: {id: string, handleClose: () => void,refreshList: () => void}) {
+    const [quote, setQuoteData] = useState<Quote>();
     const fetchQuote =async () => {
         const resp = await axiosInstance.get(`Quote/get/${id}`);
         setQuoteData(resp.data)
-        console.log(resp.data)
+        console.log(resp,"lol")
     }
     useEffect(() => {
         fetchQuote()
     },[])
 
-    const handleUpdate = async (status: string) => {
-        const resp = await axiosInstance.put(`Quote/update/${id}`, {...quote, quoteStatus: status});
+    const handleUpdate = async (status: number) => {
+        const resp = await axiosInstance.put(`Quote/update/${id}`, {...quote, quoteStatus: status, businessIdName: {id: quote?.businessDetails.id,name: quote?.businessDetails.businessName}});
         console.log({...quote, quoteStatus: status})
         if(resp.data){
             handleClose();
@@ -71,7 +64,7 @@ export default function QuoteDetails({id,handleClose,refreshList}: {id: string, 
         <Text>To,</Text>
         <Stack style={{paddingLeft: '10px', borderBottom: '1px solid', borderColor: 'rgba(0,0,0,0.3)'}}>
             <Stack horizontal horizontalAlign='space-between'>
-                <Text variant='large' styles={{root :{fontWeight : 600}}}>{quote?.businessName}</Text>
+                <Text variant='large' styles={{root :{fontWeight : 600}}}>{quote?.businessDetails.businessName}</Text>
                 <Text><Text variant='large' styles={{root: {fontWeight: 600}}}>date: </Text><Text styles={{root: {color: 'rgba(68, 63, 63, 0.51)', fontWeight: 500}}}>{quote?.date}</Text></Text>
             </Stack>
             <Stack styles={{root: {
@@ -139,7 +132,7 @@ export default function QuoteDetails({id,handleClose,refreshList}: {id: string, 
         }}}>
             {
                 quote?.quoteStatus === 'Drafted' && <>
-                <Text onClick={() => {handleUpdate("Accepted")}} variant="mediumPlus" styles={{root: {
+                <Text onClick={() => {handleUpdate(0)}} variant="mediumPlus" styles={{root: {
                   padding: '3px 10px',
                   color: 'rgb(29, 32, 32)',
                   backgroundColor: 'green',
@@ -148,7 +141,7 @@ export default function QuoteDetails({id,handleClose,refreshList}: {id: string, 
                   marginTop: 10,
                   cursor: 'pointer'
                 }}}>Accept</Text>
-                <Text onClick={() => {handleUpdate('Rejected')}} variant="mediumPlus" styles={{root: {
+                <Text onClick={() => {handleUpdate(2)}} variant="mediumPlus" styles={{root: {
                   padding: '3px 10px',
                   color: 'rgb(32, 29, 30)',
                   backgroundColor: 'rgba(226, 55, 55, 0.86)',

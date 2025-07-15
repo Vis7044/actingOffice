@@ -5,15 +5,13 @@ import {
   Field,
   FieldArray,
   ErrorMessage,
-  useFormikContext,
 } from "formik";
 import { mergeStyles, Stack, Text } from "@fluentui/react";
 import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
-import { BusinessAutocomplete } from "./BusinessAutocomplete";
 import { AxiosError } from "axios";
-import type { IQuote } from "../types/projectTypes";
+import type { IAddress, IQuote } from "../types/projectTypes";
 
 const input = mergeStyles({
   border: "1px solid ",
@@ -33,13 +31,12 @@ const input = mergeStyles({
 });
 
 interface IService {
-    key: number;
-    name: string;
-    description: string;
-    amount: number;
-    userId: string
+  key: number;
+  name: string;
+  description: string;
+  amount: number;
+  userId: string;
 }
-
 
 interface IClient {
   id: string;
@@ -50,6 +47,12 @@ interface Quote extends IQuote {
   vatRate: number;
   amountBeforeVat: number;
   vatAmount: number;
+  businessDetails: {
+      address: IAddress,
+      businessName:string,
+      id: string,
+      type: string
+    }
 }
 
 export const QuoteForm = ({
@@ -70,10 +73,10 @@ export const QuoteForm = ({
 
   const [servicesData, setServices] = useState<IService[]>([]);
 
-    const fetchService = async () => {
-      const resp = await axiosInstance.get('/Service/get');
-      setServices(resp.data);
-    }
+  const fetchService = async () => {
+    const resp = await axiosInstance.get("/Service/get");
+    setServices(resp.data);
+  };
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -108,32 +111,72 @@ export const QuoteForm = ({
     fetchUsers();
   }, []); // Empty dependency array to run only once on mount
 
-  const validationSchema = Yup.object().shape({
-    businessName: Yup.string().required("Business Name is required"),
-    date: Yup.date().required("Date is required"),
-    firstResponse: Yup.string().required(),
-    vatRate: Yup.number().required("VAT rate is required"),
+  const quoteValidationSchema = Yup.object().shape({
+    businessName: Yup.string().required("Business name is required"),
+
+    businessIdName: Yup.object().shape({
+      id: Yup.string().required("Business ID is required"),
+      name: Yup.string().required("Business name is required"),
+    }),
+
+    date: Yup.string()
+      .required("Date is required")
+      .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+
+    firstResponse: Yup.object().shape({
+      firstName: Yup.string().required("name is required"),
+    }),
+
+    vatRate: Yup.number()
+      .typeError("VAT rate must be a number")
+      .min(0, "VAT rate must be 0 or more"),
+
+    amountBeforeVat: Yup.number()
+      .typeError("Amount before VAT must be a number")
+      .min(0, "Amount before VAT must be 0 or more"),
+
+    vatAmount: Yup.number()
+      .typeError("VAT amount must be a number")
+      .min(0, "VAT amount must be 0 or more"),
+
     services: Yup.array()
       .of(
         Yup.object().shape({
           serviceName: Yup.string().required("Service name is required"),
           description: Yup.string().required("Description is required"),
           amount: Yup.number()
-            .required("Amount is required")
-            .min(0, "Amount must be at least 0"),
+            .typeError("Amount must be a number")
+            .min(0, "Amount must be 0 or more"),
         })
       )
       .min(1, "At least one service is required"),
+
+    totalAmount: Yup.number()
+      .typeError("Total amount must be a number")
+      .min(0, "Total amount must be 0 or more"),
   });
 
+  console.log(initialQuoteData)
   return (
     <Stack>
       <Formik
         initialValues={{
-          businessName: initialQuoteData?.businessName || "",
+          businessName: initialQuoteData?.businessDetails.businessName || "",
+          businessIdName: initialQuoteData?.businessDetails? {
+            id: initialQuoteData?.businessDetails.id,
+            name: initialQuoteData?.businessDetails.businessName
+          } : {
+            id: "",
+            name: "",
+          },
           date:
-            initialQuoteData?.date || new Date().toISOString().split("T")[0],
-          firstResponse: initialQuoteData?.firstResponse,
+            initialQuoteData?.date.split("T")[0] || new Date().toISOString().split("T")[0],
+          firstResponse: initialQuoteData?.firstResponse || {
+            id: "",
+            firstName: "",
+            lastName: "",
+          },
+          quoteStatus: initialQuoteData?.quoteStatus || 0,
           vatRate: initialQuoteData?.vatRate || "0",
           amountBeforeVat: initialQuoteData?.amountBeforeVat || 0,
           vatAmount: initialQuoteData?.vatAmount || 0,
@@ -146,7 +189,7 @@ export const QuoteForm = ({
           ],
           totalAmount: initialQuoteData?.totalAmount || 0,
         }}
-        validationSchema={validationSchema}
+        validationSchema={quoteValidationSchema}
         onSubmit={async (values) => {
           try {
             const totalBeforeTax = values.services.reduce(
@@ -223,66 +266,77 @@ export const QuoteForm = ({
                   horizontalAlign="space-between"
                 >
                   <Text>Business Name</Text>
-                  <Stack style={{ position: "relative", width: "70%" }}>
-                    <Field
-                      name="businessName"
-                      placeholder="Business Name"
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setQuery(value);
-                        setFieldValue("businessName", value);
-                      }}
-                      className={input}
-                      style={{
-                        width: "100%",
-                        border: "none",
-                        borderBottom: "1px solid",
-                        borderColor: "rgba(0,0,0,0.1)",
-                        borderRadius: "0",
-                      }}
-                    />
+                  <Field name="businessName">
+                    {({ field, form, meta }) => (
+                      <Stack style={{ position: "relative", width: "70%" }}>
+                        <input
+                          {...field}
+                          autoComplete="off"
+                          placeholder="Business Name"
+                          name=""
+                          className={input}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setQuery(value); // for suggestions
+                            form.setFieldValue("businessName", value); // update value
+                            form.setFieldTouched("businessName", true); // ✅ mark as touched
+                          }}
+                          style={{
+                            width: "100%",
+                            border: "none",
+                            borderBottom: "1px solid",
+                            borderColor: "rgba(0,0,0,0.1)",
+                            borderRadius: "0",
+                          }}
+                        />
 
-                    {suggestions.length > 0 && (
-                      <ul
-                        style={{
-                          position: "absolute",
-                          top: "100%",
-                          left: 0,
-                          right: 0,
-                          background: "#fff",
-                          border: "1px solid #ccc",
-                          zIndex: 10,
-                          listStyle: "none",
-                          margin: 0,
-                          padding: "0",
-                          maxHeight: "150px",
-                          overflowY: "auto",
-                        }}
-                      >
-                        {suggestions.map((s) => (
-                          <li
-                            key={s.id}
-                            onClick={() => {
-                              setFieldValue("businessName", s.name);
-                              setSuggestions([]);
-                            }}
+                        {suggestions.length > 0 && (
+                          <ul
                             style={{
-                              padding: "8px",
-                              cursor: "pointer",
-                              borderBottom: "1px solid #eee",
+                              position: "absolute",
+                              top: "100%",
+                              left: 0,
+                              right: 0,
+                              background: "#fff",
+                              border: "1px solid #ccc",
+                              zIndex: 10,
+                              listStyle: "none",
+                              margin: 0,
+                              padding: "0",
+                              maxHeight: "150px",
+                              overflowY: "auto",
                             }}
                           >
-                            {s.name}
-                          </li>
-                        ))}
-                      </ul>
+                            {suggestions.map((s) => (
+                              <li
+                                key={s.id}
+                                onClick={() => {
+                                  form.setFieldValue("businessIdName", {
+                                    id: s.id,
+                                    name: s.name,
+                                  });
+                                  form.setFieldValue("businessName", s.name);
+                                  form.setFieldTouched("businessName", true); // ✅ ensure touch
+                                  setSuggestions([]);
+                                }}
+                                style={{
+                                  padding: "8px",
+                                  cursor: "pointer",
+                                  borderBottom: "1px solid #eee",
+                                }}
+                              >
+                                {s.name}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {meta.touched && meta.error && (
+                          <div className="error-text">{meta.error}</div> // ✅ error message
+                        )}
+                      </Stack>
                     )}
-                  </Stack>
-                  <ErrorMessage
-                    name="businessName"
-                    component="div"
-                    className="error-text"
-                  />
+                  </Field>
                 </Stack>
 
                 <Stack
@@ -327,22 +381,37 @@ export const QuoteForm = ({
                       <Field
                         as="select"
                         className={input}
-                        name="firstResponse"
+                        name="firstResponse.firstName"
+                        onChange={(e) => {
+                          const userId = e.target.value;
+                          const selectedUser = users.find(
+                            (u) => u.id === userId
+                          );
+                          console.log(selectedUser);
+                          if (selectedUser) {
+                            setFieldValue("firstResponse", {
+                              id: selectedUser.id,
+                              firstName: selectedUser.firstName,
+                              lastName: selectedUser.lastName,
+                            });
+                          }
+                        }}
                         style={{ width: "150px", marginLeft: "10px" }}
                       >
-                        <option>Select</option>
+                        <option>
+                          {values.firstResponse.firstName}{" "}
+                          {values.firstResponse.lastName}{" "}
+                          {!values.firstResponse.firstName && "Select"}
+                        </option>
                         {users &&
                           users.map((user) => (
-                            <option
-                              key={user.id}
-                              value={`${user.firstName} ${user.lastName}`}
-                            >
+                            <option key={user.id} value={user.id}>
                               {user.firstName} {user.lastName}
                             </option>
                           ))}
                       </Field>
                       <ErrorMessage
-                        name="firstResponse"
+                        name="firstResponse.firstName"
                         component="div"
                         className="error-first-response"
                       />
@@ -375,9 +444,9 @@ export const QuoteForm = ({
                 </Stack>
 
                 <FieldArray name="services">
-                  {({ insert, remove, replace}) => (
+                  {({ insert, remove, replace }) => (
                     <>
-                      {values.services.map((_, index) => (
+                      {values.services.map((service, index) => (
                         <Stack tokens={{ childrenGap: 10 }} key={index}>
                           <Stack horizontal>
                             <Stack
@@ -406,8 +475,11 @@ export const QuoteForm = ({
                                   name={`services[${index}].serviceName`}
                                   onClick={fetchService} // no need for arrow function if no arguments
                                   onChange={(e) => {
-                                    const selectedIndex = Number(e.target.value);
-                                    const selectedService = servicesData[selectedIndex];
+                                    const selectedIndex = Number(
+                                      e.target.value
+                                    );
+                                    const selectedService =
+                                      servicesData[selectedIndex];
 
                                     replace(index, {
                                       serviceName: selectedService.name,
@@ -416,17 +488,19 @@ export const QuoteForm = ({
                                     });
                                   }}
                                 >
-                                  <option value="">Select</option>
+                                  <option value="">{values?.services[index].serviceName}{!values?.services[index].serviceName && 'Select'}</option>
 
                                   {!servicesData?.length && (
                                     <option disabled>Loading...</option>
                                   )}
 
-                                  {servicesData?.map((service: IService, i: number) => (
-                                    <option key={i} value={i}>
-                                      {service.name}
-                                    </option>
-                                  ))}
+                                  {servicesData?.map(
+                                    (service: IService, i: number) => (
+                                      <option key={i} value={i}>
+                                        {service.name}
+                                      </option>
+                                    )
+                                  )}
                                 </select>
 
                                 <ErrorMessage
@@ -439,7 +513,6 @@ export const QuoteForm = ({
                                   style={{ width: "30%" }}
                                   name={`services[${index}].description`}
                                   placeholder="Description"
-                                  
                                 />
                                 <ErrorMessage
                                   name={`services[${index}].description`}
@@ -498,7 +571,11 @@ export const QuoteForm = ({
                                   </Text>
                                 </Stack>
 
-                                <Stack horizontal verticalAlign="center" styles={{root: {width: '34%'}}}>
+                                <Stack
+                                  horizontal
+                                  verticalAlign="center"
+                                  styles={{ root: { width: "34%" } }}
+                                >
                                   <Text style={{ paddingRight: "6px" }}>€</Text>
                                   <input
                                     className={input}
@@ -523,35 +600,32 @@ export const QuoteForm = ({
                                 horizontalAlign="end"
                                 tokens={{ childrenGap: 5 }}
                               >
-                                
+                                <Field
+                                  as="select"
+                                  className={input}
+                                  name="vatRate"
+                                  style={{ width: "13%" }}
+                                >
+                                  <option value="0">Vat 0%</option>
+                                  <option value="20">Vat 20%</option>
+                                </Field>
+                                <Stack
+                                  horizontal
+                                  verticalAlign="center"
+                                  tokens={{ childrenGap: 3 }}
+                                  styles={{ root: { width: "35%" } }}
+                                >
+                                  <Text style={{ paddingRight: "6px" }}>€</Text>
                                   <Field
-                                    as="select"
                                     className={input}
-                                    name="vatRate"
-                                    style={{ width: "13%" }}
-                                  >
-                                    <option value="0">Vat 0%</option>
-                                    <option value="20">Vat 20%</option>
-                                  </Field>
-                                  <Stack
-                                    horizontal
-                                    verticalAlign="center"
-                                    tokens={{ childrenGap: 3 }}
-                                    styles={{root: {width:'35%'}}}
-                                  >
-                                    <Text style={{ paddingRight: "6px" }}>
-                                      €
-                                    </Text>
-                                    <Field
-                                      className={input}
-                                      value={vatAmount.toFixed(2)}
-                                      readOnly
-                                      style={{
-                                        backgroundColor: "#f0f0f0",
-                                        width: '100%'
-                                      }}
-                                    />
-                                  </Stack>
+                                    value={vatAmount.toFixed(2)}
+                                    readOnly
+                                    style={{
+                                      backgroundColor: "#f0f0f0",
+                                      width: "100%",
+                                    }}
+                                  />
+                                </Stack>
                               </Stack>
                               <Stack
                                 horizontal

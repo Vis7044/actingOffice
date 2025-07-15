@@ -22,6 +22,7 @@ import SideCanvas from "./SideCanvas";
 import { MdDelete, MdOutlineEdit } from "react-icons/md";
 import type { IQuote } from "../types/projectTypes";
 import { HiOutlineExternalLink } from "react-icons/hi";
+import { QuoteStats } from "./QuoteStats";
 
 const customTheme = createTheme({
   palette: {
@@ -50,12 +51,6 @@ const customTheme = createTheme({
   },
 });
 
-const actions = mergeStyles({
-  display: "flex",
-  alignItems: "center",
-  gap: "5px",
-});
-
 const iconButtons = mergeStyles({
   cursor: "pointer",
   selectors: {
@@ -75,10 +70,10 @@ const deleteButtons = mergeStyles({
 });
 
 const quoteStatusColor = {
-  Accepted: 'rgba(95, 235, 76, 0.56)',
-  Drafted: 'rgba(0,0,0,0.4)',
-  Rejected: 'rgba(177, 54, 54, 0.7)',
-}
+  Accepted: "rgba(96, 153, 89, 0.56)",
+  Drafted: "rgba(0,0,0,0.4)",
+  Rejected: "rgba(177, 54, 54, 0.7)",
+};
 
 const QuoteList = () => {
   const [quoteData, setQuoteData] = useState<IQuote[]>([]);
@@ -180,19 +175,30 @@ const QuoteList = () => {
       onRender: (item: IQuote) => (
         <Stack horizontal verticalAlign="center">
           <Text
-          variant="mediumPlus"
-          styles={{
-            root: {
-              borderRadius: "8px",
-              padding: "4px 8px",
-              cursor: "pointer",
-            },
-          }}
-        >
-          <QuoteDetailSideCanvas id={item.id} item={item.quoteNumber} val="" refreshList={refresh}/>
-          
-        </Text>
-        <Link style={{marginLeft: '2rem'}} to={`/quote/${item.id}`}><HiOutlineExternalLink size={16} /></Link>
+            variant="mediumPlus"
+            styles={{
+              root: {
+                borderRadius: "8px",
+                padding: "4px 8px",
+                cursor: "pointer",
+              },
+            }}
+          >
+            <QuoteDetailSideCanvas
+              id={item.id}
+              item={item.quoteNumber}
+              val=""
+              refreshList={refresh}
+            />
+          </Text>
+          <a
+            href={`/quote/${item.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ marginLeft: "2rem" }}
+          >
+            <HiOutlineExternalLink size={16} />
+          </a>
         </Stack>
       ),
     },
@@ -233,9 +239,9 @@ const QuoteList = () => {
         <Text
           className="clickable-text"
           variant="mediumPlus"
-          onClick={() => navigate(`/client/${item.businessId}`)}
+          onClick={() => navigate(`/client/${item.businessIdName.id}`)}
         >
-          {item.businessName}
+          {item.businessIdName.name}
         </Text>
       ),
     },
@@ -255,7 +261,7 @@ const QuoteList = () => {
       maxWidth: 150,
       isResizable: true,
       onRender: (item: IQuote) => (
-        <Text variant="mediumPlus">{item.firstResponse}</Text>
+        <Text variant="mediumPlus">{item.firstResponse.firstName} {item.firstResponse.lastName}</Text>
       ),
     },
     {
@@ -274,7 +280,7 @@ const QuoteList = () => {
       maxWidth: 200,
       isResizable: true,
       onRender: (item: IQuote) => (
-        <Text variant="mediumPlus">{item.totalAmount}</Text>
+        <Text variant="mediumPlus">€ {item.totalAmount}</Text>
       ),
     },
     {
@@ -293,13 +299,23 @@ const QuoteList = () => {
       maxWidth: 200,
       isResizable: true,
       onRender: (item: IQuote) => (
-        <Text variant="mediumPlus" styles={{root: {
-          padding: '3px 6px',
-          color: 'rgb(29, 32, 32)',
-          backgroundColor: quoteStatusColor[item.quoteStatus as 'Accepted' | 'Rejected' | 'Drafted'],
-          borderRadius: 6,
-          fontWeight: 500
-        }}}>{item.quoteStatus}</Text>
+        <Text
+          variant="mediumPlus"
+          styles={{
+            root: {
+              padding: "3px 6px",
+              color: "rgb(29, 32, 32)",
+              backgroundColor:
+                quoteStatusColor[
+                  item.quoteStatus as "Accepted" | "Rejected" | "Drafted"
+                ],
+              borderRadius: 6,
+              fontWeight: 400,
+            },
+          }}
+        >
+          {item.quoteStatus}
+        </Text>
       ),
     },
     {
@@ -321,7 +337,12 @@ const QuoteList = () => {
         <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 5 }}>
           <Text className={iconButtons}>
             {" "}
-            <QuoteDetailSideCanvas id={item.id} item={""} val={<FaShare /> } refreshList={refresh} />
+            <QuoteDetailSideCanvas
+              id={item.id}
+              item={""}
+              val={<FaShare />}
+              refreshList={refresh}
+            />
           </Text>
           <SideCanvas
             name={
@@ -355,6 +376,7 @@ const QuoteList = () => {
         refreshIcon={refreshIcon}
         updateFilter={updateFilter}
       />
+      <QuoteStats refreshList={refreshList} />
       {quoteData.length == 0 && (
         <Text
           variant="large"
@@ -367,7 +389,7 @@ const QuoteList = () => {
             },
           }}
         >
-          No Data Found Add a Quote
+          No Data Found
         </Text>
       )}
 

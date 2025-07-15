@@ -99,7 +99,7 @@ export const CommandBarNav = ({
     value: "",
   });
   const location = useLocation();
-  const [userOptions, setUserOptions] = React.useState<string[]>([]);
+  const [userOptions, setUserOptions] = React.useState<{id:string,name:string}[]>([]);
 
   return (
     <Stack horizontal verticalAlign="center" horizontalAlign="space-between" styles={{root: {padding: "0px 20px 3px 20px",
@@ -235,10 +235,11 @@ export const CommandBarNav = ({
                   React.useEffect(()=>{
                     async function  fetchUsers () {
                       const resp = await axiosInstance.get('/Auth/get');
-                      const users = resp.data;
+                      
+                      const users: {id:string,firstName:string,lastName:string}[] = resp.data;
 
                       // Extract or format the values you want from users
-                      const formatted = users.map((u: any) => `${u.firstName} ${u.lastName}`); 
+                      const formatted = users.map((u: {id:string,firstName:string,lastName:string}) => {return {id:u.id,name:`${u.firstName} ${u.lastName}`}}); 
                       setUserOptions(formatted);
                       console.log(users)
                     }
@@ -285,7 +286,7 @@ export const CommandBarNav = ({
                           >
                             <option value={""}>Select Value</option>
                             {userOptions.map((val) => {
-                              return <option value={val}>{val}</option>;
+                              return <option value={val.id}>{val.name}</option>;
                             })}
                           </Field>
                         </Stack>
@@ -306,7 +307,8 @@ export const CommandBarNav = ({
                           <PrimaryButton
                             onClick={() => {
                               updateFilter(props.values);
-                              setSelectedFilter(props.values);
+                              const selectedUser = userOptions.find((u) => u.id == props.values.value);
+                              setSelectedFilter({criteria: props.values.criteria, value: selectedUser?.name || ""});
                               toggleIsCalloutVisible();
                             }}
                           >
@@ -331,7 +333,7 @@ export const CommandBarNav = ({
                           }}
                         >
                           <option value={""}>Select Category</option>
-                          <option value="type">Business Type</option>
+                          <option value="Type">Business Type</option>
                           <option value="green">Green</option>
                           <option value="blue">Blue</option>
                         </Field>
