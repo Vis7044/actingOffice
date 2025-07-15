@@ -1,4 +1,6 @@
 ﻿using backend.Dtos.QuoteDto;
+using backend.Models;
+using backend.services;
 using backend.services.interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -56,7 +58,7 @@ namespace backend.Controllers
         /// </summary>
         /// <param name="quoteId"></param>
         /// <returns></returns>
-
+        [AllowAnonymous]
         [HttpGet("get/{quoteId}")]
         public async Task<IActionResult> GetQuoteByIdAsync([FromRoute] string quoteId)
         {
@@ -73,7 +75,7 @@ namespace backend.Controllers
 
 
         [HttpPut("update/{quoteId}")]
-        public async Task<IActionResult> UpdateQuoteAsync([FromRoute] string quoteId, [FromBody] CreateQuoteDto dto)
+        public async Task<IActionResult> UpdateQuoteAsync([FromRoute] string quoteId, [FromBody] QuoteModel dto)
         {
             try
             {
@@ -99,5 +101,21 @@ namespace backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("get/stats")]
+        public async Task<IActionResult> GetQuoteStats()
+        {
+            var stats = await _quoteservice.GetQuoteStats(GetRole(),GetUserId());
+
+            if (stats == null)
+            {
+                return NotFound("No quotes found.");
+            }
+
+            return Ok(stats);
+        }
+
+
+
     }
 }
