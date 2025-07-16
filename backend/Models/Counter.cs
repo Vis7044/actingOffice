@@ -9,7 +9,6 @@ namespace backend.Models
         [BsonRepresentation(BsonType.String)]
         public string Id { get; set; } = string.Empty;  // e.g. "client"
 
-        [BsonElement("value")]
         public int Value { get; set; }
     }
 }

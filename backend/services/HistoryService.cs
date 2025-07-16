@@ -13,8 +13,12 @@ namespace backend.services
         public HistoryService(MongoDbContext context)
         {
             _context = context;
-        }   
-
+        }
+        /// <summary>
+        /// method to create a client history   
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         public async Task<string> CreateClientHistoryAsync(History dto)
         {
             

@@ -1,5 +1,6 @@
 ﻿using backend.Data;
 using backend.Dtos.ClientDto;
+using backend.Enums;
 using backend.helper;
 using backend.Models;
 using backend.services.interfaces;
@@ -49,7 +50,7 @@ namespace backend.services
                 throw new Exception("Client with this business name "+client.BusinessName+" already exists ");
             }
             int sequence = await _sequenceService.GetNextSequenceAsync("client");
-            
+            var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();    
 
             // Create a new client model from the DTO
             var clientData = new ClientModel
@@ -58,7 +59,12 @@ namespace backend.services
                 BusinessName = client.BusinessName,
                 Type = client.Type,
                 Address = client.Address,
-                UserId = userId
+                CreatedBy = new CreatedBy
+                {
+                    UserId = userId,
+                    FirstName = user?.FirstName ?? "Unknown",
+                    LastName = user?.LastName ?? "Unknown",
+                },
             };
             
             try
@@ -66,11 +72,16 @@ namespace backend.services
                 await _client.InsertOneAsync(clientData);
                 var history = new History
                 {
-                    Action = "created",
-                    DateTime = DateTime.UtcNow,
-                    UserId = userId,
+                    Action = HistoryAction.Created,
+                    CreatedBy = new CreatedBy
+                    {
+                        UserId = userId,
+                        FirstName = user?.FirstName ?? "Unknown",
+                        LastName = user?.LastName ?? "Unknown",
+                        DateTime = DateTime.UtcNow
+                    },
                     Description = $"Client {client.BusinessName} created",
-                    Target =
+                    Target = new Target
                     {
                         Id = clientData.Id,
                         Name = clientData.BusinessName,
@@ -109,46 +120,57 @@ namespace backend.services
 
             // Create match filter
             var filters = new BsonDocument();
+            
 
-            if (role != "Admin")
+            if (role != UserRole.Admin.ToString())
             {
-                filters.Add("userId", new ObjectId(userId));
+                filters.Add("CreatedBy.UserId", new ObjectId(userId));
             }
-            if (!string.IsNullOrEmpty(criteria) && !string.IsNullOrEmpty(value))
-            {
-                
-                 filters.Add(criteria, new BsonDocument { { "$regex", value }, { "$options", "i" } });
-                    
-            }
+            filters.Add("IsDeleted", new BsonDocument("$ne", IsDeleted.Inactive));
 
-            if (!string.IsNullOrEmpty(search))
+            // filter based on criteria and value
+            if (Enum.TryParse<BusinessType>(value, out var enumValue))
             {
-                filters.Add("$or", new BsonArray
-                {
-                    new BsonDocument("businessName", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
-                    new BsonDocument("type", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
-                   
-                });
+                int typeInt = (int)enumValue;
+                filters.Add(criteria, typeInt);
             }
             
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var orConditions = new BsonArray
+                {
+                    new BsonDocument("BusinessName", new BsonDocument
+                    {
+                        { "$regex", search },
+                        { "$options", "i" }
+                    })
+                };
+
+                if (Enum.TryParse<BusinessType>(search, out var businessType))
+                {
+                    orConditions.Add(new BsonDocument("Type", (int)businessType));
+                }
+
+                filters.Add("$or", orConditions);
+            }
 
             // MongoDB aggregation pipeline
             var pipeline = new BsonDocument[]
             {
                 new BsonDocument("$match", filters),
-                new BsonDocument("$sort", new BsonDocument("createdOn", -1)),
+                new BsonDocument("$sort", new BsonDocument("CreatedOn", -1)),
                 new BsonDocument("$skip", skip),
                 new BsonDocument("$limit", pageSize),
                 new BsonDocument("$project", new BsonDocument
                 {
-                    { "clientId", 1 },
-                    { "businessName", 1 },
-                    { "type", 1 },
-                    { "createdOn", 1 },
-                    { "userId", 1 },
+                    { "ClientId", 1 },
+                    { "BusinessName", 1 },
+                    { "Type", 1 },
+                    { "CreatedOn", 1 },
+                    { "CreatedBy", 1 },
                 })
             };
-
+            
             try
             {
                 var result = await _client.Aggregate<ClientModel>(pipeline).ToListAsync();
@@ -187,7 +209,7 @@ namespace backend.services
 
             var historyWithUsers = history.Select(h =>
             {
-                var user = _users.Find(u => u.Id == h.UserId).FirstOrDefault();
+                var user = _users.Find(u => u.Id == h.CreatedBy.UserId).FirstOrDefault();
                 return new HistoryWithUser
                 {
                     History = h,
@@ -204,7 +226,7 @@ namespace backend.services
 
         public async Task<List<ClientModel>> SearchByBusinessNameAsync(string query)
         {
-            var filter = Builders<ClientModel>.Filter.Regex("businessName", new BsonRegularExpression(query, "i"));
+            var filter = Builders<ClientModel>.Filter.Regex("BusinessName", new BsonRegularExpression(query, "i"));
             var projection = Builders<ClientModel>.Projection.Include(x => x.BusinessName);
             var result = await _client
                 .Find(filter)
@@ -222,7 +244,7 @@ namespace backend.services
             {
                 if(role != "Admin" )
                 {
-                    var existingClient = await _client.Find(c => c.Id == businessId && c.UserId == userId).FirstOrDefaultAsync();
+                    var existingClient = await _client.Find(c => c.Id == businessId && c.CreatedBy.UserId == userId).FirstOrDefaultAsync();
                     if (existingClient == null)
                     {
                         return "You do not have permission to update this client.";
@@ -289,13 +311,24 @@ namespace backend.services
                     ? string.Join("; ", changes.Select(c => $"{c.Key}: {c.Value}"))
                     : "No significant changes detected";
 
+                var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+
+                if (result.MatchedCount == 0)
+                {
+                    return "No client found to update.";
+                }
                 var history = new History
                 {
-                    Action = "updated",
-                    DateTime = DateTime.UtcNow,
-                    UserId = userId,
+                    Action = HistoryAction.Updated,
+                    CreatedBy = new CreatedBy
+                    {
+                        UserId = userId,
+                        FirstName =user.FirstName  ?? "Unknown",
+                        LastName = user.LastName ?? "Unknown",
+                        DateTime = DateTime.UtcNow
+                    },
                     Description = $"Client updated: {changesSummary}",
-                    Target = new TargetDto
+                    Target = new Target
                     {
                         Id = clientBeforeUpdate.Id,
                         Name = clientBeforeUpdate.BusinessName
@@ -303,11 +336,6 @@ namespace backend.services
                 };
 
                 var historyId = await _history.CreateClientHistoryAsync(history);
-
-                if (result.MatchedCount == 0)
-                {
-                    return "No client found to update.";
-                }
 
                 return "Client updated successfully";
             }
@@ -321,9 +349,9 @@ namespace backend.services
         {
             try
             {
-                if (role != "Admin")
+                if (role != UserRole.Admin.ToString())
                 {
-                    var existingClient = await _client.Find(c => c.Id == businessId && c.UserId == userId).FirstOrDefaultAsync();
+                    var existingClient = await _client.Find(c => c.Id == businessId && c.CreatedBy.UserId == userId).FirstOrDefaultAsync();
                     if (existingClient == null)
                     {
                         return "You do not have permission to update this client.";
@@ -336,15 +364,34 @@ namespace backend.services
                 {
                     return "Client not found.";
                 }
-
-                var historyFilter = Builders<History>.Filter.Eq(h => h.Target.Id, client.Id);
-                await _historyDb.DeleteManyAsync(historyFilter);
-
-                var result = await _client.DeleteOneAsync(filter);
-                if (result.DeletedCount == 0)
+                var result = await _client.UpdateOneAsync(
+                    filter,
+                    Builders<ClientModel>.Update.Set(c => c.IsDeleted, IsDeleted.Inactive)
+                );  
+                if (result.ModifiedCount == 0)
                 {
                     throw new Exception("No client found to delete.");
                 }
+                var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+                var history = new History
+                {
+                    Action = HistoryAction.Deleted,
+                    CreatedBy = new CreatedBy
+                    {
+                        UserId = userId,
+                        FirstName = user?.FirstName ?? "Unknown",
+                        LastName = user?.LastName ?? "Unknown", 
+                        DateTime = DateTime.UtcNow
+                    },
+                    Description = $"Client Marked InActive",
+                    Target = new Target
+                    {
+                        Id = client.Id,
+                        Name = client.BusinessName
+                    }
+                };
+
+                var historyId = await _history.CreateClientHistoryAsync(history);
                 return "deleted Successfully";
             }
             catch (Exception ex)

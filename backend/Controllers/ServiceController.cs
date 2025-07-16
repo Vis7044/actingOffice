@@ -1,4 +1,5 @@
 ﻿using backend.Data;
+using backend.Enums;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -42,6 +43,7 @@ namespace backend.Controllers
             {
                 return BadRequest("Service with this name already exists.");
             }
+            var user = await _dbContext.Users.Find(u => u.Id == GetUserId()).FirstOrDefaultAsync();
             try
             {
                 var userId = GetUserId();
@@ -50,7 +52,13 @@ namespace backend.Controllers
                     Name = service.Name,
                     Description = service.Description,
                     Amount = service.Amount,
-                    UserId = userId,
+                    CreatedBy = new CreatedBy
+                    {
+                        UserId = userId,
+                        FirstName = user?.FirstName ?? "Unknown User",
+                        LastName = user?.LastName ?? "Unknown User",
+                        
+                    }
                 };
                 await _serviceCollection.InsertOneAsync(newSerivce);
                 return Ok(new { message = "Service created successfully", serviceId = newSerivce.Id });
@@ -68,9 +76,9 @@ namespace backend.Controllers
             {
 
                 var filter = new BsonDocument();
-                if (GetRole() != "Admin")
+                if (GetRole() != UserRole.Admin.ToString())
                 {
-                    filter.Add("userId", GetUserId());
+                    filter.Add("CreatedBy.UserId",new ObjectId(GetUserId()));
                 }
                 var result = await _serviceCollection.Find(filter).ToListAsync();
                 return Ok(result);

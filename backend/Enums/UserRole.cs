@@ -2,7 +2,7 @@
 
 namespace backend.Enums
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    
     public enum UserRole
     {
         User,
