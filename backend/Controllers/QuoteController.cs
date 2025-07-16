@@ -20,12 +20,23 @@ namespace backend.Controllers
         {
             _quoteservice = quoteService;
         }
+        /// <summary>
+        /// get the user id from the claims
+        /// </summary>
+        /// <returns></returns>
         private string GetUserId() =>
            User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
-
+        /// <summary>
+        /// get the role of the user from the claims
+        /// </summary>
+        /// <returns></returns>
         private string? GetRole() =>
             User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-
+        /// <summary>
+        /// create a new quote
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost("create")]
         public async Task<IActionResult> CreateQuoteAsync([FromBody] CreateQuoteDto dto)
         {
@@ -39,7 +50,15 @@ namespace backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        /// <summary>
+        /// get all quotes with pagination and search functionality
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="searchTerm"></param>
+        /// <param name="criteria"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         [HttpGet("get")]
         public async Task<IActionResult> GetAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "",[FromQuery] string criteria = "",[FromQuery] string value = "")
         {
@@ -73,7 +92,12 @@ namespace backend.Controllers
             }
         }
 
-
+        /// <summary>
+        /// update a quote
+        /// </summary>
+        /// <param name="quoteId"></param>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPut("update/{quoteId}")]
         public async Task<IActionResult> UpdateQuoteAsync([FromRoute] string quoteId, [FromBody] QuoteModel dto)
         {
@@ -101,7 +125,10 @@ namespace backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        /// <summary>
+        /// get quote stats
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("get/stats")]
         public async Task<IActionResult> GetQuoteStats()
         {

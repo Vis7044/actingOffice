@@ -30,6 +30,11 @@ namespace backend.Controllers
         private string? GetRole() =>
             User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
 
+        /// <summary>
+        /// create a new service
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
         [HttpPost("create")]
         public async Task<IActionResult> CreateService([FromBody] Service service)
         {
@@ -68,7 +73,13 @@ namespace backend.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error creating service: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// get all services
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="searchTerm"></param>
+        /// <returns></returns>
         [HttpGet("get")]
         public async Task<IActionResult> GetServices([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "")
         {
@@ -80,12 +91,109 @@ namespace backend.Controllers
                 {
                     filter.Add("CreatedBy.UserId",new ObjectId(GetUserId()));
                 }
+                if(!string.IsNullOrEmpty(searchTerm))
+                {
+                    filter.Add("$or", new BsonArray
+                    {
+                        new BsonDocument("Name", new BsonDocument { { "$regex", searchTerm }, { "$options", "i" } }),
+                        new BsonDocument("Description", new BsonDocument { { "$regex", searchTerm }, { "$options", "i" } })
+                    });
+                }
+                filter.Add("IsDeleted", IsDeleted.Active);
                 var result = await _serviceCollection.Find(filter).ToListAsync();
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error retrieving services: {ex.Message}");
+            }
+        }
+        /// <summary>
+        /// return service by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet("get/{id}")]
+        public async Task<IActionResult> GetServiceById(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Service ID is required.");
+            }
+            var service = await _serviceCollection.Find(s => s.Id == id).FirstOrDefaultAsync();
+            if (service == null)
+            {
+                return NotFound("Service not found.");
+            }
+            return Ok(service);
+        }
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateServiceAsync(string id, [FromBody] Service service)
+        {
+            if (string.IsNullOrEmpty(id) || service == null)
+            {
+                return BadRequest("Invalid service data.");
+            }
+            if (GetRole() != UserRole.Admin.ToString())
+            {
+                var existingService = await _serviceCollection.Find(s => s.Id == id && s.CreatedBy.UserId == GetUserId()).FirstOrDefaultAsync();
+                if (existingService == null)
+                {
+                    return NotFound("Service not found or you do not have permission to update this service.");
+                }
+            }
+            try
+            {
+                var filter = Builders<Service>.Filter.Eq(c => c.Id, id);
+                var update = Builders<Service>.Update
+                    .Set(s => s.Name, service.Name)
+                    .Set(s => s.Description, service.Description)
+                    .Set(s => s.Amount, service.Amount);
+                var result = await _serviceCollection.UpdateOneAsync(filter, update);
+                if (result.ModifiedCount == 0)
+                {
+                    return NotFound("No service found to update.");
+                }
+                return Ok("Service updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error updating service: {ex.Message}");
+            }
+        }
+        /// <summary>
+        /// soft delete service by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPost("delete/{id}")]
+        public async Task<IActionResult> DeleteServiceAsycn(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return BadRequest("Service ID is required.");
+            }
+            if (GetRole() != UserRole.Admin.ToString())
+            {
+                var service = await _serviceCollection.Find(s => s.Id == id && s.CreatedBy.UserId == GetUserId()).FirstOrDefaultAsync();
+                if (service == null)
+                {
+                    return NotFound("Service not found or you do not have permission to delete this service.");
+                }
+            }  
+            try
+            {
+                var filter = Builders<Service>.Filter.Eq(c => c.Id, id);
+                var result = await _serviceCollection.UpdateOneAsync(filter, Builders<Service>.Update.Set(x => x.IsDeleted, IsDeleted.Inactive));
+                if (result.ModifiedCount == 0)
+                {
+                    throw new Exception("No client found to delete.");
+                }
+                return Ok("Service deleted successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error deleting service: {ex.Message}");
             }
         }
     }
