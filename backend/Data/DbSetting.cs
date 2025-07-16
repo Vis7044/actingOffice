@@ -1,5 +1,8 @@
 ﻿namespace backend.Data
 {
+    /// <summary>
+    /// db setting class to hold database connection information
+    /// </summary>
     public class DbSetting
     {
         public string ConnectionString { get; set; } = string.Empty;
