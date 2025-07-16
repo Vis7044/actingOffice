@@ -1,32 +1,18 @@
-import React, { useEffect, useState } from "react";
-import {
-  Formik,
-  Form,
-  Field,
-  ErrorMessage,
-} from "formik";
+
+import { Formik, Form, Field, ErrorMessage } from "formik";
 import { mergeStyles, Stack, Text } from "@fluentui/react";
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
-import { AxiosError } from "axios";
 import { FaSave } from "react-icons/fa";
-
-interface IService {
-    name: string;
-    description: string;
-    amount: number;
-    userId: string
-}
-
 
 const input = mergeStyles({
   border: "1px solid #909090",
   outline: "none",
   padding: "4px",
   fontSize: "14px",
-  color: 'rgba(0,0,0,0.9)',
+  color: "rgba(0,0,0,0.9)",
   borderRadius: "5px",
-  width: '90%',
+  width: "90%",
   transition: "border 0.3s ease, border-color 0.3s ease",
   selectors: {
     ":hover": {
@@ -35,66 +21,85 @@ const input = mergeStyles({
     },
   },
 });
+interface IService {
+  key: number;
+  name: string;
+  description: string;
+  amount: number;
+  userId: string;
+}
 
 export const ItemForm = ({
   refreshLIst,
   handleClose,
   initialServiceData,
+  isEdit,
+  itemId
 }: {
   refreshLIst: () => void;
   handleClose: () => void;
   initialServiceData?: IService;
+  isEdit?: boolean;
+  itemId?:string
 }) => {
   const validateYupSchema = Yup.object().shape({
     name: Yup.string().required("Type is required"),
     description: Yup.string().required("Business name is required"),
-    amount: Yup.number().required("Enter Amount")
+    amount: Yup.number().required("Enter Amount"),
   });
 
-  const [error, setError] = useState(null);
-  
+
   return (
     <div>
       <Formik
         initialValues={{
           name: initialServiceData?.name || "",
           description: initialServiceData?.description || "",
-          amount: initialServiceData?.amount || 0
+          amount: initialServiceData?.amount || 0,
         }}
         validationSchema={validateYupSchema}
         onSubmit={async (values) => {
           try {
-            const result = await axiosInstance.post(
-              `/Service/create`,
-              values
-            );
-            if (result.data) {
-              refreshLIst();
-              handleClose();
+            if (!isEdit) {
+              const result = await axiosInstance.post(
+                `/Service/create`,
+                values
+              );
+              if (result.data) {
+                refreshLIst();
+                handleClose();
+              }
+            } else {
+              const result = await axiosInstance.put(
+                `Service/update/${itemId}`, values
+              );
+              if (result.data) {
+                refreshLIst();
+                handleClose();
+              }
             }
           } catch (error) {
-            
-            console.log(error)
+            console.log(error);
           }
         }}
       >
-        {({ values }) => (
+        {() => (
           <Form>
-            <Stack horizontal horizontalAlign="space-between" styles={{root: {width: '100%'}}}>   
-              <Stack styles={{root: {width: '60%'}}}>
+            <Stack
+              horizontal
+              horizontalAlign="space-between"
+              styles={{ root: { width: "100%" } }}
+            >
+              <Stack styles={{ root: { width: "60%" } }}>
                 <Text>Business Name</Text>
-                <Field
-                  className={input}
-                  name={`name`}
-                  placeholder="Name"
-                />
+                <Field className={input} name={`name`} placeholder="Name" />
                 <ErrorMessage
                   name={`name`}
                   component="div"
-                  style={{ color: "red" }}
+                  className="error"
                 />
               </Stack>
-              <Stack styles={{root: {width: '60%'}}}>
+              <Stack styles={{ root: { width: "60%" } }}>
                 <Text>Description</Text>
                 <Field
                   className={input}
@@ -104,24 +109,20 @@ export const ItemForm = ({
                 <ErrorMessage
                   name={`description`}
                   component="div"
-                  style={{ color: "red" }}
+                  className="error"
                 />
               </Stack>
-              <Stack styles={{root: {width: '60%'}}}>
+              <Stack styles={{ root: { width: "60%" } }}>
                 <Text>Amount</Text>
-                <Field
-                  className={input}
-                  name={`amount`}
-                  placeholder="Amount"
-                />
+                <Field className={input} name={`amount`} placeholder="Amount" />
                 <ErrorMessage
                   name={`amount`}
                   component="div"
-                  style={{ color: "red" }}
+                  className="error"
                 />
               </Stack>
             </Stack>
-            {error && <div style={{ color: "red" }}>{error}</div>}
+            
             <button
               type="submit"
               style={{

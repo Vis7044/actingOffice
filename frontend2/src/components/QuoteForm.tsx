@@ -88,7 +88,6 @@ export const QuoteForm = ({
       try {
         const res = await axiosInstance.get(`/Client/search?query=${query}`);
         setSuggestions(res.data);
-        console.log("Suggestions fetched:", res.data);
       } catch (err) {
         console.error("Error fetching suggestions", err);
       }
@@ -156,7 +155,6 @@ export const QuoteForm = ({
       .min(0, "Total amount must be 0 or more"),
   });
 
-  console.log(initialQuoteData)
   return (
     <Stack>
       <Formik
@@ -207,18 +205,15 @@ export const QuoteForm = ({
               vatAmount,
               amountBeforeVat: totalBeforeTax,
             };
-            console.log("Payload to be sent:", payload);
             try {
               if (!isEdit) {
                 await axiosInstance.post("/Quote/create", payload);
-                console.log("Quote created successfully:", payload);
               }
               if (isEdit) {
                 await axiosInstance.put(
                   `/Quote/update/${initialQuoteData?.id}`,
                   payload
                 );
-                console.log("quote updated successfully");
               }
 
               refreshLIst();
@@ -226,7 +221,6 @@ export const QuoteForm = ({
             } catch (error) {
               const axiosError: AxiosError<unknown, unknown> =
                 error as AxiosError;
-              console.log(axiosError.response?.data);
               setError(axiosError.response?.data as string);
             }
           } catch (error) {
@@ -387,7 +381,6 @@ export const QuoteForm = ({
                           const selectedUser = users.find(
                             (u) => u.id === userId
                           );
-                          console.log(selectedUser);
                           if (selectedUser) {
                             setFieldValue("firstResponse", {
                               id: selectedUser.id,

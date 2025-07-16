@@ -27,7 +27,9 @@ interface IClient {
   status: string;
   address: ClientAddress;
   history: [];
-  createdOn: Date;
+  createdBy: {
+    dateTime: Date
+  }
 }
 
 interface ClientAddress {
@@ -46,7 +48,9 @@ export interface IUser {
 
 export interface IClientHistory {
   id: string;
-  dateTime: string;
+  createdBy: {
+    dateTime: Date
+  },
   action: string;
   description: string;
   target: {
@@ -59,11 +63,6 @@ interface IClientHistoryWithUser {
   history: IClientHistory;
   user: IUser;
 }
-
-const actionSection = mergeStyles({
-  marginTop: "10px",
-  gap: "5px",
-});
 
 const iconButtons = mergeStyles({
   cursor: "pointer",
@@ -86,7 +85,6 @@ export const ClientDetails = () => {
       const resp = await axiosInstance.get(`/Client/getClient/${id}`);
       setClient(resp.data?.client);
       setHistory(resp.data?.historyWithUsers);
-      console.log(resp.data, "data");
     } catch (err) {
       console.error(err);
       setError("Failed to load client details.");
@@ -240,7 +238,7 @@ export const ClientDetails = () => {
                       Incorporated Date
                     </Text>
                     <Text>
-                      {new Date(client.createdOn).toLocaleDateString()}
+                      {new Date(client.createdBy.dateTime.toString().split("T")[0]).toLocaleDateString()}
                     </Text>
                   </Stack>
                   <Stack>
@@ -272,7 +270,7 @@ export const ClientDetails = () => {
               {history.map((item, index) => (
                 <Stack key={index} styles={{root:{ width: "300px" }}}>
                   <Text>
-                    at {new Date(item.history.dateTime).toLocaleString()} by{" "}
+                    at {new Date(item.history.createdBy.dateTime.toString()).toLocaleString()} by{" "}
                     <strong>
                       {item.user.firstName} {item.user.lastName}
                     </strong>

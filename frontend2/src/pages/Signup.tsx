@@ -122,9 +122,7 @@
       onSubmit: async (values, { setSubmitting, resetForm }) => {
     try {
       setSubmitting(true);
-      const res = await axiosInstance.post("/Auth/register", values);
-      console.log(res.data)
-      console.log("Registration Successful:", res.data);
+      await axiosInstance.post("/Auth/register", values);
       resetForm();
       navigate('/login');
     } catch (error) {

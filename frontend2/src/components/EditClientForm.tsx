@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react";
+
 import {
   Formik,
   Form,
   Field,
-  FieldArray,
   ErrorMessage,
-  validateYupSchema,
 } from "formik";
 import { mergeStyles, Stack, Text } from "@fluentui/react";
-import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
+import { FaSave } from "react-icons/fa";
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
-import axios from "axios";
 
 interface IAddress {
   building: string;
@@ -71,12 +68,7 @@ export const EditClientForm = ({
     }),
   });
 
-  const [error, setError] = useState(null);
-  console.log(initialClientData);
 
-  // if(initialClientData === null) return <div>loading</div>
-
-  console.log(initialClientData);
   return (
     <div>
       <Formik
@@ -108,7 +100,7 @@ export const EditClientForm = ({
           }
         }}
       >
-        {({ values }) => (
+        {() => (
           <Form>
             <Stack horizontal horizontalAlign="space-between" styles={{root: {width: '100%'}}}>
               <Stack styles={{root: {width: '40%'}}}>
@@ -126,7 +118,7 @@ export const EditClientForm = ({
                 <ErrorMessage
                   name={`type`}
                   component="div"
-                  style={{ color: "red" }}
+                  className="error"
                 />
               </Stack>
 
@@ -140,7 +132,7 @@ export const EditClientForm = ({
                 <ErrorMessage
                   name={`businessName`}
                   component="div"
-                  style={{ color: "red" }}
+                  className="error"
                 />
               </Stack>
             </Stack>
@@ -161,7 +153,7 @@ export const EditClientForm = ({
                   <ErrorMessage
                     name={`address.building`}
                     component="div"
-                    style={{ color: "red" }}
+                    className="error"
                   />
                 </Stack>
                 <Stack styles={{ root: {width: "50%" } }}>
@@ -173,7 +165,7 @@ export const EditClientForm = ({
                   <ErrorMessage
                     name={`address.street`}
                     component="div"
-                    style={{ color: "red" }}
+                    className="error"
                   />
                 </Stack>
               </Stack>
@@ -192,7 +184,7 @@ export const EditClientForm = ({
                   <ErrorMessage
                     name={`address.city`}
                     component="div"
-                    style={{ color: "red" }}
+                    className="error"
                   />
                 </Stack>
                 <Stack styles={{ root: {width: "50%" } }}>
@@ -204,7 +196,7 @@ export const EditClientForm = ({
                   <ErrorMessage
                     name={`address.state`}
                     component="div"
-                    style={{ color: "red" }}
+                    className="error"
                   />
                 </Stack>
               </Stack>
@@ -223,7 +215,7 @@ export const EditClientForm = ({
                   <ErrorMessage
                     name={`address.pinCode`}
                     component="div"
-                    style={{ color: "red" }}
+                    className="error"
                   />
                 </Stack>
                 <Stack styles={{ root: {width: "50%" } }}>
@@ -235,13 +227,12 @@ export const EditClientForm = ({
                   <ErrorMessage
                     name={`address.country`}
                     component="div"
-                    style={{ color: "red" }}
+                    className="error"
                   />
                 </Stack>
               </Stack>
             </Stack>
 
-            {error && <div style={{ color: "red" }}>{error}</div>}
             <button
               type="submit"
               style={{

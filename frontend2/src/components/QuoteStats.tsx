@@ -19,14 +19,13 @@ interface IQuoteStat {
   totalRejected: number;
 }
 
-export const QuoteStats = ({refreshList}) => {
+export const QuoteStats = ({refreshList}:{refreshList: boolean}) => {
   const [quoteStats, setQuoteStats] = useState<IQuoteStat | null>(null);
 
 
 
   const fetchData = async () => {
     const resp = await axiosInstance.get("/Quote/get/stats");
-    console.log(resp.data);
     setQuoteStats(resp.data);
   };
   
@@ -35,7 +34,7 @@ export const QuoteStats = ({refreshList}) => {
     fetchData();
   }, [refreshList]);
   return (
-    <div className="ms-Grid" >
+    <div className="ms-Grid">
       <Stack horizontal className="ms-Grid-row">
         <Stack
           verticalAlign="space-between"

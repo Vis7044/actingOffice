@@ -84,11 +84,13 @@ export const CommandBarNav = ({
   updateSearch,
   refreshIcon,
   updateFilter,
+  updateStatus
 }: {
   refreshLIst: () => void;
   updateSearch: (search: string) => void;
   refreshIcon: boolean;
   updateFilter: (filter: { criteria: string; value: string }) => void;
+  updateStatus?: React.Dispatch<React.SetStateAction<string>>
 }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isCalloutVisible, { toggle: toggleIsCalloutVisible }] =
@@ -98,6 +100,9 @@ export const CommandBarNav = ({
     criteria: "",
     value: "",
   });
+
+  const [status, setStatus] = useState("Active")
+  const [activeStatus,setActiveStatus] = useState(false)
   const location = useLocation();
   const [userOptions, setUserOptions] = React.useState<{id:string,name:string}[]>([]);
 
@@ -155,9 +160,14 @@ export const CommandBarNav = ({
               borderRadius: "20px",
               cursor: "pointer",
             }}}
+            id={activeStatus?`${buttonId}`:'abcd'}
+              onClick={() => {
+                setActiveStatus(true)
+                toggleIsCalloutVisible()
+              }}
           >
             <Text>
-              Status = <span style={{ fontWeight: "bold" }}>Active</span>
+              Status = <span style={{ fontWeight: "bold" }}>{status?status:'Active'}</span>
             </Text>
           </Stack>
         )}
@@ -203,8 +213,11 @@ export const CommandBarNav = ({
                 borderRadius: "20px",
                 cursor: "pointer",
               }}}
-              id={buttonId}
-              onClick={() => toggleIsCalloutVisible()}
+              id={!activeStatus ? `${buttonId}`:"abcd"}
+              onClick={() => {
+                setActiveStatus(false)
+                toggleIsCalloutVisible()
+              }}
             >
               <CiFilter size={20} color="rgb(7, 84, 250)" />
               <Text>Add Filter</Text>
@@ -227,8 +240,9 @@ export const CommandBarNav = ({
                 initialValues={{
                   criteria: "",
                   value: "",
+                  status: "Active",
                 }}
-                onSubmit={(values) => {}}
+                onSubmit={() => {}}
               >
                 {(props: FormikProps<any>) => {
                   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -241,7 +255,6 @@ export const CommandBarNav = ({
                       // Extract or format the values you want from users
                       const formatted = users.map((u: {id:string,firstName:string,lastName:string}) => {return {id:u.id,name:`${u.firstName} ${u.lastName}`}}); 
                       setUserOptions(formatted);
-                      console.log(users)
                     }
                     if (props.values.criteria === "FirstResponse") {
                       fetchUsers();
@@ -320,7 +333,7 @@ export const CommandBarNav = ({
                   ) : (
                     <Form>
                       <Stack style={{}}>
-                        <Text>Criteria: </Text>
+                        {!activeStatus && <><Text>Criteria: </Text>
                         <Field
                           as="select"
                           name="criteria"
@@ -336,9 +349,25 @@ export const CommandBarNav = ({
                           <option value="Type">Business Type</option>
                           <option value="green">Green</option>
                           <option value="blue">Blue</option>
-                        </Field>
+                        </Field></>}
+                        {activeStatus && <><Text>Values: </Text>
+                        <Field
+                          as="select"
+                          name="status"
+                          style={{
+                            width: "100%",
+                            border: "1px solid",
+                            borderColor: "rgba(0,0,0,0.3)",
+                            borderRadius: "5px",
+                            padding: "4px 5px",
+                          }}
+                        >
+                          <option value="Active" >Active</option>
+                          <option value="All">All</option>
+                          <option value="Inactive">InActive</option>
+                        </Field></>}
                       </Stack>
-                      {props.values.criteria !== "" && (
+                      {props.values.criteria !== "" && !activeStatus && (
                         <Stack styles={{ root:{marginTop: "10px"} }}>
                           <Text>Value: </Text>
                           <Field
@@ -372,15 +401,25 @@ export const CommandBarNav = ({
                           <DefaultButton onClick={toggleIsCalloutVisible}>
                             Cancel
                           </DefaultButton>
-                          <PrimaryButton
+                          {!activeStatus && <PrimaryButton
                             onClick={() => {
                               updateFilter(props.values);
                               setSelectedFilter(props.values);
+                              setStatus(props.values.status)
                               toggleIsCalloutVisible();
                             }}
                           >
                             Done
-                          </PrimaryButton>
+                          </PrimaryButton>}
+                          {activeStatus && updateStatus && <PrimaryButton
+                            onClick={() => {
+                              updateStatus(props.values.status)
+                              setStatus(props.values.status)
+                              toggleIsCalloutVisible();
+                            }}
+                          >
+                            Done
+                          </PrimaryButton>}
                         </Stack>
                       </FocusZone>
                     </Form>

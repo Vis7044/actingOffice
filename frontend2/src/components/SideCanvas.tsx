@@ -8,7 +8,7 @@ import EditClientForm from './EditClientForm';
 import ItemForm from './ItemForm';
 import type { Client, IAddress } from '../types/projectTypes';
 import type { IQuote } from '../types/projectTypes';
-import { Stack, Text } from '@fluentui/react';
+import { Text } from '@fluentui/react';
 
 interface ClientWithId extends Client {
   id: string;
@@ -26,23 +26,35 @@ interface Quote extends IQuote {
   };
 }
 
+interface IService {
+    key: number;
+    name: string;
+    description: string;
+    amount: number;
+    userId: string
+}
+
 function SideCanvas({
   name,
   refreshLIst,
   isEdit,
   businessId,
-  quoteId
+  quoteId,
+  itemId
 }: {
   name: ReactNode;
   refreshLIst: () => void;
   isEdit?: boolean;
   businessId?: string;
   quoteId?: string;
+  itemId?:string
 }) {
   const [show, setShow] = useState(false);
   const [isData, setIsData] = useState(false);
   const [updateClientData, setUpdateClientData] = useState<ClientWithId | null>(null);
   const [updatedQuoteData, setUpdateQuoteData] = useState<Quote | null>(null);
+  const [serviceData, setServiceData] = useState<IService | null>(null)
+
 
   const location = window.location.pathname;
   const isQuotePage = location.includes('quote');
@@ -64,6 +76,16 @@ function SideCanvas({
     }
   };
 
+  const handleFetchService = async () => {
+    try {
+      const response = await axiosInstance.get(`/Service/get/${itemId}`);
+      setServiceData(response.data)
+      setIsData(true);
+    } catch (error) {
+      console.error("item Fetch error", error)
+    }
+  }
+
   const handleQuoteFetch = async () => {
     try {
       const response = await axiosInstance.get(`/Quote/get/${quoteId}`);
@@ -82,6 +104,8 @@ function SideCanvas({
         await handleQuoteFetch();
       } else if (businessId) {
         await handleFetch();
+      } else if(itemId) {
+       await handleFetchService()
       }
     } else {
       setIsData(true); // for create mode
@@ -136,6 +160,7 @@ function SideCanvas({
           {isItemPage && !isEdit && (
             <ItemForm refreshLIst={refreshLIst} handleClose={handleClose} />
           )}
+          {isItemPage && isEdit && serviceData && <ItemForm refreshLIst={refreshLIst} handleClose={handleClose} initialServiceData={serviceData} itemId={itemId} />}
         </Offcanvas.Body>
       </Offcanvas>
     </>

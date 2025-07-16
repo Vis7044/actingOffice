@@ -108,7 +108,6 @@ export const Login = () => {
         const token = res?.data?.token;
         if(token) {
           login(token);
-          console.log("Login Successful:", res.data);
           fetchUser()
                 .then(setUser)
           resetForm();

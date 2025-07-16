@@ -48,13 +48,11 @@ export default function AnonymousQuote() {
     const resp = await axiosInstance.get(`/Quote/get/${id}`);
     const data = resp.data;
     setQuoteData(data);
-    console.log(data)
   }
 
   useEffect(() => {
     fetchQuote()
   },[])
-  console.log(id)
   return (
     <Container fluid style={{maxWidth: '700px'}}>
       <Row>

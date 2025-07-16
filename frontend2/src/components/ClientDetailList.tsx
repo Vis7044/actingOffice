@@ -32,6 +32,10 @@ interface IClient {
   type: string;
   createdOn: Date;
   status: string;
+  isDeleted: string;
+  createdBy: {
+    dateTime: Date
+  }
 }
 
 
@@ -60,18 +64,16 @@ const ClientDetailList = () => {
   const [refreshIcon, setRefreshIcon] = useState(false);
 
   const [search, setSearch] = useState("");
-  const [error, setError] = useState(null)
+  const [status, setStatus] = useState("Active")
   const [filter, setFilter] = useState({criteria: '', value: ''})
 
 
   const updateSearch = (searchTerm: string) => {
     setSearch(searchTerm);
-    console.log(searchTerm);
   };
 
   const updateFilter = (filterValue: {criteria: string,value:string}) =>{
     setFilter(filterValue);
-    console.log(filterValue)
   }
   const refresh = () => {
     setRefreshList(!refreshList);
@@ -87,9 +89,8 @@ const ClientDetailList = () => {
     const fetchClientsData = async () => {
       try {
         setRefreshIcon(true);
-        console.log(filter)
         const response = await axiosInstance.get(
-          `/Client/getClient?searchTerm=${search}&page=${activePage}&pageSize=${pageSize}&criteria=${filter.criteria}&value=${filter.value}`
+          `/Client/getClient?searchTerm=${search}&page=${activePage}&pageSize=${pageSize}&criteria=${filter.criteria}&value=${filter.value}&IsDeleted=${status}`
         );
         const data = response.data?.data.map(
           (client: Omit<IClient, "key">, index: number) => {
@@ -103,7 +104,6 @@ const ClientDetailList = () => {
         setTotalPages(Math.ceil(response.data.totalCount / pageSize));
         setActivePage(response.data.page);
         
-        console.log("Fetched clients data:", response.data);
         setClientsData(data || []);
         setRefreshIcon(false);
       } catch (error) {
@@ -112,17 +112,13 @@ const ClientDetailList = () => {
     };
 
     fetchClientsData();
-  }, [refreshList, search, activePage, pageSize,filter]);
+  }, [refreshList, search, activePage, pageSize,filter,status]);
 
-  if (refreshList == true) {
-    console.log("refreshing");
-  }
 
   const handleDelete = async (id: string) => {
     try {
       const resp = await axiosInstance.delete(`/Client/delete/${id}`);
       if(resp.data){
-        console.log(resp.data);
         refresh()
       }
       
@@ -209,6 +205,20 @@ const ClientDetailList = () => {
       ),
     },
     {
+      key: "status",
+      name: "Status",
+      onRenderHeader: () => (
+        <Text variant="mediumPlus" styles={{root: { color: "rgb(2, 91, 150)", fontWeight: 500}}}>Status</Text>
+      ),
+      fieldName: "type",
+      minWidth: 100,
+      maxWidth: 150,
+      isResizable: true,
+      onRender: (item: IClient) => (
+        <Text variant="medium">{item.isDeleted}</Text>
+      ),
+    },
+    {
       key: "createdOn",
       name: "Created On",
       onRenderHeader: () => (
@@ -220,7 +230,7 @@ const ClientDetailList = () => {
       isResizable: true,
       onRender: (item: IClient) => (
         <Text variant="medium">
-          {new Date(item.createdOn).toLocaleDateString("en-IN", {
+          {new Date(item.createdBy.dateTime).toLocaleDateString("en-IN", {
             day: "2-digit",
             month: "short",
             year: "numeric",
@@ -249,8 +259,7 @@ const ClientDetailList = () => {
 
   const selection = new Selection({
     onSelectionChanged: () => {
-      const selectedItems = selection.getSelection();
-      console.log("Selected items:", selectedItems);
+      
     },
   });
 
@@ -271,6 +280,7 @@ const ClientDetailList = () => {
         updateSearch={updateSearch}
         refreshIcon={refreshIcon}
         updateFilter={updateFilter}
+        updateStatus={setStatus}
       />
       {clientsData.length==0 && <Text style={{position: 'absolute', top:'50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '20px'}}>No Data Found Add a business</Text>}
       {clientsData.length>0 && 

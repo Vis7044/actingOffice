@@ -5,7 +5,6 @@ import {
   Field,
   FieldArray,
   ErrorMessage,
-  validateYupSchema,
 } from "formik";
 import { mergeStyles, Stack, Text } from "@fluentui/react";
 import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
@@ -13,28 +12,6 @@ import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
 import type { Client } from "../types/projectTypes";
 
-// interface IAddress {
-//   building: string;
-//   street: string;
-//   city: string;
-//   state: string;
-//   pinCode: string;
-//   country: string;
-// }
-
-// interface Client {
-//   businessName: string;
-//   type: string;
-//   address: IAddress;
-// }
-
-const firstDiv = mergeStyles({
-  display: "flex",
-  gap: "10px",
-  justifyContent: "space-evenly",
-  alignItems: "center",
-  padding: "0px 5px",
-});
 
 const input = mergeStyles({
   border: "1px solid #909090",
@@ -119,9 +96,9 @@ export const ClientForm = ({
         {({ values }) => (
           <Form>
             <FieldArray name="clients">
-              {({ insert, remove, push }) => (
+              {({ insert, remove }) => (
                 <div>
-                  {values.clients.map((client, index) => (
+                  {values.clients.map((_, index) => (
                     <Stack
                       key={index}
                       styles={{root: {width: '100%'}}}
@@ -148,7 +125,7 @@ export const ClientForm = ({
                           <ErrorMessage
                             name={`clients[${index}].type`}
                             component="div"
-                            style={{ color: "red" }}
+                            className="error"
                           />
                         </Stack>
 
@@ -164,7 +141,7 @@ export const ClientForm = ({
                           <ErrorMessage
                             name={`clients[${index}].businessName`}
                             component="div"
-                            style={{ color: "red" }}
+                            className="error"
                           />
                         </Stack>
                         <Stack
@@ -227,7 +204,7 @@ export const ClientForm = ({
                             <ErrorMessage
                               name={`clients[${index}].address.building`}
                               component="div"
-                              style={{ color: "red" }}
+                              className="error"
                             />
                           </Stack>
                           <Stack styles={{
@@ -241,7 +218,7 @@ export const ClientForm = ({
                             <ErrorMessage
                               name={`clients[${index}].address.street`}
                               component="div"
-                              style={{ color: "red" }}
+                              className="error"
                             />
                           </Stack>
                         </Stack>
@@ -264,7 +241,7 @@ export const ClientForm = ({
                             <ErrorMessage
                               name={`clients[${index}].address.city`}
                               component="div"
-                              style={{ color: "red" }}
+                              className="error"
                             />
                           </Stack>
                           <Stack styles={{
@@ -278,7 +255,7 @@ export const ClientForm = ({
                             <ErrorMessage
                               name={`clients[${index}].address.state`}
                               component="div"
-                              style={{ color: "red" }}
+                              className="error"
                             />
                           </Stack>
                         </Stack>
@@ -301,7 +278,7 @@ export const ClientForm = ({
                             <ErrorMessage
                               name={`clients[${index}].address.pinCode`}
                               component="div"
-                              style={{ color: "red" }}
+                              className="error"
                             />
                           </Stack>
                           <Stack styles={{
@@ -315,7 +292,7 @@ export const ClientForm = ({
                             <ErrorMessage
                               name={`clients[${index}].address.country`}
                               component="div"
-                              style={{ color: "red" }}
+                              className="error"
                             />
                           </Stack>
                         </Stack>

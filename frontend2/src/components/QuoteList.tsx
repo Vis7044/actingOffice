@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import  { useEffect, useState } from "react";
 import {
   DetailsListLayoutMode,
   SelectionMode,
@@ -12,8 +12,7 @@ import { ThemeProvider, createTheme } from "@fluentui/react";
 
 import "@fluentui/react/dist/css/fabric.css";
 import type { IColumn } from "@fluentui/react/lib/DetailsList";
-import { MarqueeSelection } from "@fluentui/react";
-import { Link, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { CommandBarNav } from "./CommandBarNav";
 import QuoteDetailSideCanvas from "./QuoteDetailsSideCanvas";
@@ -86,11 +85,9 @@ const QuoteList = () => {
   const [filter, setFilter] = useState({ criteria: "", value: "" });
   const updateFilter = (filterValue: { criteria: string; value: string }) => {
     setFilter(filterValue);
-    console.log(filterValue);
   };
   const updateSearch = (searchTerm: string) => {
     setSearch(searchTerm);
-    console.log(searchTerm);
   };
   const refresh = () => {
     setRefreshList(!refreshList);
@@ -100,7 +97,6 @@ const QuoteList = () => {
     try {
       const resp = await axiosInstance.delete(`/Quote/delete/${id}`);
       if (resp.data) {
-        console.log(resp.data);
         refresh();
       } else {
         setError(resp.data);
@@ -117,7 +113,6 @@ const QuoteList = () => {
         const response = await axiosInstance.get(
           `/Quote/get?searchTerm=${search}&criteria=${filter.criteria}&value=${filter.value}`
         );
-        console.log("Response from API:", response.data);
 
         const data = response.data.data?.map(
           (quote: Omit<IQuote, "key">, index: number) => {
@@ -127,7 +122,6 @@ const QuoteList = () => {
             };
           }
         );
-        console.log("Fetched clients data:", data);
         // Ensure data is an array before setting state
         setQuoteData(data || []);
         setRefreshIcon(false);
@@ -364,8 +358,7 @@ const QuoteList = () => {
 
   const selection = new Selection({
     onSelectionChanged: () => {
-      const selectedItems = selection.getSelection();
-      console.log("Selected items:", selectedItems);
+      
     },
   });
   return (

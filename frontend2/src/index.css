@@ -26,6 +26,10 @@
   left: 209px;
 }
 
+.error {
+  color: red;
+}
+
 .custom-progress {
   height: 16px !important; /* Steeper/thicker progress bar */
   border-radius: 6px;

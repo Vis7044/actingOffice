@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import axiosInstance from '../utils/axiosInstance';
-import { Stack, StackItem, Text } from '@fluentui/react';
+import { Stack, Text } from '@fluentui/react';
 import type { IQuote } from '../types/projectTypes';
 
 
@@ -13,14 +13,6 @@ interface IAddress {
   country: string;
 }
 
-interface IClient {
-  businessName: string;
-  type: string;
-  address: IAddress;
-  id: string
-} 
-
-
 interface Quote extends IQuote {
   vatRate: number;
   amountBeforeVat: number;
@@ -31,6 +23,7 @@ interface Quote extends IQuote {
       id: string,
       type: string
     }
+   
 }
 
 const quoteStatusColor = {
@@ -44,7 +37,6 @@ export default function QuoteDetails({id,handleClose,refreshList}: {id: string, 
     const fetchQuote =async () => {
         const resp = await axiosInstance.get(`Quote/get/${id}`);
         setQuoteData(resp.data)
-        console.log(resp,"lol")
     }
     useEffect(() => {
         fetchQuote()
@@ -52,12 +44,11 @@ export default function QuoteDetails({id,handleClose,refreshList}: {id: string, 
 
     const handleUpdate = async (status: number) => {
         const resp = await axiosInstance.put(`Quote/update/${id}`, {...quote, quoteStatus: status, businessIdName: {id: quote?.businessDetails.id,name: quote?.businessDetails.businessName}});
-        console.log({...quote, quoteStatus: status})
+      
         if(resp.data){
             handleClose();
             refreshList()
         }
-        console.log(resp, 'updating')
     }
   return (
     <Stack styles={{root: {height: '100%',position: 'relative'}}}>

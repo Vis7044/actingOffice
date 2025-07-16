@@ -1,15 +1,36 @@
-import { DetailsListLayoutMode, SelectionMode, ShimmeredDetailsList, Stack, Text, type IColumn } from '@fluentui/react'
+import { DetailsListLayoutMode, mergeStyles, SelectionMode, ShimmeredDetailsList, Stack, Text, type IColumn } from '@fluentui/react'
 import React, { useEffect, useState } from 'react'
 import { CommandBarNav } from '../components/CommandBarNav'
 import axiosInstance from '../utils/axiosInstance';
+import SideCanvas from '../components/SideCanvas';
+import { MdDelete, MdOutlineEdit } from 'react-icons/md';
 
 interface IService {
+    id:string,
     key: number;
     name: string;
     description: string;
     amount: number;
     userId: string
 }
+
+const iconButtons = mergeStyles({
+  cursor: "pointer",
+  selectors: {
+    ":hover": {
+      color: "rgb(36, 115, 160)",
+    },
+  },
+});
+
+const deleteButtons = mergeStyles({
+  cursor: "pointer",
+  selectors: {
+    ":hover": {
+      color: "rgb(160, 65, 36)",
+    },
+  },
+});
 
 
 
@@ -22,30 +43,40 @@ export default function Item() {
 
     const updateSearch = (searchTerm: string) => {
     setSearch(searchTerm);
-    console.log(searchTerm);
   };
 
   const updateFilter = (filterValue: {criteria: string,value:string}) =>{
     setFilter(filterValue);
-    console.log(filterValue)
   }
     const getData = async () => {
         setRefreshIcon(true)
-        const resp = await axiosInstance.get("/Service/get");
+        const resp = await axiosInstance.get(`/Service/get?searchTerm=${search}`);
         const valuewithkey = resp.data.map((item: IService,index:number) =>{
             return {...item, key: index+1}
         })
         setRefreshIcon(false)
         setItemData(valuewithkey)
-        console.log(resp.data)
     }
     useEffect(() => {
         getData();
-    },[refreshList]) 
+    },[refreshList, search]) 
 
     const refresh = () => {
         setRefreshList(!refreshList)
     }
+
+    const handleDelete = async (id: string) => {
+    try {
+      const resp = await axiosInstance.post(`/Service/delete/${id}`);
+      if (resp.data) {
+        refresh();
+      } else {
+        console.log(resp.data)
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
     const columns: IColumn[] = [
     {
@@ -136,6 +167,40 @@ export default function Item() {
         >
           € {item.amount}
         </Text>
+      ),
+    },
+    {
+      key: "action",
+      name: "",
+      fieldName: "",
+      onRenderHeader: () => (
+        <Text
+          variant="mediumPlus"
+          styles={{ root: { color: "rgb(2, 91, 150)", fontWeight: 500 } }}
+        >
+          Actions
+        </Text>
+      ),
+      minWidth: 150,
+      maxWidth: 300,
+      isResizable: true,
+      onRender: (item: IService) => (
+        <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 5 }}>
+          
+          <SideCanvas
+            name={
+              <Text className={iconButtons}>
+                <MdOutlineEdit size={18} />
+              </Text>
+            }
+            refreshLIst={refresh}
+            isEdit={true}
+            itemId={item.id}
+          />
+          <Text className={deleteButtons} onClick={() => handleDelete(item.id)}>
+            <MdDelete size={18} />
+          </Text>
+        </Stack>
       ),
     },
   ];
