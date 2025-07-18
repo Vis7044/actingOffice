@@ -130,8 +130,8 @@ namespace backend.services
             {
                 filters.Add("$or", new BsonArray
                 {
-                    new BsonDocument("IdByName.Name", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
-                    new BsonDocument("FirstResponse.Name", new BsonDocument { { "$regex", search }, { "$options", "i" } })
+                    new BsonDocument("BusinessIdName.Name", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
+                    new BsonDocument("FirstResponse.FirstName", new BsonDocument { { "$regex", search }, { "$options", "i" } })
                 });
             }
 

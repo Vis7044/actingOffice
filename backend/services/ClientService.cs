@@ -108,7 +108,15 @@ namespace backend.services
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<PageResult<ClientModel>> GetClientsAsync(string role, string userId, int page, int pageSize, string searchTerm, string criteria, string value)
+        public async Task<PageResult<ClientModel>> GetClientsAsync(
+            string role,
+            string userId,
+            int page,
+            int pageSize,
+            string searchTerm,
+            string criteria,
+            string value,
+            string IsDeleted)
         {
             if (page < 1 || pageSize < 1)
             {
@@ -118,23 +126,42 @@ namespace backend.services
             var skip = (page - 1) * pageSize;
             var search = searchTerm?.Trim() ?? string.Empty;
 
-            // Create match filter
+            // Start with empty filter
             var filters = new BsonDocument();
-            
 
+            // Role-based filtering
             if (role != UserRole.Admin.ToString())
             {
                 filters.Add("CreatedBy.UserId", new ObjectId(userId));
             }
-            filters.Add("IsDeleted", new BsonDocument("$ne", IsDeleted.Inactive));
 
-            // filter based on criteria and value
-            if (Enum.TryParse<BusinessType>(value, out var enumValue))
+            // Criteria-based filtering (e.g., BusinessType)
+            if (!string.IsNullOrEmpty(value) && criteria == "Type")
             {
-                int typeInt = (int)enumValue;
-                filters.Add(criteria, typeInt);
+                if (Enum.TryParse<BusinessType>(value, out var businessType))
+                {
+                    filters.Add("Type", (int)businessType);
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid business type value.");
+                }
             }
+
             
+            if (!string.Equals(IsDeleted, "All", StringComparison.OrdinalIgnoreCase))
+            {
+                if (Enum.TryParse<IsDeleted>(IsDeleted, out var deleted))
+                {
+                    filters.Add("IsDeleted", (int)deleted);
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid delete type value.");
+                }
+            }
+
+            // Search-based filtering
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var orConditions = new BsonArray
@@ -146,15 +173,15 @@ namespace backend.services
                     })
                 };
 
-                if (Enum.TryParse<BusinessType>(search, out var businessType))
+                if (Enum.TryParse<BusinessType>(search, out var parsedSearchType))
                 {
-                    orConditions.Add(new BsonDocument("Type", (int)businessType));
+                    orConditions.Add(new BsonDocument("Type", (int)parsedSearchType));
                 }
 
                 filters.Add("$or", orConditions);
             }
 
-            // MongoDB aggregation pipeline
+            // Aggregation pipeline
             var pipeline = new BsonDocument[]
             {
                 new BsonDocument("$match", filters),
@@ -168,16 +195,17 @@ namespace backend.services
                     { "Type", 1 },
                     { "CreatedOn", 1 },
                     { "CreatedBy", 1 },
-                })
+                    {"IsDeleted",1 },
+                    
+
+                 })
             };
-            
+
             try
             {
                 var result = await _client.Aggregate<ClientModel>(pipeline).ToListAsync();
 
-                // Get total count with same match condition
-                var countFilter = new BsonDocument(filters);
-                var totalCount = await _client.CountDocumentsAsync(countFilter);
+                var totalCount = await _client.CountDocumentsAsync(filters);
 
                 return new PageResult<ClientModel>
                 {
@@ -193,7 +221,12 @@ namespace backend.services
             }
         }
 
-
+        /// <summary>
+        /// get client by id
+        /// </summary>
+        /// <param name="clientId"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public async Task<ClientModelWithHistory> GetClientByIdAsync(string clientId)
         {
             var client = await _client.Find(c => c.Id == clientId).FirstOrDefaultAsync();
@@ -237,7 +270,15 @@ namespace backend.services
             return result;
         }
 
-
+        /// <summary>
+        /// update client
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="userId"></param>
+        /// <param name="role"></param>
+        /// <param name="businessId"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public async Task<string> UpdateClientAsync(CreateClient client, string userId,string role, string businessId)
         {
             try
@@ -273,7 +314,7 @@ namespace backend.services
 
 
                 var changes = new Dictionary<string, string>();
-
+                // Compare fields and add to changes dictionary
                 if (clientBeforeUpdate.BusinessName != chengedClient.BusinessName)
                 {
                     changes["BusinessName"] = $"'{clientBeforeUpdate.BusinessName}' → '{chengedClient.BusinessName}'";
@@ -317,6 +358,7 @@ namespace backend.services
                 {
                     return "No client found to update.";
                 }
+                // if matched count is not 0 then create history
                 var history = new History
                 {
                     Action = HistoryAction.Updated,
@@ -344,11 +386,19 @@ namespace backend.services
                 throw new Exception($"Error updating client: {ex.Message}");
             }
         }
-
+        /// <summary>
+        /// soft delete client
+        /// </summary>
+        /// <param name="businessId"></param>
+        /// <param name="userId"></param>
+        /// <param name="role"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public async Task<string> DeleteClientAsync(string businessId, string userId, string role)
         {
             try
             {
+                // Check if the user has permission to delete the client
                 if (role != UserRole.Admin.ToString())
                 {
                     var existingClient = await _client.Find(c => c.Id == businessId && c.CreatedBy.UserId == userId).FirstOrDefaultAsync();
@@ -357,6 +407,7 @@ namespace backend.services
                         return "You do not have permission to update this client.";
                     }
                 }
+                // Find the client by ID
                 var filter = Builders<ClientModel>.Filter.Eq(c => c.Id, businessId);
                 var client = await _client.Find(filter).FirstOrDefaultAsync();
 
@@ -372,6 +423,7 @@ namespace backend.services
                 {
                     throw new Exception("No client found to delete.");
                 }
+                // if modified count is not 0 then create history
                 var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
                 var history = new History
                 {

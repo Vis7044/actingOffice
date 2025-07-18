@@ -4,6 +4,9 @@ using MongoDB.Driver;
 
 namespace backend.Data
 {
+    /// <summary>
+    /// class representing the MongoDB context for the application.
+    /// </summary>
     public class MongoDbContext
     {
         private readonly IMongoDatabase _database;
