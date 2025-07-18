@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { FaBars, FaSearch } from "react-icons/fa";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet,  useNavigate } from "react-router-dom";
 import { Callout,  mergeStyles, Text } from "@fluentui/react";
 import Breadcrumb from "./BreadCrumb";
 import { LiaStickyNoteSolid } from "react-icons/lia";
@@ -40,20 +40,6 @@ interface IUser {
   role: string;
 }
 
-const navItemStyle = mergeStyles({
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-  padding: "8px 16px",
-  cursor: "pointer",
-  transition: "background-color 0.2s ease-in-out",
-  selectors: {
-    ":hover": {
-      backgroundColor: "rgba(0, 0, 0, 0.1)",
-      visibility: "visible",
-    },
-  },
-});
 const styles = mergeStyleSets({
   callout: {
     width: 250,
@@ -102,7 +88,6 @@ export const SideNav: React.FC = () => {
     useBoolean(false);
   const buttonId = useId("callout-button");
   const [user, setUser] = useState<IUser | null>(null);
-
   const {logout} = useAuth()
   const fetchUser = async () => {
     const resp = await axiosInstance.get("/Auth/me");
@@ -136,7 +121,7 @@ export const SideNav: React.FC = () => {
             borderBottom: '1px solid',
             borderColor: 'rgba(0,0,0,0.1)'
           }}}
-          tokens={{childrenGap: 25}}
+          tokens={{childrenGap: 15}}
         >
           <Stack
             onClick={toggleSidebar}
@@ -146,16 +131,17 @@ export const SideNav: React.FC = () => {
             }}}
           >
             <Text styles={{root: {
-              cursor: 'pointer'
+              cursor: 'pointer',
+              paddingBottom: '10px'
             }}}><FaBars size={18} /></Text>
           </Stack>
-          <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
+          {user?.role==='Admin' && <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
             <NavItem
               icon={<RiDashboardHorizontalLine size={18} />}
               label="Dashboard"
               isOpen={isOpen}
             />
-          </Link>
+          </Link>}
         </Stack>
 
         <Stack
@@ -170,7 +156,7 @@ export const SideNav: React.FC = () => {
           )}
           <Link
             to={"/client"}
-            style={{ textDecoration: "none", color: "inherit" }}
+            style={{ textDecoration: "none", color: "inherit", }}
           >
             <NavItem icon={<TfiBag size={18}  />} label="Client" isOpen={isOpen} />
           </Link>

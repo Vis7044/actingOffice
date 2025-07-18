@@ -22,36 +22,11 @@ import { FaX } from "react-icons/fa6";
 import axiosInstance from "../utils/axiosInstance";
 
 const theme = getTheme();
-
-const commandBarStyle = mergeStyles({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  
-});
-
 const sectionStyle = mergeStyles({
   display: "flex",
   alignItems: "center",
   gap: "10px",
 });
-
-
-const itemStyle: Partial<ITextFieldStyles> = {
-  root: {
-
-  },
-  field: {
-    padding: "6px 10px",
-  cursor: "pointer",
-  borderRadius: "4px",
-  selectors: {
-    ":hover": {
-      backgroundColor: theme.palette.neutralLight,
-    },
-  },
-  },
-};
 
 const styles = mergeStyleSets({
   callout: {
@@ -79,6 +54,14 @@ const filterData = {
   ],
 };
 
+enum Types {
+  Limited="Limited",
+  LLP="LLp",
+  LimitedPartnership="LimitedPartnership",
+  Individual="Individual",
+  Partnership="Partnership"
+}
+
 export const CommandBarNav = ({
   refreshLIst,
   updateSearch,
@@ -100,7 +83,6 @@ export const CommandBarNav = ({
     criteria: "",
     value: "",
   });
-
   const [status, setStatus] = useState("Active")
   const [activeStatus,setActiveStatus] = useState(false)
   const location = useLocation();
@@ -152,7 +134,7 @@ export const CommandBarNav = ({
           />
         </Stack>
 
-        {location.pathname.includes("client") && (
+        
           <Stack
             styles={{root:{
               backgroundColor: "#C7E0F4",
@@ -170,7 +152,7 @@ export const CommandBarNav = ({
               Status = <span style={{ fontWeight: "bold" }}>{status?status:'Active'}</span>
             </Text>
           </Stack>
-        )}
+        
 
         <Stack>
           <Stack horizontal verticalAlign="center" styles={{root: {padding: '10px 0'}}} tokens={{childrenGap: 5}}>
@@ -203,7 +185,7 @@ export const CommandBarNav = ({
                 />
               </Stack>
             )}
-            <Stack
+            {!window.location.pathname.startsWith("/items") && <Stack
               horizontal
               verticalAlign="center"
               tokens={{childrenGap: 3}}
@@ -221,7 +203,7 @@ export const CommandBarNav = ({
             >
               <CiFilter size={20} color="rgb(7, 84, 250)" />
               <Text>Add Filter</Text>
-            </Stack>
+            </Stack>}
           </Stack>
 
           {isCalloutVisible ? (
@@ -265,7 +247,7 @@ export const CommandBarNav = ({
                   return location.pathname.includes("quote") ? (
                     <Form>
                       <Stack style={{}}>
-                        <Text>Criteria: </Text>
+                        {!activeStatus && <><Text>Criteria: </Text>
                         <Field
                           as="select"
                           name="criteria"
@@ -279,9 +261,23 @@ export const CommandBarNav = ({
                         >
                           <option value={""}>Select Category</option>
                           <option value="FirstResponse">First Response</option>
-                          <option value="green">Green</option>
-                          <option value="blue">Blue</option>
-                        </Field>
+                        </Field></>}
+                        {activeStatus && <><Text>Values: </Text>
+                        <Field
+                          as="select"
+                          name="status"
+                          style={{
+                            width: "100%",
+                            border: "1px solid",
+                            borderColor: "rgba(0,0,0,0.3)",
+                            borderRadius: "5px",
+                            padding: "4px 5px",
+                          }}
+                        >
+                          <option value="All">All</option>
+                          <option value="Active" >Active</option>
+                          <option value="Inactive">InActive</option>
+                        </Field></>}
                       </Stack>
                       {props.values.criteria !== "" && userOptions.length>0 && (
                         <Stack styles={{ root: {marginTop: "10px" }}}>
@@ -317,7 +313,7 @@ export const CommandBarNav = ({
                           <DefaultButton onClick={toggleIsCalloutVisible}>
                             Cancel
                           </DefaultButton>
-                          <PrimaryButton
+                          {!activeStatus && <PrimaryButton
                             onClick={() => {
                               updateFilter(props.values);
                               const selectedUser = userOptions.find((u) => u.id == props.values.value);
@@ -326,7 +322,16 @@ export const CommandBarNav = ({
                             }}
                           >
                             Done
-                          </PrimaryButton>
+                          </PrimaryButton>}
+                          {activeStatus && updateStatus && <PrimaryButton
+                            onClick={() => {
+                              updateStatus(props.values.status)
+                              setStatus(props.values.status)
+                              toggleIsCalloutVisible();
+                            }}
+                          >
+                            Done
+                          </PrimaryButton>}
                         </Stack>
                       </FocusZone>
                     </Form>
@@ -347,8 +352,6 @@ export const CommandBarNav = ({
                         >
                           <option value={""}>Select Category</option>
                           <option value="Type">Business Type</option>
-                          <option value="green">Green</option>
-                          <option value="blue">Blue</option>
                         </Field></>}
                         {activeStatus && <><Text>Values: </Text>
                         <Field
@@ -362,8 +365,8 @@ export const CommandBarNav = ({
                             padding: "4px 5px",
                           }}
                         >
-                          <option value="Active" >Active</option>
                           <option value="All">All</option>
+                          <option value="Active" >Active</option>
                           <option value="Inactive">InActive</option>
                         </Field></>}
                       </Stack>
@@ -382,9 +385,13 @@ export const CommandBarNav = ({
                             }}
                           >
                             <option value={""}>Select Value</option>
-                            {filterData.businessType.map((val) => {
-                              return <option value={val}>{val}</option>;
-                            })}
+                           
+                              <option value={Types.Individual}>Individual</option>;
+                              <option value={Types.LLP}>LLp</option>;
+                              <option value={Types.Limited}>Limited</option>;
+                              <option value={Types.LimitedPartnership}>LimitedPartnership</option>;
+                              <option value={Types.Partnership}>Partnership</option>;
+                            
                           </Field>
                         </Stack>
                       )}

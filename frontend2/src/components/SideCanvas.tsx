@@ -54,8 +54,6 @@ function SideCanvas({
   const [updateClientData, setUpdateClientData] = useState<ClientWithId | null>(null);
   const [updatedQuoteData, setUpdateQuoteData] = useState<Quote | null>(null);
   const [serviceData, setServiceData] = useState<IService | null>(null)
-
-
   const location = window.location.pathname;
   const isQuotePage = location.includes('quote');
   const isItemPage = location.includes('items');
@@ -160,7 +158,7 @@ function SideCanvas({
           {isItemPage && !isEdit && (
             <ItemForm refreshLIst={refreshLIst} handleClose={handleClose} />
           )}
-          {isItemPage && isEdit && serviceData && <ItemForm refreshLIst={refreshLIst} handleClose={handleClose} initialServiceData={serviceData} itemId={itemId} />}
+          {isItemPage && isEdit && serviceData && <ItemForm isEdit refreshLIst={refreshLIst} handleClose={handleClose} initialServiceData={serviceData} itemId={itemId} />}
         </Offcanvas.Body>
       </Offcanvas>
     </>

@@ -3,7 +3,7 @@ import * as Yup from "yup";
 
 import axiosInstance from "../utils/axiosInstance";
 import { AxiosError } from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../utils/useAuth";
 import { makeStyles } from "@fluentui/react";
 import { fetchUser } from "../Auth/userService";
@@ -111,7 +111,7 @@ export const Login = () => {
           fetchUser()
                 .then(setUser)
           resetForm();
-          navigate("/");
+          return <Navigate to={'/'} replace/>
 
         }else {
           console.log('something went wrong')

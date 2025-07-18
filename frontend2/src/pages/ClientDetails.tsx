@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { FaCircleUser, FaMessage } from "react-icons/fa6";
 import { mergeStyles, Stack, Text } from "@fluentui/react";
 import { MdEdit, MdOutlineEdit } from "react-icons/md";
-import { FaPlus } from "react-icons/fa";
+import {  FaPlus } from "react-icons/fa";
 import { RiStickyNoteAddLine } from "react-icons/ri";
 import { MdAttachEmail } from "react-icons/md";
 import { LiaFileInvoiceDollarSolid } from "react-icons/lia";
@@ -102,8 +102,9 @@ export const ClientDetails = () => {
   if (!client) return <div>No client found.</div>;
 
   return (
-    <Stack>
-      <Stack horizontal tokens={{ childrenGap: 5 }}>
+    <Stack horizontal styles={{root: {minHeight: '92%'}}}>
+      <Stack styles={{root: {width: '80%'}}}>
+        <Stack horizontal tokens={{ childrenGap: 5 }}>
         <Stack
           horizontal
           styles={{ root: { margin: "20px 10px", position: "relative" } }}
@@ -173,7 +174,7 @@ export const ClientDetails = () => {
       </Stack>
       <Stack
         tokens={{ childrenGap: 10 }}
-        styles={{ root: { marginTop: "20px", paddingLeft: "20px" } }}
+        styles={{ root: { marginTop: "20px",  } }}
       >
         <Pivot aria-label="Basic Pivot Example">
           <PivotItem
@@ -182,13 +183,14 @@ export const ClientDetails = () => {
               "data-order": 1,
               "data-title": "Profile",
             }}
+            style={{paddingLeft: "20px"}}
           >
             <Label styles={labelStyles}>
               <Stack
                 
                 styles={{
                   root: {
-                    width: "70%",
+                    width: "100%",
                     backgroundColor: "rgba(77, 74, 74, 0.07)",
                     border: "1px solid",
                     borderColor: "rgba(32, 31, 31, 0.18)",
@@ -265,11 +267,12 @@ export const ClientDetails = () => {
               </Stack>
             </Label>
           </PivotItem>
-          <PivotItem headerText="History">
+          <PivotItem headerText="History" style={{width: "100%" }}>
             <Label styles={labelStyles}>
               {history.map((item, index) => (
-                <Stack key={index} styles={{root:{ width: "300px" }}}>
-                  <Text>
+                <Stack horizontal tokens={{childrenGap: 10}} verticalAlign="center" key={index} styles={{root:{width: '100%',border: '0.4px solid',borderColor: 'rgba(71, 69, 69, 0.06)', padding: '10px'}}}>
+                  <MdEdit size={20} color=" #5fb3e4ff"/>
+                  <Text styles={{root:{width: "300px"}}}>
                     at {new Date(item.history.createdBy.dateTime.toString()).toLocaleString()} by{" "}
                     <strong>
                       {item.user.firstName} {item.user.lastName}
@@ -288,6 +291,10 @@ export const ClientDetails = () => {
             <Label styles={labelStyles}>Billing</Label>
           </PivotItem>
         </Pivot>
+      </Stack>
+      </Stack>
+      <Stack styles={{root:{width:'20%',borderLeft: '1px solid',borderColor: 'rgba(0,0,0,0.2)'}}}>
+        Hello
       </Stack>
     </Stack>
   );

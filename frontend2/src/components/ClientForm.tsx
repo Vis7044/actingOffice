@@ -11,6 +11,7 @@ import { FaPlus, FaTrash, FaSave } from "react-icons/fa";
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
 import type { Client } from "../types/projectTypes";
+import { FaX } from "react-icons/fa6";
 
 
 const input = mergeStyles({
@@ -36,6 +37,8 @@ export const ClientForm = ({
   refreshLIst: () => void;
   handleClose: () => void;
 }) => {
+  const [error, setError] = useState(null);
+
   const clientSchema = Yup.object().shape({
     type: Yup.string().required("Type is required"),
     businessName: Yup.string().required("Business name is required"),
@@ -48,9 +51,6 @@ export const ClientForm = ({
       country: Yup.string().required("Country is required"),
     }),
   });
-
-  const [error, setError] = useState(null);
-
   const validationSchema = Yup.object().shape({
     clients: Yup.array().of(clientSchema),
   });
@@ -301,6 +301,22 @@ export const ClientForm = ({
                   ))}
                   {error && <div style={{ color: "red" }}>{error}</div>}
                   <button
+                    style={{
+                      position: "absolute",
+                      right: "85px",
+                      bottom: "10px",
+                      color: 'black',
+                      border: "none",
+                      backgroundColor: "rgba(249, 249, 250, 1)",
+                      padding: "4px 8px",
+                      borderRadius: "5px",
+                    }}
+                    onClick={handleClose}
+                  >
+                    {" "}
+                    <FaX size={16} color="grey" /> Cancel{" "}
+                  </button>
+                  <button
                     type="submit"
                     style={{
                       position: "absolute",
@@ -314,7 +330,7 @@ export const ClientForm = ({
                     }}
                   >
                     {" "}
-                    <FaSave /> Submit{" "}
+                    <FaSave /> Save{" "}
                   </button>
                 </div>
               )}

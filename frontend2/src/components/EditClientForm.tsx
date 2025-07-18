@@ -9,6 +9,7 @@ import { mergeStyles, Stack, Text } from "@fluentui/react";
 import { FaSave } from "react-icons/fa";
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
+import { FaX } from "react-icons/fa6";
 
 interface IAddress {
   building: string;
@@ -234,6 +235,23 @@ export const EditClientForm = ({
             </Stack>
 
             <button
+                                style={{
+                                  position: "absolute",
+                                  right: "85px",
+                                  bottom: "10px",
+                                  color: 'black',
+                                  border: "none",
+                                  backgroundColor: "rgba(249, 249, 250, 1)",
+                                  padding: "4px 8px",
+                                  borderRadius: "5px",
+                                }}
+                                onClick={handleClose}
+                              >
+                                {" "}
+                                <FaX size={16} color="grey" /> Cancel{" "}
+                              </button>
+
+            <button
               type="submit"
               style={{
                 position: "absolute",
@@ -247,7 +265,7 @@ export const EditClientForm = ({
               }}
             >
               {" "}
-              <FaSave /> Update{" "}
+              <FaSave /> Save{" "}
             </button>
           </Form>
         )}

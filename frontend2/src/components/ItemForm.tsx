@@ -4,6 +4,7 @@ import { mergeStyles, Stack, Text } from "@fluentui/react";
 import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
 import { FaSave } from "react-icons/fa";
+import { FaX } from "react-icons/fa6";
 
 const input = mergeStyles({
   border: "1px solid #909090",
@@ -122,6 +123,23 @@ export const ItemForm = ({
                 />
               </Stack>
             </Stack>
+
+            <button
+                                style={{
+                                  position: "absolute",
+                                  right: "85px",
+                                  bottom: "10px",
+                                  color: 'black',
+                                  border: "none",
+                                  backgroundColor: "rgba(249, 249, 250, 1)",
+                                  padding: "4px 8px",
+                                  borderRadius: "5px",
+                                }}
+                                onClick={handleClose}
+                              >
+                                {" "}
+                                <FaX size={16} color="grey" /> Cancel{" "}
+                              </button>
             
             <button
               type="submit"

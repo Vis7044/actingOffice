@@ -5,7 +5,6 @@ import { Text } from '@fluentui/react';
 
 function QuoteDetailSideCanvas({ item, id, val,refreshList}: { item:string, id: string, val: ReactNode,refreshList:() => void}) {
   const [show, setShow] = useState(false);
-
   const location = window.location.pathname;
   const isQuotePage = location.includes('quote');
   const handleClose = () => {

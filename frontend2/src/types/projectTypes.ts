@@ -58,4 +58,5 @@ export interface IQuote {
     services: IService[]
     totalAmount: number;
     quoteStatus: string
+    isDeleted:string
 }

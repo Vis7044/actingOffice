@@ -26,6 +26,12 @@
   left: 209px;
 }
 
+
+svg:focus {
+  border: 0;
+  outline: none;
+}
+
 .error {
   color: red;
 }

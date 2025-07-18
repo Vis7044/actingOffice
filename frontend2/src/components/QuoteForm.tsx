@@ -12,6 +12,7 @@ import axiosInstance from "../utils/axiosInstance";
 import * as Yup from "yup";
 import { AxiosError } from "axios";
 import type { IAddress, IQuote } from "../types/projectTypes";
+import { FaX } from "react-icons/fa6";
 
 const input = mergeStyles({
   border: "1px solid ",
@@ -70,12 +71,11 @@ export const QuoteForm = ({
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<IClient[]>([]);
   const [error, setError] = useState<string | null>();
-
   const [servicesData, setServices] = useState<IService[]>([]);
 
   const fetchService = async () => {
     const resp = await axiosInstance.get("/Service/get");
-    setServices(resp.data);
+    setServices(resp.data.data);
   };
 
   useEffect(() => {
@@ -118,9 +118,9 @@ export const QuoteForm = ({
       name: Yup.string().required("Business name is required"),
     }),
 
-    date: Yup.string()
-      .required("Date is required")
-      .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
+    date: Yup.date()
+      .required("Date is required"),
+      
 
     firstResponse: Yup.object().shape({
       firstName: Yup.string().required("name is required"),
@@ -167,8 +167,9 @@ export const QuoteForm = ({
             id: "",
             name: "",
           },
-          date:
-            initialQuoteData?.date.split("T")[0] || new Date().toISOString().split("T")[0],
+          date: initialQuoteData?.date
+          ? new Date(initialQuoteData.date).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
           firstResponse: initialQuoteData?.firstResponse || {
             id: "",
             firstName: "",
@@ -207,12 +208,12 @@ export const QuoteForm = ({
             };
             try {
               if (!isEdit) {
-                await axiosInstance.post("/Quote/create", payload);
+                await axiosInstance.post("/Quote/create", {...payload,date: new Date(`${payload.date}`)});
               }
               if (isEdit) {
                 await axiosInstance.put(
                   `/Quote/update/${initialQuoteData?.id}`,
-                  payload
+                  { ...payload, date: new Date(`${payload.date}`) }
                 );
               }
 
@@ -650,7 +651,22 @@ export const QuoteForm = ({
                 </FieldArray>
 
                 {error && <div style={{ color: "red" }}>{error}</div>}
-
+                    <button
+                                        style={{
+                                          position: "absolute",
+                                          right: "85px",
+                                          bottom: "10px",
+                                          color: 'black',
+                                          border: "none",
+                                          backgroundColor: "rgba(249, 249, 250, 1)",
+                                          padding: "4px 8px",
+                                          borderRadius: "5px",
+                                        }}
+                                        onClick={handleClose}
+                                      >
+                                        {" "}
+                                        <FaX size={16} color="grey" /> Cancel{" "}
+                                      </button>
                 <button
                   type="submit"
                   style={{
@@ -664,7 +680,7 @@ export const QuoteForm = ({
                     borderRadius: "5px",
                   }}
                 >
-                  <FaSave /> {isEdit ? "Update" : "Submit"}
+                  <FaSave />{" "}save
                 </button>
               </Stack>
             </Form>

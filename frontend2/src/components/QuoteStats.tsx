@@ -21,15 +21,11 @@ interface IQuoteStat {
 
 export const QuoteStats = ({refreshList}:{refreshList: boolean}) => {
   const [quoteStats, setQuoteStats] = useState<IQuoteStat | null>(null);
-
-
-
   const fetchData = async () => {
     const resp = await axiosInstance.get("/Quote/get/stats");
     setQuoteStats(resp.data);
   };
   
-
   useEffect(() => {
     fetchData();
   }, [refreshList]);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Card, Col, Container, Image, Row, Stack, Table } from 'react-bootstrap'
+import { Card, Col, Container, Image, Row, Table } from 'react-bootstrap'
 import { useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance';
 import { FaCheckCircle } from 'react-icons/fa';
