@@ -43,7 +43,7 @@ export default function QuoteDetails({id,handleClose,refreshList}: {id: string, 
     },[id])
 
     const handleUpdate = async (status: number) => {
-        const resp = await axiosInstance.put(`Quote/update/${id}`, {...quote, quoteStatus: status, businessIdName: {id: quote?.businessDetails.id,name: quote?.businessDetails.businessName}});
+        const resp = await axiosInstance.post(`Quote/update/${id}`, {...quote, quoteStatus: status, businessIdName: {id: quote?.businessDetails.id,name: quote?.businessDetails.businessName}});
       
         if(resp.data){
             handleClose();

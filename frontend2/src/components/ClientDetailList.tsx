@@ -79,7 +79,7 @@ const ClientDetailList = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const resp = await axiosInstance.delete(`/Client/delete/${id}`);
+      const resp = await axiosInstance.post(`/Client/delete/${id}`);
       if (resp.data) {
         refresh();
       }
@@ -293,7 +293,7 @@ const ClientDetailList = () => {
             <Text
               style={{ cursor: "pointer" }}
               onClick={async () => {
-                await axiosInstance.put(`/Client/update/${item?.id}`, {
+                await axiosInstance.post(`/Client/update/${item?.id}`, {
                   ...item,
                   isDeleted: "Active",
                 });

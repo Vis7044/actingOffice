@@ -71,7 +71,7 @@ export const ItemForm = ({
                 handleClose();
               }
             } else {
-              const result = await axiosInstance.put(
+              const result = await axiosInstance.post(
                 `Service/update/${itemId}`, values
               );
               if (result.data) {

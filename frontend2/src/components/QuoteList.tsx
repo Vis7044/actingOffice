@@ -100,7 +100,7 @@ const QuoteList = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const resp = await axiosInstance.delete(`/Quote/delete/${id}`);
+      const resp = await axiosInstance.post(`/Quote/delete/${id}`);
       if (resp.data) {
         refresh();
       } else {
@@ -357,7 +357,7 @@ const QuoteList = () => {
           />
           {item.isDeleted === "Inactive"?<Text style={{cursor: 'pointer'}} onClick={async () => {
             
-                await axiosInstance.put(
+                await axiosInstance.post(
                   `/Quote/update/${item?.id}`,
                   {...item,isDeleted: 'Active'}
                 );
