@@ -30,7 +30,7 @@ const textFieldStyles: Partial<ITextFieldStyles> = {
 export const BusinessAutocomplete = () => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<IClient[]>([]);
-  const { setFieldValue } = useFormikContext<any>(); // Adjust type if needed
+  const { setFieldValue } = useFormikContext<unknown>(); // Adjust type if needed
 
   useEffect(() => {
     const fetchSuggestions = async () => {
