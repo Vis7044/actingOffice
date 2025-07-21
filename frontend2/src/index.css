@@ -14,8 +14,8 @@
   font-size: 12px;
   margin-top: 2px;
   position: absolute;
-  bottom: -10px;
-  left: 250px;
+  bottom: -16px;
+  left: 150px;
 }
 .error-service-description {
   color: red;
@@ -24,6 +24,40 @@
   position: absolute;
   bottom: -14px;
   left: 209px;
+}
+
+.error-service-amount{
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -14px;
+  right: 59px;
+}
+
+
+svg:focus {
+  border: 0;
+  outline: none;
+}
+
+.error {
+  color: red;
+}
+
+.custom-progress {
+  height: 16px !important; /* Steeper/thicker progress bar */
+  border-radius: 6px;
+}
+
+.quote-box {
+  min-width: 200px;
+  flex: 1;
+}
+
+
+.offCanvasBody {
+  padding: 0px !important;
 }
 
 .shimmer {

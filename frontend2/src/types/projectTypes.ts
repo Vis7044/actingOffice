@@ -19,7 +19,7 @@ export interface User {
     role: string
 }
 
-interface IAddress {
+export interface IAddress {
   building: string;
   street: string;
   city: string;
@@ -43,11 +43,20 @@ interface IService {
 export interface IQuote {
     key: number;
     id: string;
-    businessId :string;
-    businessName : string;
+
+    businessIdName : {
+      id: string,
+      name: string
+    }
     quoteNumber: string;    
     date: string;
-    firstResponse: string;
+    firstResponse: {
+      id:string,
+      firstName: string,
+      lastName: string
+    }
     services: IService[]
     totalAmount: number;
+    quoteStatus: string
+    isDeleted:string
 }

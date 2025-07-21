@@ -1,32 +1,36 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../utils/axiosInstance";
-import { Field, useFormikContext } from "formik";
-import { mergeStyles } from "@fluentui/react";
+import { useFormikContext } from "formik";
+import { Stack, TextField, type ITextFieldStyles, mergeStyles, FocusZone, List } from "@fluentui/react";
 
 interface IClient {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
-const input = mergeStyles({
-  border: "1px solid #909090",
-  outline: "none",
-  padding: "4px",
-  fontSize: "14px",
-  borderRadius: "5px",
-  width: "250px",
+const suggestionItemClass = mergeStyles({
+  padding: "8px",
+  cursor: "pointer",
+  borderBottom: "1px solid #eee",
   selectors: {
     ":hover": {
-      border: "1px solid",
-      borderColor: "rgb(65, 150, 230)",
+      backgroundColor: "#f3f2f1",
     },
   },
 });
 
+const textFieldStyles: Partial<ITextFieldStyles> = {
+  root: { width: 600 },
+  field: {
+    borderBottom: "1px solid gray",
+    borderRadius: 0,
+  },
+};
+
 export const BusinessAutocomplete = () => {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<IClient[]>([]);
-  const { setFieldValue } = useFormikContext();
+  const { setFieldValue } = useFormikContext<unknown>(); // Adjust type if needed
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -38,61 +42,67 @@ export const BusinessAutocomplete = () => {
       try {
         const res = await axiosInstance.get(`/Client/search?query=${query}`);
         setSuggestions(res.data);
-        console.log("Suggestions fetched:", res.data);  
       } catch (err) {
         console.error("Error fetching suggestions", err);
       }
     };
 
-    const delayDebounce = setTimeout(fetchSuggestions, 300); // debounce 300ms
+    const delayDebounce = setTimeout(fetchSuggestions, 300);
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
+  const onSuggestionClick = (name: string) => {
+    setFieldValue("businessName", name);
+    setQuery(name);
+    setSuggestions([]);
+  };
+
   return (
-    <div style={{ position: "relative" }}>
-      <Field
+    <Stack styles={{ root: { position: "relative" } }}>
+      <TextField
+        label=""
         name="businessName"
         placeholder="Business Name"
-        onChange={(e) => {
-          const value = e.target.value;
-          setQuery(value);
-          setFieldValue("businessName", value);
+        styles={textFieldStyles}
+        value={query}
+        onChange={(_, newValue) => {
+          setQuery(newValue || "");
+          setFieldValue("businessName", newValue || "");
         }}
-        className={input}
-        style={{ width: "600px", border: 'none', borderBottom: '1px solid',borderColor: 'gray' }}
       />
 
       {suggestions.length > 0 && (
-        <ul
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            right: 0,
-            background: "#fff",
-            border: "1px solid #ccc",
-            zIndex: 10,
-            listStyle: "none",
-            margin: 0,
-            padding: "0",
-            maxHeight: "150px",
-            overflowY: "auto",
-          }}
-        >
-          {suggestions.map((s) => (
-            <li
-              key={s.id}
-              onClick={() => {
-                setFieldValue("businessName", s.name);
-                setSuggestions([]);
-              }}
-              style={{ padding: "8px", cursor: "pointer", borderBottom: "1px solid #eee" }}
-            >
-              {s.name}
-            </li>
-          ))}
-        </ul>
+        <FocusZone>
+          <Stack
+            styles={{
+              root: {
+                position: "absolute",
+                top: "100%",
+                left: 0,
+                right: 0,
+                background: "#fff",
+                border: "1px solid #ccc",
+                zIndex: 10,
+                maxHeight: "150px",
+                overflowY: "auto",
+              },
+            }}
+          >
+            <List
+              items={suggestions}
+              onRenderCell={(item: IClient) => (
+                <div
+                  key={item.id}
+                  onClick={() => onSuggestionClick(item.name)}
+                  className={suggestionItemClass}
+                >
+                  {item.name}
+                </div>
+              )}
+            />
+          </Stack>
+        </FocusZone>
       )}
-    </div>
+    </Stack>
   );
 };

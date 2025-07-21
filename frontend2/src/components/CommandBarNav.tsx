@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { SlReload } from "react-icons/sl";
 import { CiFilter } from "react-icons/ci";
-import { mergeStyles, getTheme } from "@fluentui/react";
+import { mergeStyles, getTheme} from "@fluentui/react";
 import SideCanvas from "./SideCanvas";
 import * as React from "react";
 import {
@@ -20,50 +20,13 @@ import { Field, Form, Formik, type FormikProps } from "formik";
 import { useLocation } from "react-router-dom";
 import { FaX } from "react-icons/fa6";
 import axiosInstance from "../utils/axiosInstance";
+import { Types } from "../utils/enum";
 
 const theme = getTheme();
-
-const commandBarStyle = mergeStyles({
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  padding: "0px 20px 3px 20px",
-  borderBottom: `1px solid ${theme.palette.neutralQuaternaryAlt}`,
-});
-
 const sectionStyle = mergeStyles({
   display: "flex",
   alignItems: "center",
   gap: "10px",
-});
-
-const itemStyle = mergeStyles({
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  padding: "6px 10px",
-  cursor: "pointer",
-  borderRadius: "4px",
-  selectors: {
-    ":hover": {
-      backgroundColor: theme.palette.neutralLight,
-    },
-  },
-});
-
-const filterStyle = mergeStyles({
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  padding: "3px 7px",
-  backgroundColor: "#C7E0F4",
-  cursor: "pointer",
-  borderRadius: "40px",
-  selectors: {
-    ":hover": {
-      backgroundColor: "#B3D0E8",
-    },
-  },
 });
 
 const styles = mergeStyleSets({
@@ -82,26 +45,30 @@ const styles = mergeStyleSets({
   },
 });
 
-const filterData = {
-  businessType: [
-    "LimitedPartnership",
-    "LLp",
-    "Limited",
-    "Individual",
-    "Partnership",
-  ],
-};
+// const filterData = {
+//   businessType: [
+//     "LimitedPartnership",
+//     "LLp",
+//     "Limited",
+//     "Individual",
+//     "Partnership",
+//   ],
+// };
+
+
 
 export const CommandBarNav = ({
   refreshLIst,
   updateSearch,
   refreshIcon,
   updateFilter,
+  updateStatus
 }: {
   refreshLIst: () => void;
   updateSearch: (search: string) => void;
   refreshIcon: boolean;
   updateFilter: (filter: { criteria: string; value: string }) => void;
+  updateStatus?: React.Dispatch<React.SetStateAction<string>>
 }) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isCalloutVisible, { toggle: toggleIsCalloutVisible }] =
@@ -111,36 +78,40 @@ export const CommandBarNav = ({
     criteria: "",
     value: "",
   });
+  const [status, setStatus] = useState("Active")
+  const [activeStatus,setActiveStatus] = useState(false)
   const location = useLocation();
-  const [userOptions, setUserOptions] = React.useState<string[]>([]);
+  const [userOptions, setUserOptions] = React.useState<{id:string,name:string}[]>([]);
 
   return (
-    <div className={commandBarStyle}>
+    <Stack horizontal verticalAlign="center" horizontalAlign="space-between" styles={{root: {padding: "0px 20px 3px 20px",
+  borderBottom: `1px solid ${theme.palette.neutralQuaternaryAlt}`,paddingBottom: '5px'}}} >
       {/* Left side */}
-      <div className={sectionStyle}>
-        <div className={itemStyle}>
+      <Stack horizontal verticalAlign="center" tokens={{childrenGap: 25}}>
+        <Text styles={{root: {cursor: 'pointer'}}}>
           <SideCanvas name="Add business" refreshLIst={refreshLIst} />
-        </div>
-        <div className={itemStyle} onClick={refreshLIst}>
+        </Text>
+        <Stack horizontal verticalAlign="center" styles={{root: {cursor: 'pointer'}}} tokens={{childrenGap: 5}} onClick={refreshLIst}>
           <SlReload className={refreshIcon ? "spin" : ""} />
-          <span>Refresh</span>
-        </div>
-      </div>
+          <Text>Refresh</Text>
+        </Stack>
+      </Stack>
 
       {/* Right side */}
       <div className={sectionStyle}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
+        <Stack
+          horizontal
+          verticalAlign="center"
+          tokens={{childrenGap: 4}}
+          styles={{
+            root:{
             color: "black",
             padding: "4px 10px",
             borderRadius: 4,
             border: "1px solid",
             borderColor: "rgba(0,0,0,0.2)",
             boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-          }}
+          }}}
         >
           <FaSearch color="gray" />
           <input
@@ -156,43 +127,49 @@ export const CommandBarNav = ({
               if (e.key === "Enter") updateSearch(searchTerm);
             }}
           />
-        </div>
+        </Stack>
 
-        {location.pathname.includes("client") && (
-          <div
-            style={{
+        
+          <Stack
+            styles={{root:{
               backgroundColor: "#C7E0F4",
               padding: "3px 8px",
               borderRadius: "20px",
               cursor: "pointer",
-            }}
+            }}}
+            id={activeStatus?`${buttonId}`:'abcd'}
+              onClick={() => {
+                setActiveStatus(true)
+                toggleIsCalloutVisible()
+              }}
           >
-            <span>
-              Status = <span style={{ fontWeight: "bold" }}>Active</span>
-            </span>
-          </div>
-        )}
+            <Text>
+              Status = <span style={{ fontWeight: "bold" }}>{status?status:'Active'}</span>
+            </Text>
+          </Stack>
+        
 
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+        <Stack>
+          <Stack horizontal verticalAlign="center" styles={{root: {padding: '10px 0'}}} tokens={{childrenGap: 5}}>
             {selectedFilter.criteria !== "" && selectedFilter.value !== "" && (
-              <div
-                style={{
+              <Stack
+                horizontal
+                verticalAlign="center"
+                tokens={{childrenGap: 5}}
+                styles={{root:{
                   backgroundColor: "#C7E0F4",
-                  padding: "3px 8px",
+                  padding: "0 8px",
                   borderRadius: "20px",
                   cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                }}
+                  
+                }}}
               >
-                <span style={{}}>
+                <Text style={{}}>
                   {selectedFilter.criteria} ={" "}
-                  <span style={{ fontWeight: "bold" }}>
+                  <Text styles={{root:{ fontWeight: "bold"} }}>
                     {selectedFilter.value}
-                  </span>
-                </span>
+                  </Text>
+                </Text>
                 <FaX
                   onClick={() => {
                     updateFilter({ criteria: "", value: "" });
@@ -201,22 +178,28 @@ export const CommandBarNav = ({
                   style={{ marginLeft: "4px" }}
                   size={12}
                 />
-              </div>
+              </Stack>
             )}
-            <div
-              style={{
+            {!window.location.pathname.startsWith("/items") && <Stack
+              horizontal
+              verticalAlign="center"
+              tokens={{childrenGap: 3}}
+              styles={{root:{
                 backgroundColor: "#C7E0F4",
                 padding: "3px 8px",
                 borderRadius: "20px",
                 cursor: "pointer",
+              }}}
+              id={!activeStatus ? `${buttonId}`:"abcd"}
+              onClick={() => {
+                setActiveStatus(false)
+                toggleIsCalloutVisible()
               }}
-              id={buttonId}
-              onClick={() => toggleIsCalloutVisible()}
             >
               <CiFilter size={20} color="rgb(7, 84, 250)" />
-              <span>Add Filter</span>
-            </div>
-          </div>
+              <Text>Add Filter</Text>
+            </Stack>}
+          </Stack>
 
           {isCalloutVisible ? (
             <FocusTrapCallout
@@ -230,24 +213,29 @@ export const CommandBarNav = ({
               <Text block variant="xLarge" className={styles.title}>
                 select filter
               </Text>
+              
+
               <Formik
                 initialValues={{
                   criteria: "",
                   value: "",
+                  status: "Active",
                 }}
-                onSubmit={(values) => {}}
+                onSubmit={() => {}}
               >
+                {/* eslint-disable */}
                 {(props: FormikProps<any>) => {
-                  // eslint-disable-next-line react-hooks/rules-of-hooks
+                  {/* eslint-enable */}
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                   React.useEffect(()=>{
                     async function  fetchUsers () {
                       const resp = await axiosInstance.get('/Auth/get');
-                      const users = resp.data;
+                      
+                      const users: {id:string,firstName:string,lastName:string}[] = resp.data;
 
                       // Extract or format the values you want from users
-                      const formatted = users.map((u: any) => `${u.firstName} ${u.lastName}`); 
+                      const formatted = users.map((u: {id:string,firstName:string,lastName:string}) => {return {id:u.id,name:`${u.firstName} ${u.lastName}`}}); 
                       setUserOptions(formatted);
-                      console.log(users)
                     }
                     if (props.values.criteria === "FirstResponse") {
                       fetchUsers();
@@ -257,8 +245,8 @@ export const CommandBarNav = ({
                   },[props.values.criteria])
                   return location.pathname.includes("quote") ? (
                     <Form>
-                      <div style={{}}>
-                        <div>Criteria: </div>
+                      <Stack style={{}}>
+                        {!activeStatus && <><Text>Criteria: </Text>
                         <Field
                           as="select"
                           name="criteria"
@@ -272,13 +260,27 @@ export const CommandBarNav = ({
                         >
                           <option value={""}>Select Category</option>
                           <option value="FirstResponse">First Response</option>
-                          <option value="green">Green</option>
-                          <option value="blue">Blue</option>
-                        </Field>
-                      </div>
+                        </Field></>}
+                        {activeStatus && <><Text>Values: </Text>
+                        <Field
+                          as="select"
+                          name="status"
+                          style={{
+                            width: "100%",
+                            border: "1px solid",
+                            borderColor: "rgba(0,0,0,0.3)",
+                            borderRadius: "5px",
+                            padding: "4px 5px",
+                          }}
+                        >
+                          <option value="All">All</option>
+                          <option value="Active" >Active</option>
+                          <option value="Inactive">InActive</option>
+                        </Field></>}
+                      </Stack>
                       {props.values.criteria !== "" && userOptions.length>0 && (
-                        <div style={{ marginTop: "10px" }}>
-                          <div>Value: </div>
+                        <Stack styles={{ root: {marginTop: "10px" }}}>
+                          <Text>Value: </Text>
                           <Field
                             as="select"
                             name="value"
@@ -292,10 +294,10 @@ export const CommandBarNav = ({
                           >
                             <option value={""}>Select Value</option>
                             {userOptions.map((val) => {
-                              return <option value={val}>{val}</option>;
+                              return <option value={val.id}>{val.name}</option>;
                             })}
                           </Field>
-                        </div>
+                        </Stack>
                       )}
                       <FocusZone
                         handleTabKey={FocusZoneTabbableElements.all}
@@ -303,29 +305,38 @@ export const CommandBarNav = ({
                       >
                         <Stack
                           className={styles.buttons}
-                          // eslint-disable-next-line @typescript-eslint/no-deprecated
-                          gap={8}
+                          tokens={{childrenGap: 8}}
                           horizontal
                         >
                           <DefaultButton onClick={toggleIsCalloutVisible}>
                             Cancel
                           </DefaultButton>
-                          <PrimaryButton
+                          {!activeStatus && <PrimaryButton
                             onClick={() => {
                               updateFilter(props.values);
-                              setSelectedFilter(props.values);
+                              const selectedUser = userOptions.find((u) => u.id == props.values.value);
+                              setSelectedFilter({criteria: props.values.criteria, value: selectedUser?.name || ""});
                               toggleIsCalloutVisible();
                             }}
                           >
                             Done
-                          </PrimaryButton>
+                          </PrimaryButton>}
+                          {activeStatus && updateStatus && <PrimaryButton
+                            onClick={() => {
+                              updateStatus(props.values.status)
+                              setStatus(props.values.status)
+                              toggleIsCalloutVisible();
+                            }}
+                          >
+                            Done
+                          </PrimaryButton>}
                         </Stack>
                       </FocusZone>
                     </Form>
                   ) : (
                     <Form>
-                      <div style={{}}>
-                        <div>Criteria: </div>
+                      <Stack style={{}}>
+                        {!activeStatus && <><Text>Criteria: </Text>
                         <Field
                           as="select"
                           name="criteria"
@@ -338,14 +349,28 @@ export const CommandBarNav = ({
                           }}
                         >
                           <option value={""}>Select Category</option>
-                          <option value="type">Business Type</option>
-                          <option value="green">Green</option>
-                          <option value="blue">Blue</option>
-                        </Field>
-                      </div>
-                      {props.values.criteria !== "" && (
-                        <div style={{ marginTop: "10px" }}>
-                          <div>Value: </div>
+                          <option value="Type">Business Type</option>
+                        </Field></>}
+                        {activeStatus && <><Text>Values: </Text>
+                        <Field
+                          as="select"
+                          name="status"
+                          style={{
+                            width: "100%",
+                            border: "1px solid",
+                            borderColor: "rgba(0,0,0,0.3)",
+                            borderRadius: "5px",
+                            padding: "4px 5px",
+                          }}
+                        >
+                          <option value="All">All</option>
+                          <option value="Active" >Active</option>
+                          <option value="Inactive">InActive</option>
+                        </Field></>}
+                      </Stack>
+                      {props.values.criteria !== "" && !activeStatus && (
+                        <Stack styles={{ root:{marginTop: "10px"} }}>
+                          <Text>Value: </Text>
                           <Field
                             as="select"
                             name="value"
@@ -358,11 +383,15 @@ export const CommandBarNav = ({
                             }}
                           >
                             <option value={""}>Select Value</option>
-                            {filterData.businessType.map((val) => {
-                              return <option value={val}>{val}</option>;
-                            })}
+                           
+                              <option value={Types.Individual}>Individual</option>;
+                              <option value={Types.LLP}>LLp</option>;
+                              <option value={Types.Limited}>Limited</option>;
+                              <option value={Types.LimitedPartnership}>LimitedPartnership</option>;
+                              <option value={Types.Partnership}>Partnership</option>;
+                            
                           </Field>
-                        </div>
+                        </Stack>
                       )}
                       <FocusZone
                         handleTabKey={FocusZoneTabbableElements.all}
@@ -370,22 +399,32 @@ export const CommandBarNav = ({
                       >
                         <Stack
                           className={styles.buttons}
-                          // eslint-disable-next-line @typescript-eslint/no-deprecated
-                          gap={8}
+                          
+                          tokens={{childrenGap: 8}}
                           horizontal
                         >
                           <DefaultButton onClick={toggleIsCalloutVisible}>
                             Cancel
                           </DefaultButton>
-                          <PrimaryButton
+                          {!activeStatus && <PrimaryButton
                             onClick={() => {
                               updateFilter(props.values);
                               setSelectedFilter(props.values);
+                              setStatus(props.values.status)
                               toggleIsCalloutVisible();
                             }}
                           >
                             Done
-                          </PrimaryButton>
+                          </PrimaryButton>}
+                          {activeStatus && updateStatus && <PrimaryButton
+                            onClick={() => {
+                              updateStatus(props.values.status)
+                              setStatus(props.values.status)
+                              toggleIsCalloutVisible();
+                            }}
+                          >
+                            Done
+                          </PrimaryButton>}
                         </Stack>
                       </FocusZone>
                     </Form>
@@ -396,8 +435,8 @@ export const CommandBarNav = ({
               It's not related to or required for FocusTrapCallout's built-in focus trapping. */}
             </FocusTrapCallout>
           ) : null}
-        </div>
+        </Stack>
       </div>
-    </div>
+    </Stack>
   );
 };
