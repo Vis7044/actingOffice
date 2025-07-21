@@ -214,7 +214,7 @@ export const QuoteForm = ({
                 await axiosInstance.post("/Quote/create", {...payload,date: new Date(`${payload.date}`)});
               }
               if (isEdit) {
-                await axiosInstance.put(
+                await axiosInstance.post(
                   `/Quote/update/${initialQuoteData?.id}`,
                   { ...payload, date: new Date(`${payload.date}`) }
                 );

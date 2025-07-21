@@ -88,7 +88,7 @@ export const EditClientForm = ({
         validationSchema={validateYupSchema}
         onSubmit={async (values) => {
           try {
-            const result = await axiosInstance.put(
+            const result = await axiosInstance.post(
               `/Client/update/${initialClientData.id}`,
               values
             );
