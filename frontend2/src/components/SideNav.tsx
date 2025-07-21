@@ -386,8 +386,7 @@ export const SideNav: React.FC = () => {
             >
               <Stack
                 className={styles.buttons}
-                // eslint-disable-next-line @typescript-eslint/no-deprecated
-                gap={20}
+                tokens={{childrenGap: 20}}
                 style={{display: 'flex', justifyContent: 'space-between'}}
                 horizontal
               >

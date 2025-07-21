@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import axiosInstance from '../utils/axiosInstance';
 import { Stack, Text } from '@fluentui/react';
 import type { IQuote } from '../types/projectTypes';
@@ -34,13 +34,13 @@ const quoteStatusColor = {
 
 export default function QuoteDetails({id,handleClose,refreshList}: {id: string, handleClose: () => void,refreshList: () => void}) {
     const [quote, setQuoteData] = useState<Quote>();
-    const fetchQuote =async () => {
-        const resp = await axiosInstance.get(`Quote/get/${id}`);
-        setQuoteData(resp.data)
-    }
     useEffect(() => {
+        const fetchQuote =async () => {
+            const resp = await axiosInstance.get(`Quote/get/${id}`);
+            setQuoteData(resp.data)
+        }
         fetchQuote()
-    },[])
+    },[id])
 
     const handleUpdate = async (status: number) => {
         const resp = await axiosInstance.put(`Quote/update/${id}`, {...quote, quoteStatus: status, businessIdName: {id: quote?.businessDetails.id,name: quote?.businessDetails.businessName}});

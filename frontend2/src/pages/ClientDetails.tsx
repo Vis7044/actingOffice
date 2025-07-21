@@ -80,6 +80,7 @@ export const ClientDetails = () => {
   const [error, setError] = useState<string>("");
   const [history, setHistory] = useState<IClientHistoryWithUser[]>([]);
 
+  
   const fetchClientDetail = async () => {
     try {
       const resp = await axiosInstance.get(`/Client/getClient/${id}`);
@@ -92,10 +93,9 @@ export const ClientDetails = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchClientDetail();
-  }, []);
+  }, [id]);
 
   if (loading) return <div>Loading client details...</div>;
   if (error) return <div>{error}</div>;

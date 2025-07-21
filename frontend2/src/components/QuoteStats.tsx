@@ -1,5 +1,5 @@
 import { Stack, Text } from "@fluentui/react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { ProgressBar } from "react-bootstrap";
 import { LuSquare } from "react-icons/lu";
