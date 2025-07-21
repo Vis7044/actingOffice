@@ -19,7 +19,11 @@ namespace backend.Dtos.ClientDto
         /// <summary>
         /// address of the client,
         /// </summary>
-        public required ClientAddress Address { get; set; } = new();
+        public ClientAddress? Address { get; set; }
+        /// <summary>
+        /// soft delete functionality,
+        /// </summary>
+        public IsDeleted IsDeleted { get; set; } = IsDeleted.Active;
 
     }
 }

@@ -1,5 +1,7 @@
 ﻿using backend.Data;
+using backend.Dtos.QuoteDto;
 using backend.Enums;
+using backend.helper;
 using backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -81,7 +83,7 @@ namespace backend.Controllers
         /// <param name="searchTerm"></param>
         /// <returns></returns>
         [HttpGet("get")]
-        public async Task<IActionResult> GetServices([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "")
+        public async Task<IActionResult> GetServices([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "", [FromQuery] string IsDeleted="")
         {
             try
             {
@@ -99,9 +101,25 @@ namespace backend.Controllers
                         new BsonDocument("Description", new BsonDocument { { "$regex", searchTerm }, { "$options", "i" } })
                     });
                 }
-                filter.Add("IsDeleted", IsDeleted.Active);
-                var result = await _serviceCollection.Find(filter).ToListAsync();
-                return Ok(result);
+                if (!string.Equals(IsDeleted, "All", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (Enum.TryParse<IsDeleted>(IsDeleted, out var deleted))
+                    {
+                        filter.Add("IsDeleted", (int)deleted);
+                    }
+                    
+                }
+
+                var result = await _serviceCollection.Find(filter).Skip((page-1)*pageSize).Limit(pageSize).ToListAsync();
+                var countFilter = new BsonDocument(filter);
+                var totalCount = await _serviceCollection.CountDocumentsAsync(countFilter);
+                return Ok(new PageResult<Service>
+                {
+                    TotalCount = totalCount,
+                    Page = page,
+                    PageSize = pageSize,
+                    Data = result
+                });
             }
             catch (Exception ex)
             {
@@ -148,7 +166,8 @@ namespace backend.Controllers
                 var update = Builders<Service>.Update
                     .Set(s => s.Name, service.Name)
                     .Set(s => s.Description, service.Description)
-                    .Set(s => s.Amount, service.Amount);
+                    .Set(s => s.Amount, service.Amount)
+                    .Set(s => s.IsDeleted, service.IsDeleted);
                 var result = await _serviceCollection.UpdateOneAsync(filter, update);
                 if (result.ModifiedCount == 0)
                 {

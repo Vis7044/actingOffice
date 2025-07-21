@@ -4,8 +4,11 @@ using backend.Enums;
 using backend.helper;
 using backend.Models;
 using backend.services.interfaces;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using System.Reflection.Metadata;
 
 namespace backend.services
 {
@@ -18,8 +21,8 @@ namespace backend.services
         public QuoteService(MongoDbContext context, CounterService counter)
         {
             _context = context;
-            _quote = context.Quote; // Initialize the quotes collection
-            _counter = counter; // Initialize the counters collection
+            _quote = context.Quote; 
+            _counter = counter; 
             _client = context.Clients;
         }
         /// <summary>
@@ -70,9 +73,9 @@ namespace backend.services
                 Date = dto.Date,
                 FirstResponse = new FirstResponse
                 {
-                    Id = user.Id,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName
+                    Id = dto.FirstResponse.Id,
+                    FirstName = dto.FirstResponse.FirstName,
+                    LastName = dto.FirstResponse.LastName
                 },
                 AmountBeforeVat = amountBeforeVat,
                 VatRate = vatRate,
@@ -103,7 +106,7 @@ namespace backend.services
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<PageResult<QuoteModel>> GetQouteAsync(string role, string userId, int page, int pageSize, string searchTerm, string criteria, string value)
+        public async Task<PageResult<QuoteModel>> GetQouteAsync(string role, string userId, int page, int pageSize, string searchTerm, string criteria, string value, string IsDeleted)
         {
             if (page < 1 || pageSize < 1)
             {
@@ -118,12 +121,24 @@ namespace backend.services
             {
                 filters.Add("CreatedBy.UserId", new ObjectId(userId));
             }
-            filters.Add("IsDeleted", new BsonDocument("$ne", IsDeleted.Inactive));
+            
             if (!string.IsNullOrEmpty(criteria) && !string.IsNullOrEmpty(value))
             {
 
                 filters.Add($"{criteria}._id", new ObjectId(value));
 
+            }
+
+            if (!string.Equals(IsDeleted, "All", StringComparison.OrdinalIgnoreCase))
+            {
+                if (Enum.TryParse<IsDeleted>(IsDeleted, out var deleted))
+                {
+                    filters.Add("IsDeleted", (int)deleted);
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid delete type value.");
+                }
             }
 
             if (!string.IsNullOrEmpty(search))
@@ -268,9 +283,9 @@ namespace backend.services
             var totalDrafted = quote.Sum(q => q.QuoteStatus == Enums.QuoteStatus.Drafted? q.TotalAmount: 0);
             var totalAccepted = quote.Sum(q => q.QuoteStatus == Enums.QuoteStatus.Accepted? q.TotalAmount: 0);
             var totalRejected = quote.Sum(q => q.QuoteStatus == Enums.QuoteStatus.Rejected? q.TotalAmount: 0);  
-            var DrafterPercentage = totalDrafted * 100 / totalAmount;
-            var AcceptedPercentage = totalAccepted * 100 / totalAmount;
-            var RejectedPercentage = totalRejected * 100 / totalAmount;
+            var DrafterPercentage = Math.Round(totalDrafted * 100 / totalAmount,2);
+            var AcceptedPercentage = Math.Round(totalAccepted * 100 / totalAmount,2);
+            var RejectedPercentage = Math.Round(totalRejected * 100 / totalAmount,2);
 
             return new QuoteStats
             {
@@ -333,12 +348,13 @@ namespace backend.services
                 var update = Builders<QuoteModel>.Update
                     .Set(c => c.BusinessIdName, businessIdName)
                     .Set(c => c.FirstResponse, quote.FirstResponse)
-
+                    .Set(c => c.Date, quote.Date)
                     .Set(c => c.AmountBeforeVat, quote.AmountBeforeVat)
                     .Set(c => c.VatRate, quote.VatRate)
                     .Set(c => c.VatAmount, quote.VatAmount)
                     .Set(c => c.TotalAmount, quote.TotalAmount)
                     .Set(c => c.QuoteStatus, quote.QuoteStatus)
+                    .Set(c => c.IsDeleted, quote.IsDeleted)
                     .Set(c => c.Services, quote.Services);
 
                 var result = await _quote.UpdateOneAsync(filter, update);
@@ -388,5 +404,215 @@ namespace backend.services
                 throw new Exception($"Error deleting client: {ex.Message}");
             }
         }
+
+        public async Task<PageResult<QuoteSummaryDto>> GetUsersQuoteStatus(int page, int pageSize)
+        {
+            if (page < 1 || pageSize < 1)
+            {
+                throw new ArgumentException("Page and page size must be greater than 0.");
+            }
+            var skip = (page - 1) * pageSize;
+
+            var groupStage = new BsonDocument("$group",
+                new BsonDocument
+                {
+            { "_id", "$CreatedBy.UserId" },
+            { "TotalCount", new BsonDocument("$sum", 1) },
+            { "AcceptedCount", new BsonDocument("$sum", new BsonDocument("$cond", new BsonArray {
+                new BsonDocument("$eq", new BsonArray { "$QuoteStatus", 0 }), 1, 0 })) },
+            { "DraftCount", new BsonDocument("$sum", new BsonDocument("$cond", new BsonArray {
+                new BsonDocument("$eq", new BsonArray { "$QuoteStatus", 1 }), 1, 0 })) },
+            { "RejectedCount", new BsonDocument("$sum", new BsonDocument("$cond", new BsonArray {
+                new BsonDocument("$eq", new BsonArray { "$QuoteStatus", 2 }), 1, 0 })) },
+            { "FirstName", new BsonDocument("$first", "$CreatedBy.FirstName") },
+            { "LastName", new BsonDocument("$first", "$CreatedBy.LastName") }
+                });
+
+            var projectStage = new BsonDocument("$project",
+                new BsonDocument
+                {
+            { "_id", 0 },
+            { "FirstName", 1 },
+            { "LastName", 1 },
+            { "TotalCount", 1 },
+            { "AcceptedCount", 1 },
+            { "DraftCount", 1 },
+            { "RejectedCount", 1 }
+                });
+
+            var pipeline = new[]
+            {
+        groupStage,
+        projectStage,
+        new BsonDocument("$skip", skip),
+        new BsonDocument("$limit", pageSize)
+        };
+
+            var result = await _quote.Aggregate<QuoteSummaryDto>(pipeline).ToListAsync();
+            //var result2 = result.Skip(skip).Take(pageSize);
+            // Count total grouped users
+            var countPipeline = new[] { groupStage };
+            var totalGroups = await _quote.Aggregate<BsonDocument>(countPipeline).ToListAsync();
+            var totalCount = totalGroups.Count;
+
+            return new PageResult<QuoteSummaryDto>
+            {
+                TotalCount = totalCount,
+                Page = page,
+                PageSize = pageSize,
+                Data = result
+            };
+        }
+
+        
+        
+        public async Task<List<DailyQuoteSummary>> GetDailyQuoteDetails(int offset)
+        {
+            var now = DateTime.UtcNow;
+            var targetDate = now.AddMonths(offset);
+            var year = targetDate.Year;
+            var month = targetDate.Month;
+
+            var startOfMonth = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
+
+            var pipeline = new BsonDocument[]
+            {
+                new BsonDocument("$match", new BsonDocument("Date", new BsonDocument
+                {
+                    { "$gte",
+                    new DateTime(year, month, 1, 0, 0, 0) },
+                                { "$lte",
+                    new DateTime(year, month, DateTime.DaysInMonth(year, month), 23, 59, 59) }  
+                })),
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", new BsonDocument("$dateToString", new BsonDocument
+                        {
+                            { "format", "%d" },
+                            { "date", "$Date" }
+                        })
+                    },
+                    { "total", new BsonDocument("$sum", 1) }
+                }),
+                new BsonDocument("$sort", new BsonDocument("_id", 1))
+            };
+
+            var result = await _quote.Aggregate<DailyQuoteSummary>(pipeline).ToListAsync();
+
+            
+            var daysInMonth = DateTime.DaysInMonth(year, month);
+            var completeResult = Enumerable.Range(1, daysInMonth)
+                .Select(d => d.ToString("D2"))
+                .Select(d => result.FirstOrDefault(r => r._id == d) ?? new DailyQuoteSummary { _id = d, total = 0 })
+                .OrderBy(r => r._id)
+                .ToList();
+
+            return completeResult;
+        }
+
+        
+
+
+        public async Task<List<DailyQouteAmountSalary>> GetUsersQuoteAmountStatus(int offset)
+        {
+            var now = DateTime.UtcNow;
+            var targetDate = now.AddMonths(offset);
+            var year = targetDate.Year;
+            var month = targetDate.Month;
+
+            var startOfMonth = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
+
+            var pipeline = new BsonDocument[]
+            {
+                new BsonDocument("$match", new BsonDocument("Date", new BsonDocument
+                {
+                    { "$gte",
+                    new DateTime(year, month, 1, 0, 0, 0) },
+                                { "$lte",
+                    new DateTime(year, month, DateTime.DaysInMonth(year, month), 23, 59, 59) }
+                })),
+                new BsonDocument("$group",
+                new BsonDocument
+                    {
+                        { "_id", "$CreatedBy.UserId" },
+                        { "TotalCount",
+                        new BsonDocument("$sum", 1) },
+                                { "AcceptedCount",
+                        new BsonDocument("$sum",
+                        new BsonDocument("$cond",
+                        new BsonArray
+                                {
+                                    new BsonDocument("$eq",
+                                    new BsonArray
+                                        {
+                                            "$QuoteStatus",
+                                            0
+                                        }),
+                                    "$TotalAmount",
+                                    0
+                                })) },
+                        { "DraftCount",
+                        new BsonDocument("$sum",
+                        new BsonDocument("$cond",
+                        new BsonArray
+                                {
+                                    new BsonDocument("$eq",
+                                    new BsonArray
+                                        {
+                                            "$QuoteStatus",
+                                            1
+                                        }),
+                                    "$TotalAmount",
+                                    0
+                                })) },
+                        { "RejectedCount",
+                        new BsonDocument("$sum",
+                        new BsonDocument("$cond",
+                        new BsonArray
+                                        {
+                                    new BsonDocument("$eq",
+                                    new BsonArray
+                                        {
+                                            "$QuoteStatus",
+                                            2
+                                        }),
+                                    "$TotalAmount",
+                                    0
+                                })) },
+                        { "FirstName",
+                        new BsonDocument("$first", "$CreatedBy.FirstName") },
+                                { "LastName",
+                        new BsonDocument("$first", "$CreatedBy.LastName") }
+                            }),
+                        new BsonDocument("$project",
+                        new BsonDocument
+                        {
+                            { "_id", 0 },
+                            { "FirstName", 1 },
+                            { "LastName", 1 },
+                            { "TotalCount", 1 },
+                            { "AcceptedCount", 1 },
+                            { "DraftCount", 1 },
+                            { "RejectedCount", 1 }
+                        }),
+                        new BsonDocument("$sort", new BsonDocument("AcceptedCount", -1))
+            };
+
+            
+            var result = await _quote.Aggregate<QuoteSummaryDto>(pipeline).ToListAsync();
+
+           return result.Select(r => new DailyQouteAmountSalary
+           {
+                Name = $"{r.FirstName} {r.LastName}",
+                TotalCountAmount = r.TotalCount.ToString(),
+                AcceptedCountAmount = r.AcceptedCount.ToString(),
+                DraftCountAmount = r.DraftCount.ToString(),
+                RejectedCountAmount = r.RejectedCount.ToString()
+            }).ToList();
+        }
+
+
     }
 }

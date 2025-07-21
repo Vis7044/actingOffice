@@ -302,10 +302,16 @@ namespace backend.services
                 {
                     return "No client found to update.";
                 }
+                if(client.Address == null)
+                {
+                    client.Address = clientBeforeUpdate.Address;
+                }
+                
 
                 var update = Builders<ClientModel>.Update
                     .Set(c => c.BusinessName, client.BusinessName)
                     .Set(c => c.Type, client.Type)
+                    .Set(c => c.IsDeleted, client.IsDeleted)
                     .Set(c => c.Address, client.Address);
 
                 var result = await _client.UpdateOneAsync(filter, update);
@@ -347,7 +353,10 @@ namespace backend.services
                 {
                     changes["Building"] = $"'{clientBeforeUpdate.Address.PinCode}' → '{chengedClient.Address.PinCode}'";
                 }
-
+                if (clientBeforeUpdate.IsDeleted != chengedClient.IsDeleted)
+                {
+                    changes["IsDeleted"] = $"'{clientBeforeUpdate.IsDeleted}' → '{chengedClient.IsDeleted}'";
+                }
                 var changesSummary = changes.Count > 0
                     ? string.Join("; ", changes.Select(c => $"{c.Key}: {c.Value}"))
                     : "No significant changes detected";
