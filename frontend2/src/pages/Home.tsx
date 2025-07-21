@@ -158,7 +158,7 @@ const Home = () => {
   }, [currentPage, pageSize]);
 
   const handlePageSizeChange = (
-    event: React.FormEvent<HTMLDivElement>,
+    _,
     option?: IDropdownOption
   ) => {
     if (option) {

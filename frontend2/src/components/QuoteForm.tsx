@@ -446,7 +446,7 @@ export const QuoteForm = ({
                 <FieldArray name="services">
                   {({ insert, remove, replace }) => (
                     <>
-                      {values.services.map((service, index) => (
+                      {values.services.map((_, index) => (
                         <Stack tokens={{ childrenGap: 10 }} key={index}>
                           <Stack horizontal>
                             <Stack

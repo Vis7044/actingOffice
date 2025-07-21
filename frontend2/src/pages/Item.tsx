@@ -7,7 +7,7 @@ import {
   Text,
   type IColumn,
 } from "@fluentui/react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { CommandBarNav } from "../components/CommandBarNav";
 import axiosInstance from "../utils/axiosInstance";
 import SideCanvas from "../components/SideCanvas";
@@ -60,20 +60,20 @@ export default function Item() {
   const updateFilter = (filterValue: { criteria: string; value: string }) => {
     setFilter(filterValue);
   };
-  const getData = async () => {
-    setRefreshIcon(true);
-    const resp = await axiosInstance.get(
-      `/Service/get?searchTerm=${search}&IsDeleted=${status}&page=${activePage}&pageSize=${pageSize}`
-    );
-    const valuewithkey = resp.data.data.map((item: IService, index: number) => {
-      return { ...item, key: pageSize*(activePage-1)+index + 1};
-    });
-    setRefreshIcon(false);
-    setItemData(valuewithkey);
-
-    setTotalPages(Math.ceil(resp.data.totalCount / resp.data.pageSize));
-  };
   useEffect(() => {
+    const getData = async () => {
+      setRefreshIcon(true);
+      const resp = await axiosInstance.get(
+        `/Service/get?searchTerm=${search}&IsDeleted=${status}&page=${activePage}&pageSize=${pageSize}`
+      );
+      const valuewithkey = resp.data.data.map((item: IService, index: number) => {
+        return { ...item, key: pageSize*(activePage-1)+index + 1};
+      });
+      setRefreshIcon(false);
+      setItemData(valuewithkey);
+  
+      setTotalPages(Math.ceil(resp.data.totalCount / resp.data.pageSize));
+    };
     getData();
   }, [refreshList, search, status, filter, activePage, pageSize]);
 

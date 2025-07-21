@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from 'react';
-import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import type {  ReactNode } from 'react';
 import { fetchUser } from './userService';
 import type { User } from '../types/projectTypes';
 
@@ -11,6 +11,7 @@ interface IAuthContext {
  
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { useAuth } from '../utils/useAuth'
 import { Navigate } from 'react-router-dom'
 

@@ -305,8 +305,7 @@ export const CommandBarNav = ({
                       >
                         <Stack
                           className={styles.buttons}
-                          // eslint-disable-next-line @typescript-eslint/no-deprecated
-                          gap={8}
+                          tokens={{childrenGap: 8}}
                           horizontal
                         >
                           <DefaultButton onClick={toggleIsCalloutVisible}>
@@ -400,8 +399,8 @@ export const CommandBarNav = ({
                       >
                         <Stack
                           className={styles.buttons}
-                          // eslint-disable-next-line @typescript-eslint/no-deprecated
-                          gap={8}
+                          
+                          tokens={{childrenGap: 8}}
                           horizontal
                         >
                           <DefaultButton onClick={toggleIsCalloutVisible}>

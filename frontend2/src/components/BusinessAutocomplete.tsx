@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { useFormikContext } from "formik";
 import { Stack, TextField, type ITextFieldStyles, mergeStyles, FocusZone, List } from "@fluentui/react";
@@ -65,7 +65,7 @@ export const BusinessAutocomplete = () => {
         placeholder="Business Name"
         styles={textFieldStyles}
         value={query}
-        onChange={(e, newValue) => {
+        onChange={(_, newValue) => {
           setQuery(newValue || "");
           setFieldValue("businessName", newValue || "");
         }}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, Col, Container, Image, Row, Table } from 'react-bootstrap'
 import { useParams } from 'react-router-dom'
 import axiosInstance from '../utils/axiosInstance';
@@ -44,15 +44,15 @@ interface IQuote {
 export default function AnonymousQuote() {
   const [quoteData, setQuoteData] = useState<IQuote | null>(null)
   const {id} = useParams();
-  const fetchQuote = async () => {
-    const resp = await axiosInstance.get(`/Quote/get/${id}`);
-    const data = resp.data;
-    setQuoteData(data);
-  }
-
+  
   useEffect(() => {
+    const fetchQuote = async () => {
+      const resp = await axiosInstance.get(`/Quote/get/${id}`);
+      const data = resp.data;
+      setQuoteData(data);
+    }
     fetchQuote()
-  },[])
+  },[id])
   return (
     <Container fluid style={{maxWidth: '700px'}}>
       <Row>
