@@ -98,7 +98,7 @@ namespace backend.Controllers
         /// <param name="quoteId"></param>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpPut("update/{quoteId}")]
+        [HttpPost("update/{quoteId}")]
         public async Task<IActionResult> UpdateQuoteAsync([FromRoute] string quoteId, [FromBody] QuoteModel dto)
         {
             try
@@ -112,7 +112,7 @@ namespace backend.Controllers
             }
         }
 
-        [HttpDelete("delete/{quoteId}")]
+        [HttpPost("delete/{quoteId}")]
         public async Task<IActionResult> DeleteQuoteAsync([FromRoute] string quoteId)
         {
             try

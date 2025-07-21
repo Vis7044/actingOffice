@@ -116,7 +116,7 @@ namespace backend.Controllers
         /// <param name="businessId"></param>
         /// <param name="client"></param>
         /// <returns></returns>
-        [HttpPut("update/{businessId}")]
+        [HttpPost("update/{businessId}")]
         public async Task<IActionResult> UpdateClientAsync([FromRoute] string businessId, [FromBody] CreateClient client)
         {
             if (string.IsNullOrEmpty(businessId))
@@ -138,7 +138,7 @@ namespace backend.Controllers
         /// </summary>
         /// <param name="businessId"></param>
         /// <returns></returns>
-        [HttpDelete("delete/{businessId}")]
+        [HttpPost("delete/{businessId}")]
         public async Task<IActionResult> DeleteClientAsync([FromRoute] string businessId)
         {
             if (string.IsNullOrEmpty(businessId))
