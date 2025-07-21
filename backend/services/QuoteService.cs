@@ -106,34 +106,36 @@ namespace backend.services
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="Exception"></exception>
-        public async Task<PageResult<QuoteModel>> GetQouteAsync(string role, string userId, int page, int pageSize, string searchTerm, string criteria, string value, string IsDeleted)
+        public async Task<PageResult<QuoteModel>> GetQouteAsync(
+    string role, string userId, int page, int pageSize,
+    string searchTerm, string criteria, string value, string IsDeleted)
         {
             if (page < 1 || pageSize < 1)
             {
                 throw new ArgumentException("Page and page size must be greater than 0.");
             }
-            var skip = (page - 1) * pageSize;
-            var search = searchTerm?.Trim() ?? string.Empty;
 
-            // Create match filter
-            var filters = new BsonDocument();
+            var builder = Builders<QuoteModel>.Filter;
+            var filter = builder.Empty;
+
+            // Role-based filter
             if (role != UserRole.Admin.ToString())
             {
-                filters.Add("CreatedBy.UserId", new ObjectId(userId));
+                filter &= builder.Eq(q => q.CreatedBy.UserId, userId);
             }
-            
+
+            // Criteria filter (e.g., BusinessIdName._id)
             if (!string.IsNullOrEmpty(criteria) && !string.IsNullOrEmpty(value))
             {
-
-                filters.Add($"{criteria}._id", new ObjectId(value));
-
+                filter &= builder.Eq($"{criteria}._id", new ObjectId(value)); 
             }
 
+            // IsDeleted filter
             if (!string.Equals(IsDeleted, "All", StringComparison.OrdinalIgnoreCase))
             {
                 if (Enum.TryParse<IsDeleted>(IsDeleted, out var deleted))
                 {
-                    filters.Add("IsDeleted", (int)deleted);
+                    filter &= builder.Eq(q => q.IsDeleted,deleted);
                 }
                 else
                 {
@@ -141,30 +143,30 @@ namespace backend.services
                 }
             }
 
-            if (!string.IsNullOrEmpty(search))
+            // Search filters
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                filters.Add("$or", new BsonArray
-                {
-                    new BsonDocument("BusinessIdName.Name", new BsonDocument { { "$regex", search }, { "$options", "i" } }),
-                    new BsonDocument("FirstResponse.FirstName", new BsonDocument { { "$regex", search }, { "$options", "i" } })
-                });
+                var search = searchTerm.Trim();
+                var searchFilter = builder.Or(
+                    builder.Regex("BusinessIdName.Name", new BsonRegularExpression(search, "i")),
+                    builder.Regex("FirstResponse.FirstName", new BsonRegularExpression(search, "i"))
+                );
+
+                filter &= searchFilter;
             }
 
-
-            var pipeline = new BsonDocument[]
-            {
-                new BsonDocument("$match", filters),
-                new BsonDocument("$sort", new BsonDocument("Date", -1)),
-                new BsonDocument("$skip", (page - 1) * pageSize),
-                new BsonDocument("$limit", pageSize),
-                
-            };
+            var sort = Builders<QuoteModel>.Sort.Descending(q => q.Date);
 
             try
             {
-                var quotes = await _quote.Aggregate<QuoteModel>(pipeline).ToListAsync();
-                var countFilter = new BsonDocument(filters);
-                var totalCount = await _quote.CountDocumentsAsync(countFilter);
+                var quotes = await _quote
+                    .Find(filter)
+                    .Sort(sort)
+                    .Skip((page - 1) * pageSize)
+                    .Limit(pageSize)
+                    .ToListAsync();
+
+                var totalCount = await _quote.CountDocumentsAsync(filter);
 
                 return new PageResult<QuoteModel>
                 {
@@ -178,8 +180,8 @@ namespace backend.services
             {
                 throw new Exception($"Error retrieving quotes: {ex.Message}");
             }
-
         }
+
 
         /// <summary>
         /// Retrieves a quote by its ID
@@ -464,8 +466,11 @@ namespace backend.services
             };
         }
 
-        
-        
+        /// <summary>
+        /// Gets daily quote details for a specific month based on the offset from the current date.
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public async Task<List<DailyQuoteSummary>> GetDailyQuoteDetails(int offset)
         {
             var now = DateTime.UtcNow;
@@ -510,10 +515,11 @@ namespace backend.services
 
             return completeResult;
         }
-
-        
-
-
+        /// <summary>
+        /// Gets the status of user quotes for a specific month based on the offset from the current date.
+        /// </summary>
+        /// <param name="offset"></param>
+        /// <returns></returns>
         public async Task<List<DailyQouteAmountSalary>> GetUsersQuoteAmountStatus(int offset)
         {
             var now = DateTime.UtcNow;
