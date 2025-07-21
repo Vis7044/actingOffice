@@ -109,103 +109,79 @@ namespace backend.services
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="Exception"></exception>
         public async Task<PageResult<ClientModel>> GetClientsAsync(
-            string role,
-            string userId,
-            int page,
-            int pageSize,
-            string searchTerm,
-            string criteria,
-            string value,
-            string IsDeleted)
+    string role,
+    string userId,
+    int page,
+    int pageSize,
+    string searchTerm,
+    string criteria,
+    string value,
+    string IsDeleted)
         {
             if (page < 1 || pageSize < 1)
-            {
                 throw new ArgumentException("Page and pageSize must be greater than 0.");
-            }
 
-            var skip = (page - 1) * pageSize;
-            var search = searchTerm?.Trim() ?? string.Empty;
+            int skip = (page - 1) * pageSize;
+            string search = searchTerm?.Trim() ?? string.Empty;
 
-            // Start with empty filter
-            var filters = new BsonDocument();
+            var builder = Builders<ClientModel>.Filter;
+            var filter = builder.Empty;
 
-            // Role-based filtering
+            // Role filter
             if (role != UserRole.Admin.ToString())
-            {
-                filters.Add("CreatedBy.UserId", new ObjectId(userId));
-            }
+                filter &= builder.Eq(c => c.CreatedBy.UserId, userId);
 
-            // Criteria-based filtering (e.g., BusinessType)
+            // Business Type filter
             if (!string.IsNullOrEmpty(value) && criteria == "Type")
             {
                 if (Enum.TryParse<BusinessType>(value, out var businessType))
-                {
-                    filters.Add("Type", (int)businessType);
-                }
+                    filter &= builder.Eq(c => c.Type, businessType);
                 else
-                {
                     throw new ArgumentException("Invalid business type value.");
-                }
             }
 
-            
+            // IsDeleted filter
             if (!string.Equals(IsDeleted, "All", StringComparison.OrdinalIgnoreCase))
             {
                 if (Enum.TryParse<IsDeleted>(IsDeleted, out var deleted))
-                {
-                    filters.Add("IsDeleted", (int)deleted);
-                }
+                    filter &= builder.Eq(c => c.IsDeleted, deleted);
                 else
-                {
                     throw new ArgumentException("Invalid delete type value.");
-                }
             }
 
-            // Search-based filtering
+            // Search filter
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var orConditions = new BsonArray
-                {
-                    new BsonDocument("BusinessName", new BsonDocument
-                    {
-                        { "$regex", search },
-                        { "$options", "i" }
-                    })
-                };
+                var searchFilters = new List<FilterDefinition<ClientModel>>
+        {
+            builder.Regex(c => c.BusinessName, new BsonRegularExpression(search, "i"))
+        };
 
                 if (Enum.TryParse<BusinessType>(search, out var parsedSearchType))
-                {
-                    orConditions.Add(new BsonDocument("Type", (int)parsedSearchType));
-                }
+                    searchFilters.Add(builder.Eq(c => c.Type, parsedSearchType));
 
-                filters.Add("$or", orConditions);
+                filter &= builder.Or(searchFilters);
             }
 
-            // Aggregation pipeline
-            var pipeline = new BsonDocument[]
-            {
-                new BsonDocument("$match", filters),
-                new BsonDocument("$sort", new BsonDocument("CreatedOn", -1)),
-                new BsonDocument("$skip", skip),
-                new BsonDocument("$limit", pageSize),
-                new BsonDocument("$project", new BsonDocument
-                {
-                    { "ClientId", 1 },
-                    { "BusinessName", 1 },
-                    { "Type", 1 },
-                    { "CreatedOn", 1 },
-                    { "CreatedBy", 1 },
-                    {"IsDeleted",1 },
-                    
+            // Projection
+            var projection = Builders<ClientModel>.Projection
+                .Include(c => c.ClientId)
+                .Include(c => c.BusinessName)
+                .Include(c => c.Type)
+                .Include(c => c.CreatedBy)
+                .Include(c => c.IsDeleted);
 
-                 })
-            };
-
+            // Fetch data
             try
             {
-                var result = await _client.Aggregate<ClientModel>(pipeline).ToListAsync();
+                var result = await _client.Find(filter)
+                    .Project<ClientModel>(projection)
+                    .SortByDescending(c => c.CreatedBy.DateTime)
+                    .Skip(skip)
+                    .Limit(pageSize)
+                    .ToListAsync();
 
-                var totalCount = await _client.CountDocumentsAsync(filters);
+                var totalCount = await _client.CountDocumentsAsync(filter);
 
                 return new PageResult<ClientModel>
                 {
@@ -220,6 +196,7 @@ namespace backend.services
                 throw new Exception($"Error fetching clients: {ex.Message}");
             }
         }
+
 
         /// <summary>
         /// get client by id
@@ -237,6 +214,7 @@ namespace backend.services
             // Get history records
             var history = await _historyDb
                 .Find(h => h.Target.Id == clientId)
+                .SortByDescending(h=>h.CreatedBy.DateTime)
                 .ToListAsync();
 
 
