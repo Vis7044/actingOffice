@@ -3,10 +3,11 @@ import * as Yup from "yup";
 
 import axiosInstance from "../utils/axiosInstance";
 import { AxiosError } from "axios";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../utils/useAuth";
 import { makeStyles } from "@fluentui/react";
 import { fetchUser } from "../Auth/userService";
+import { useState } from "react";
 
 const useStyle = makeStyles({
   form: {
@@ -86,6 +87,7 @@ export const Login = () => {
   const classes = useStyle();
   const navigate = useNavigate();
   const {login, setUser, user} =useAuth();
+  const [error, setError] = useState<string | null>(null)
   
   if(user){
     navigate('/')
@@ -111,21 +113,26 @@ export const Login = () => {
           fetchUser()
                 .then(setUser)
           resetForm();
-          return <Navigate to={'/'} replace/>
+          navigate('/');
 
         }else {
           console.log('something went wrong')
           return;
         }
       } catch (error) {
-        const axiosError = error as AxiosError;
-        console.error("Login Failed:", axiosError);
-        if (axiosError.response) {
-          console.error("Response data:", axiosError.response.data);
-        } else {
-          console.log("unknown error");
-        }
-      } finally {
+  const axiosError = error as AxiosError;
+
+  if (axiosError.response?.data) {
+    /* eslint-disable */
+    const errorMsg = (axiosError.response.data as any)|| 'Login failed';
+    /* eslint-enable */
+
+    setError(errorMsg);
+  } else {
+    setError("An unknown error occurred");
+  }
+}
+ finally {
         setSubmitting(false);
       }
     },
@@ -189,6 +196,7 @@ export const Login = () => {
         >
           {formik.isSubmitting ? "Submitting..." : "Log in"}
         </button>
+        {error? <p style={{ color: "red", fontSize: "13px", textAlign: "center" }}>{error}</p>:""}
       <p style={{textAlign: 'end'}}>New User? <Link style={{color: 'blue'}} to={'/signup'}>signup</Link></p>
       </form>
 

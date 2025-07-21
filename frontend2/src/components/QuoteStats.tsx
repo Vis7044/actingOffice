@@ -46,7 +46,7 @@ export const QuoteStats = ({refreshList}:{refreshList: boolean}) => {
               <Text>Draft</Text>
               <Text>{quoteStats?.draftedPercentage || 0}%</Text>
             </Stack>
-            <ProgressBar variant="info" style={{height: 10}} now={quoteStats?.draftedPercentage} />
+            <ProgressBar variant="info"  style={{height: 10}} now={quoteStats?.draftedPercentage} />
           </Stack>
         </Stack>
         <Stack

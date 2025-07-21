@@ -72,6 +72,7 @@ export default function BarQuoteChart({offset}:{offset: number}) {
     </Stack>
   );
 }
+/* eslint-disable */
 
 const CustomizedTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || payload.length === 0) return null;

@@ -14,8 +14,8 @@
   font-size: 12px;
   margin-top: 2px;
   position: absolute;
-  bottom: -10px;
-  left: 250px;
+  bottom: -16px;
+  left: 150px;
 }
 .error-service-description {
   color: red;
@@ -24,6 +24,15 @@
   position: absolute;
   bottom: -14px;
   left: 209px;
+}
+
+.error-service-amount{
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -14px;
+  right: 59px;
 }
 
 

@@ -41,7 +41,7 @@ export const ClientForm = ({
 
   const clientSchema = Yup.object().shape({
     type: Yup.string().required("Type is required"),
-    businessName: Yup.string().required("Business name is required"),
+    businessName: Yup.string().trim().required("Business name is required"),
     address: Yup.object().shape({
       building: Yup.string().required("Building is required"),
       street: Yup.string().required("Street is required"),

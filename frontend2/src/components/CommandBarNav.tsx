@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { SlReload } from "react-icons/sl";
 import { CiFilter } from "react-icons/ci";
-import { mergeStyles, getTheme, type ITextFieldStyles } from "@fluentui/react";
+import { mergeStyles, getTheme} from "@fluentui/react";
 import SideCanvas from "./SideCanvas";
 import * as React from "react";
 import {
@@ -20,6 +20,7 @@ import { Field, Form, Formik, type FormikProps } from "formik";
 import { useLocation } from "react-router-dom";
 import { FaX } from "react-icons/fa6";
 import axiosInstance from "../utils/axiosInstance";
+import { Types } from "../utils/enum";
 
 const theme = getTheme();
 const sectionStyle = mergeStyles({
@@ -44,23 +45,17 @@ const styles = mergeStyleSets({
   },
 });
 
-const filterData = {
-  businessType: [
-    "LimitedPartnership",
-    "LLp",
-    "Limited",
-    "Individual",
-    "Partnership",
-  ],
-};
+// const filterData = {
+//   businessType: [
+//     "LimitedPartnership",
+//     "LLp",
+//     "Limited",
+//     "Individual",
+//     "Partnership",
+//   ],
+// };
 
-enum Types {
-  Limited="Limited",
-  LLP="LLp",
-  LimitedPartnership="LimitedPartnership",
-  Individual="Individual",
-  Partnership="Partnership"
-}
+
 
 export const CommandBarNav = ({
   refreshLIst,
@@ -218,6 +213,8 @@ export const CommandBarNav = ({
               <Text block variant="xLarge" className={styles.title}>
                 select filter
               </Text>
+              
+
               <Formik
                 initialValues={{
                   criteria: "",
@@ -226,8 +223,10 @@ export const CommandBarNav = ({
                 }}
                 onSubmit={() => {}}
               >
+                {/* eslint-disable */}
                 {(props: FormikProps<any>) => {
-                  // eslint-disable-next-line react-hooks/rules-of-hooks
+                  {/* eslint-enable */}
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                   React.useEffect(()=>{
                     async function  fetchUsers () {
                       const resp = await axiosInstance.get('/Auth/get');

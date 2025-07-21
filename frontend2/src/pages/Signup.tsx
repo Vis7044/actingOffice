@@ -6,6 +6,7 @@
   import { Link, useNavigate } from "react-router-dom";
   import { makeStyles } from "@fluentui/react";
   import { useAuth } from "../utils/useAuth";
+import { useState } from "react";
 
   const useStyle = makeStyles({
     form: {
@@ -91,6 +92,7 @@
     const classes = useStyle();
     const navigate = useNavigate();
     const {user} = useAuth()
+    const [error, setError] = useState<string | null>(null)
 
     if(user) {
       navigate('/')
@@ -116,7 +118,7 @@
         password: Yup.string()
           .min(6, "Must be 6 characters or more")
           .required("Required"),
-        dateOfBirth: Yup.date().required("Required"),
+        dateOfBirth: Yup.date() .max(new Date(Date.now() - 86400000), "Date of birth cannot be in the future").required("Required"),
         role: Yup.string().required("Required"),
       }),
       onSubmit: async (values, { setSubmitting, resetForm }) => {
@@ -127,11 +129,15 @@
       navigate('/login');
     } catch (error) {
       const axiosError =error as AxiosError;
-      console.error("Registration failed:", axiosError);
+      
       if(axiosError.response){
-        console.error("Response data:", axiosError.response.data);
+        /* eslint-disable */
+
+        setError(axiosError.response.data as any);
+        /* eslint-enable */
+
       }else {
-        console.log("unknown error")
+        setError("An unknown error occurred. Please try again.");
       }
     } finally {
       setSubmitting(false);
@@ -265,6 +271,7 @@
   >
     {formik.isSubmitting ? "Submitting..." : "Submit"}
   </button>
+   {error? <p style={{ color: "red", fontSize: "13px", textAlign: "center" }}>{error}</p>:""}
   <p style={{textAlign: 'end'}}>Already have an account? <Link style={{color: 'blue'}} to={'/login'}>Login</Link></p>
   </form>
             

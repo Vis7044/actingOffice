@@ -44,9 +44,9 @@ export const ItemForm = ({
   itemId?:string
 }) => {
   const validateYupSchema = Yup.object().shape({
-    name: Yup.string().required("Type is required"),
-    description: Yup.string().required("Business name is required"),
-    amount: Yup.number().required("Enter Amount"),
+    name: Yup.string().trim().required("*Required"),
+    description: Yup.string().trim().required("*Required"),
+    amount: Yup.number().min(1).required("*Required"),
   });
 
 

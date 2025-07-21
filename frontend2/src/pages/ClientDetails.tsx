@@ -279,8 +279,8 @@ export const ClientDetails = () => {
                     </strong>
                     <br />
                     Action:{" "}
-                    <Text style={{ width: "300px" }}>
-                      {item.history.description}
+                    <Text>
+                      {item.history.description.split(";").map(des => <Text>{des}</Text>)}
                     </Text>
                   </Text>
                 </Stack>

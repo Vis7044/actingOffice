@@ -211,7 +211,7 @@ const Home = () => {
       </Stack>
       <Stack styles={{root: {width:"90%",margin: 'auto'}}}>
         <ShimmeredDetailsList
-          items={userQuoteData} // ✅ No slicing
+          items={userQuoteData} 
           columns={columns}
           setKey="set"
           layoutMode={DetailsListLayoutMode.fixedColumns}

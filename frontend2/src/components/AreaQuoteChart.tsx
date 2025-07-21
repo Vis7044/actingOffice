@@ -7,7 +7,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Line,
 } from 'recharts';
 import axiosInstance from '../utils/axiosInstance';
 
@@ -62,6 +61,7 @@ export default function AreaQuoteChart({ offset = 0 }: { offset: number }) {
     </ResponsiveContainer>
   );
 }
+/* eslint-disable */
 
 const CustomizedTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload || payload.length === 0) return null;

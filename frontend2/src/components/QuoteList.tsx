@@ -2,7 +2,6 @@ import  { useEffect, useState } from "react";
 import {
   DetailsListLayoutMode,
   SelectionMode,
-  Selection,
   ShimmeredDetailsList,
   mergeStyles,
   Text,
@@ -70,14 +69,6 @@ const deleteButtons = mergeStyles({
   },
 });
 
-const rowClass = mergeStyles({
-  borderBottom: '1px solid #e1e1e1', // Adjust border color
-  selectors: {
-    '&:last-child': {
-      borderBottom: 'none',
-    },
-  },
-});
 
 const quoteStatusColor = {
   Accepted: "rgba(96, 153, 89, 0.56)",
@@ -91,7 +82,6 @@ const QuoteList = () => {
   const [refreshList, setRefreshList] = useState(false);
   const [refreshIcon, setRefreshIcon] = useState(false);
   const [search, setSearch] = useState("");
-  const [error, setError] = useState(null);
   const [status, setStatus] = useState("Active")
   const [filter, setFilter] = useState({ criteria: "", value: "" });
   const [activePage, setActivePage] = useState(1);
@@ -114,7 +104,7 @@ const QuoteList = () => {
       if (resp.data) {
         refresh();
       } else {
-        setError(resp.data);
+        console.error('something went wrong')
       }
     } catch (error) {
       console.log(error);
@@ -384,11 +374,7 @@ const QuoteList = () => {
     },
   ];
 
-  const selection = new Selection({
-    onSelectionChanged: () => {
-      
-    },
-  });
+  
   return (
     <ThemeProvider theme={customTheme}>
       <Stack styles={{root: {overflow: 'hidden', height: '90vh',overflowY: 'auto'}}}>
@@ -416,7 +402,7 @@ const QuoteList = () => {
         </Text>
       )}
 
-      <Stack >
+      <Stack>
         {quoteData.length > 0 && (
         <ShimmeredDetailsList
           items={quoteData}
