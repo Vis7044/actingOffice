@@ -145,7 +145,7 @@ namespace backend.Controllers
             }
             return Ok(service);
         }
-        [HttpPut("update/{id}")]
+        [HttpPost("update/{id}")]
         public async Task<IActionResult> UpdateServiceAsync(string id, [FromBody] Service service)
         {
             if (string.IsNullOrEmpty(id) || service == null)

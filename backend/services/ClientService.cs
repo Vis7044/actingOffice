@@ -109,14 +109,14 @@ namespace backend.services
         /// <exception cref="ArgumentException"></exception>
         /// <exception cref="Exception"></exception>
         public async Task<PageResult<ClientModel>> GetClientsAsync(
-    string role,
-    string userId,
-    int page,
-    int pageSize,
-    string searchTerm,
-    string criteria,
-    string value,
-    string IsDeleted)
+            string role,
+            string userId,
+            int page,
+            int pageSize,
+            string searchTerm,
+            string criteria,
+            string value,
+            string IsDeleted)
         {
             if (page < 1 || pageSize < 1)
                 throw new ArgumentException("Page and pageSize must be greater than 0.");
@@ -153,9 +153,9 @@ namespace backend.services
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var searchFilters = new List<FilterDefinition<ClientModel>>
-        {
-            builder.Regex(c => c.BusinessName, new BsonRegularExpression(search, "i"))
-        };
+                {
+                    builder.Regex(c => c.BusinessName, new BsonRegularExpression(search, "i"))
+                };
 
                 if (Enum.TryParse<BusinessType>(search, out var parsedSearchType))
                     searchFilters.Add(builder.Eq(c => c.Type, parsedSearchType));
