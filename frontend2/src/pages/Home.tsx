@@ -14,6 +14,7 @@ import axiosInstance from "../utils/axiosInstance";
 import { Button } from "react-bootstrap";
 import AreaQuoteChart from "../components/AreaQuoteChart";
 import BarQuoteChart from "../components/BarQuoteChart";
+import BarQuoteChart2 from "../components/BarQuoteChart2";
 
 export interface IQuoteSummary {
   firstName: string;
@@ -231,7 +232,7 @@ const Home = () => {
         >
           Quotes Detail of Users
         </Text>
-        <BarQuoteChart offset={monthOffset} />
+        <BarQuoteChart2 offset={monthOffset} />
       </Stack>
       <Stack styles={{ root: { width: "50%", margin: 'auto' } }}>
         <ShimmeredDetailsList
