@@ -15,7 +15,7 @@
   margin-top: 2px;
   position: absolute;
   bottom: -16px;
-  left: 150px;
+  left: 0px;
 }
 .error-service-description {
   color: red;
@@ -34,6 +34,26 @@
   bottom: -14px;
   right: 59px;
 }
+
+.error-service-name {
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -14px;
+  left: -20px;
+}
+
+.error-first-response {
+  color: red;
+  font-size: 12px;
+  margin-top: 2px;
+  position: absolute;
+  bottom: -15px;
+  left: 100px;
+  z-index: 1;
+}
+
 
 
 svg:focus {
@@ -64,23 +84,6 @@ svg:focus {
   background-color: red;
 }
 
-.error-service-name {
-  color: red;
-  font-size: 12px;
-  margin-top: 2px;
-  position: absolute;
-  bottom: -14px;
-  left: -20px;
-}
-
-.error-first-response {
-  color: red;
-  font-size: 12px;
-  margin-top: 2px;
-  position: absolute;
-  bottom: -20px;
-  right: 84px;
-}
 
 .lato-thin {
   font-family: "Lato", sans-serif;

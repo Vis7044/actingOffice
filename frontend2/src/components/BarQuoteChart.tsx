@@ -6,7 +6,8 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Rectangle
 } from 'recharts';
 import axiosInstance from '../utils/axiosInstance';
 import { Stack, Text } from '@fluentui/react';
@@ -62,11 +63,11 @@ export default function BarQuoteChart({offset}:{offset: number}) {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name"/>
         <YAxis />
-        <Tooltip content={<CustomizedTooltip />} />
+        <Tooltip content={<CustomizedTooltip />} cursor={{fill: 'transparent'}} />
         
-        <Bar dataKey="draftCountAmount" fill="#8884d8" name="Drafted" hide={!counter.first}/>
-        <Bar dataKey="acceptedCountAmount" fill="#82ca9d" name="Accepted" hide={!counter.second}/>
-        <Bar dataKey="rejectedCountAmount" fill="#da5b35ff" name="Rejected" hide={!counter.thrid}/>
+        <Bar dataKey="draftCountAmount" fill="#8884d8af" name="Drafted" hide={!counter.first} activeBar={<Rectangle fill="#8884d8" stroke="#8884d8"  />}/>
+        <Bar dataKey="acceptedCountAmount" fill="#82ca9e9c" name="Accepted" hide={!counter.second} activeBar={<Rectangle fill="#82ca9d" stroke="#82ca9d"  />}/>
+        <Bar dataKey="rejectedCountAmount" fill="#da5b3586" name="Rejected" hide={!counter.thrid} activeBar={<Rectangle fill="#da5b35ff" stroke="#da5b35ff"  />}/>
       </BarChart>
     </ResponsiveContainer>
     </Stack>

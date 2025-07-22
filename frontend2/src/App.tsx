@@ -33,12 +33,13 @@ function App() {
             <Route path="client" index element={<Client />} />
             <Route path="quote" element={<Quote />} />
             <Route path="items" element={<Item />} />
-            <Route path="/client/:id" element={<ClientDetails />} />
+            <Route path="client/:id" element={<ClientDetails />} />
             <Route path="profile" element={<Profile />} />
           </Route>
           <Route path="signup" element={<ProtectLogin><Signup /></ProtectLogin>} />
           <Route path="login" element={<ProtectLogin><Login /></ProtectLogin>} />
-          <Route path="/quote/:id" element={<AnonymousQuote />} />
+          <Route path="quote/:id" element={<AnonymousQuote />} />
+          <Route path="*" element={<div>Page Not Found</div>}/>
         </Routes>
       </BrowserRouter>
     </>

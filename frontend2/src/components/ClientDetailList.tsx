@@ -22,6 +22,7 @@ import { Pagination } from "react-bootstrap";
 import { MdDelete, MdOutlineEdit } from "react-icons/md";
 import SideCanvas from "./SideCanvas";
 import { LiaUndoAltSolid } from "react-icons/lia";
+import { ActionCallout } from "./ActionCallout";
 
 interface IClient {
   key: number;
@@ -65,6 +66,25 @@ const ClientDetailList = () => {
   const [activePage, setActivePage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [pageSize, setPageSize] = useState(10);
+   const [isCalloutOpen, setCalloutOpen] = useState(false);
+    const [actionMode, setActionMode] = useState<"delete" | "restore" | null>(
+      null
+    );
+    const [targetButtonId, setTargetButtonId] = useState<string | null>(null);
+    const [activeItem, setActiveItem] = useState<IClient | null>(null);
+    const openDeleteCallout = (item: IClient, buttonId: string) => {
+      setActionMode("delete");
+      setActiveItem(item);
+      setTargetButtonId(buttonId);
+      setCalloutOpen(true);
+    };
+  
+    const openRestoreCallout = (item: IClient, buttonId: string) => {
+      setActionMode("restore");
+      setActiveItem(item);
+      setTargetButtonId(buttonId);
+      setCalloutOpen(true);
+    };
 
   const updateSearch = (searchTerm: string) => {
     setSearch(searchTerm);
@@ -79,10 +99,8 @@ const ClientDetailList = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const resp = await axiosInstance.post(`/Client/delete/${id}`);
-      if (resp.data) {
-        refresh();
-      }
+      await axiosInstance.post(`/Client/delete/${id}`);
+      refresh()
     } catch (error) {
       console.log(error);
     }
@@ -284,30 +302,59 @@ const ClientDetailList = () => {
           />
           {item.isDeleted === "Active" ? (
             <Text
-              className={deleteButtons}
-              onClick={() => handleDelete(item.id)}
+              id={`deleteBtn-${item.id}`}
+              style={{ cursor: "pointer" }}
+              onClick={() => openDeleteCallout(item, `deleteBtn-${item.id}`)}
             >
               <MdDelete size={18} />
             </Text>
           ) : (
             <Text
-              style={{ cursor: "pointer" }}
-              onClick={async () => {
-                await axiosInstance.post(`/Client/update/${item?.id}`, {
-                  ...item,
-                  isDeleted: "Active",
-                });
-
-                refresh();
-              }}
+            
+              id={`restoreBtn-${item.id}`}
+              className={deleteButtons}
+              onClick={() => openRestoreCallout(item, `restoreBtn-${item.id}`)}
             >
               <LiaUndoAltSolid size={18} />
             </Text>
+          )}
+          {isCalloutOpen && activeItem.id===item.id && targetButtonId && actionMode && (
+            <ActionCallout
+              isOpen={isCalloutOpen}
+              targetId={targetButtonId}
+              message={
+                actionMode === "delete"
+                  ? "Are you sure you want to delete this item?"
+                  : "Are you sure you want to restore this item?"
+              }
+              onConfirm={async () => {
+                if (actionMode === "delete") {
+                  handleDelete(activeItem.id) 
+                } else {
+                  await axiosInstance.post(`/Client/update/${activeItem?.id}`, {
+                  ...activeItem,
+                  isDeleted: "Active",
+                });
+                refresh();
+                }
+                setCalloutOpen(false);
+              }}
+              onClose={() => setCalloutOpen(false)}
+              title={
+                actionMode === "delete"
+                  ? "Delete Confirmation"
+                  : "Restore Confirmation"
+              }
+              confirmText={actionMode === "delete" ? "Delete" : "Restore"}
+              cancelText="Cancel"
+            />
           )}
         </Stack>
       ),
     },
   ];
+
+
 
   const selection = new Selection({
     onSelectionChanged: () => {},

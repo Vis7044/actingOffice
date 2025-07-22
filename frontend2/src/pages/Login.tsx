@@ -113,7 +113,7 @@ export const Login = () => {
           fetchUser()
                 .then(setUser)
           resetForm();
-          navigate('/');
+          navigate('/client');
 
         }else {
           console.log('something went wrong')

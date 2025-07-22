@@ -1,4 +1,4 @@
-import  { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   DetailsListLayoutMode,
   SelectionMode,
@@ -11,18 +11,19 @@ import { ThemeProvider, createTheme } from "@fluentui/react";
 
 import "@fluentui/react/dist/css/fabric.css";
 import type { IColumn } from "@fluentui/react/lib/DetailsList";
-import {  useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { CommandBarNav } from "./CommandBarNav";
 import QuoteDetailSideCanvas from "./QuoteDetailsSideCanvas";
 import { FaShare } from "react-icons/fa";
 import SideCanvas from "./SideCanvas";
-import { MdDelete, MdOutlineEdit} from "react-icons/md";
+import { MdDelete, MdOutlineEdit } from "react-icons/md";
 import type { IQuote } from "../types/projectTypes";
 import { HiOutlineExternalLink } from "react-icons/hi";
 import { QuoteStats } from "./QuoteStats";
 import { LiaUndoAltSolid } from "react-icons/lia";
 import { Pagination } from "react-bootstrap";
+import { ActionCallout } from "./ActionCallout";
 
 const customTheme = createTheme({
   palette: {
@@ -69,7 +70,6 @@ const deleteButtons = mergeStyles({
   },
 });
 
-
 const quoteStatusColor = {
   Accepted: "rgba(96, 153, 89, 0.56)",
   Drafted: "rgba(0,0,0,0.4)",
@@ -82,11 +82,30 @@ const QuoteList = () => {
   const [refreshList, setRefreshList] = useState(false);
   const [refreshIcon, setRefreshIcon] = useState(false);
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("Active")
+  const [status, setStatus] = useState("Active");
   const [filter, setFilter] = useState({ criteria: "", value: "" });
   const [activePage, setActivePage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isCalloutOpen, setCalloutOpen] = useState(false);
+  const [actionMode, setActionMode] = useState<"delete" | "restore" | null>(
+    null
+  );
+  const [targetButtonId, setTargetButtonId] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<IQuote | null>(null);
+  const openDeleteCallout = (item: IQuote, buttonId: string) => {
+    setActionMode("delete");
+    setActiveItem(item);
+    setTargetButtonId(buttonId);
+    setCalloutOpen(true);
+  };
+
+  const openRestoreCallout = (item: IQuote, buttonId: string) => {
+    setActionMode("restore");
+    setActiveItem(item);
+    setTargetButtonId(buttonId);
+    setCalloutOpen(true);
+  };
 
   const updateFilter = (filterValue: { criteria: string; value: string }) => {
     setFilter(filterValue);
@@ -98,19 +117,6 @@ const QuoteList = () => {
     setRefreshList(!refreshList);
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      const resp = await axiosInstance.post(`/Quote/delete/${id}`);
-      if (resp.data) {
-        refresh();
-      } else {
-        console.error('something went wrong')
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   useEffect(() => {
     const fetchQuotesData = async () => {
       try {
@@ -119,11 +125,13 @@ const QuoteList = () => {
           `/Quote/get?searchTerm=${search}&criteria=${filter.criteria}&value=${filter.value}&IsDeleted=${status}&page=${activePage}&pageSize=${pageSize}`
         );
 
-        setTotalPages(Math.ceil(response.data.totalCount/response.data.pageSize))
+        setTotalPages(
+          Math.ceil(response.data.totalCount / response.data.pageSize)
+        );
         const data = response.data.data?.map(
           (quote: Omit<IQuote, "key">, index: number) => {
             return {
-              key: pageSize*(activePage-1)+index + 1,
+              key: pageSize * (activePage - 1) + index + 1,
               ...quote,
             };
           }
@@ -137,7 +145,7 @@ const QuoteList = () => {
     };
 
     fetchQuotesData();
-  }, [refreshList, search, filter,status,activePage,pageSize]);
+  }, [refreshList, search, filter, status, activePage, pageSize]);
 
   const columns: IColumn[] = [
     {
@@ -170,7 +178,7 @@ const QuoteList = () => {
       ),
       fieldName: "quoteNumber",
       minWidth: 150,
-      
+
       maxWidth: 300,
       isResizable: true,
       onRender: (item: IQuote) => (
@@ -180,7 +188,7 @@ const QuoteList = () => {
             styles={{
               root: {
                 borderRadius: "8px",
-                
+
                 cursor: "pointer",
               },
             }}
@@ -218,7 +226,11 @@ const QuoteList = () => {
       minWidth: 150,
       maxWidth: 200,
       isResizable: true,
-      onRender: (item: IQuote) => <Text variant="mediumPlus">{new Date(item.date).toISOString().split("T")[0]}</Text>,
+      onRender: (item: IQuote) => (
+        <Text variant="mediumPlus">
+          {new Date(item.date).toISOString().split("T")[0]}
+        </Text>
+      ),
     },
     {
       key: "businessName",
@@ -262,7 +274,9 @@ const QuoteList = () => {
       maxWidth: 150,
       isResizable: true,
       onRender: (item: IQuote) => (
-        <Text variant="mediumPlus">{item.firstResponse.firstName} {item.firstResponse.lastName}</Text>
+        <Text variant="mediumPlus">
+          {item.firstResponse.firstName} {item.firstResponse.lastName}
+        </Text>
       ),
     },
     {
@@ -355,97 +369,145 @@ const QuoteList = () => {
             isEdit={true}
             quoteId={item.id}
           />
-          {item.isDeleted === "Inactive"?<Text style={{cursor: 'pointer'}} onClick={async () => {
+          {item.isDeleted === "Inactive" ? (
+            <Text
+              id={`restoreBtn-${item.id}`}
+              style={{ cursor: "pointer" }}
+              onClick={() => openRestoreCallout(item, `restoreBtn-${item.id}`)}
+            >
+              <LiaUndoAltSolid size={18} />
+            </Text>
+          ) : (
+            <Text
+              id={`deleteBtn-${item.id}`}
+              className={deleteButtons}
+              onClick={() =>{
+                console.log("deleting")
+                 openDeleteCallout(item, `deleteBtn-${item.id}`)
+              }}
+            >
+              <MdDelete size={18} />
+            </Text>
+          )}
+          {isCalloutOpen && activeItem.id===item.id && targetButtonId && actionMode && (
             
-                await axiosInstance.post(
-                  `/Quote/update/${item?.id}`,
-                  {...item,isDeleted: 'Active'}
-                );
-              
-
-              refresh();
-          }}>
-            <LiaUndoAltSolid  size={18} />
-          </Text>:<Text className={deleteButtons} onClick={() => handleDelete(item.id)}>
-            <MdDelete size={18} />
-          </Text>}
+            <ActionCallout
+              isOpen={isCalloutOpen}
+              targetId={targetButtonId}
+              message={
+                actionMode === "delete"
+                  ? "Are you sure you want to delete this item?"
+                  : "Are you sure you want to restore this item?"
+              }
+              onConfirm={async () => {
+                if (actionMode === "delete") {
+                  const resp = await axiosInstance.post(
+                    `/Quote/delete/${activeItem.id}`
+                  );
+                  if (resp.data) {
+                    refresh();
+                  } else {
+                    console.error("something went wrong");
+                  }
+                } else {
+                  await axiosInstance.post(`/Quote/update/${activeItem.id}`, {
+                    ...activeItem,
+                    isDeleted: "Active",
+                  });
+                  refresh();
+                }
+                setCalloutOpen(false);
+              }}
+              onClose={() => setCalloutOpen(false)}
+              title={
+                actionMode === "delete"
+                  ? "Delete Confirmation"
+                  : "Restore Confirmation"
+              }
+              confirmText={actionMode === "delete" ? "Delete" : "Restore"}
+              cancelText="Cancel"
+            />
+          )}
         </Stack>
       ),
     },
   ];
 
-  
   return (
     <ThemeProvider theme={customTheme}>
-      <Stack styles={{root: {overflow: 'hidden', height: '90vh',overflowY: 'auto'}}}>
+      <Stack
+        styles={{
+          root: { overflow: "hidden", height: "90vh", overflowY: "auto" },
+        }}
+      >
         <CommandBarNav
-        refreshLIst={refresh}
-        updateSearch={updateSearch}
-        refreshIcon={refreshIcon}
-        updateFilter={updateFilter}
-        updateStatus={setStatus}
-      />
-      <QuoteStats refreshList={refreshList} />
-      {quoteData.length == 0 && (
-        <Text
-          variant="large"
-          styles={{
-            root: {
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%,-50%)",
-            },
-          }}
-        >
-          No Data Found
-        </Text>
-      )}
-
-      <Stack>
-        {quoteData.length > 0 && (
-        <ShimmeredDetailsList
-          items={quoteData}
-          columns={columns}
-          setKey="set"
-          
-          layoutMode={DetailsListLayoutMode.fixedColumns}
-          selectionMode={SelectionMode.none}
-          isHeaderVisible={true}
-          enableShimmer={refreshIcon}
-          ariaLabelForSelectionColumn="Toggle selection"
-          ariaLabelForSelectAllCheckbox="Toggle selection for all items"
-          checkButtonAriaLabel="select row"
-          
+          refreshLIst={refresh}
+          updateSearch={updateSearch}
+          refreshIcon={refreshIcon}
+          updateFilter={updateFilter}
+          updateStatus={setStatus}
         />
-      )}
-      </Stack>
-      <Stack horizontal verticalAlign="center" horizontalAlign="space-between">
-          <Text styles={{root:{ marginLeft: "60px"} }}>
-          <select
-            onChange={(e) => setPageSize(Number(e.target.value))}
-            style={{
-              backgroundColor: "  #ffffff",
-              color: "rgb(27, 124, 189)",
-              border: "1px solid #ccc",
-              borderRadius: "4px",
-              padding: "2px 2px",
+        <QuoteStats refreshList={refreshList} />
+        {quoteData.length == 0 && (
+          <Text
+            variant="large"
+            styles={{
+              root: {
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%,-50%)",
+              },
             }}
           >
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-            <option value={30}>30</option>
-          </select>
-        </Text>
-        <Pagination style={{ marginRight: "60px", paddingTop: "15px"} }>
-          <Pagination.First onClick={() => setActivePage(1)} />
-          <Pagination.Prev
-            onClick={() => setActivePage((prev) => Math.max(prev - 1, 1))}
-          />
+            No Data Found
+          </Text>
+        )}
 
-          {Array.from({ length: totalPages }, (_, i) => i + 1)
-            
-            .map((val) => (
+        <Stack>
+          {quoteData.length > 0 && (
+            <ShimmeredDetailsList
+              items={quoteData}
+              columns={columns}
+              setKey="set"
+              layoutMode={DetailsListLayoutMode.fixedColumns}
+              selectionMode={SelectionMode.none}
+              isHeaderVisible={true}
+              enableShimmer={refreshIcon}
+              ariaLabelForSelectionColumn="Toggle selection"
+              ariaLabelForSelectAllCheckbox="Toggle selection for all items"
+              checkButtonAriaLabel="select row"
+            />
+          )}
+        </Stack>
+        <Stack
+          horizontal
+          verticalAlign="center"
+          horizontalAlign="space-between"
+        >
+          <Text styles={{ root: { marginLeft: "60px" } }}>
+            <select
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              style={{
+                backgroundColor: "  #ffffff",
+                color: "rgb(27, 124, 189)",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                padding: "2px 2px",
+              }}
+            >
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={30}>30</option>
+            </select>
+          </Text>
+          <Pagination style={{ marginRight: "60px", paddingTop: "15px" }}>
+            <Pagination.First onClick={() => setActivePage(1)} />
+            <Pagination.Prev
+              onClick={() => setActivePage((prev) => Math.max(prev - 1, 1))}
+            />
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((val) => (
               <Pagination.Item
                 key={val}
                 active={val === activePage}
@@ -455,16 +517,15 @@ const QuoteList = () => {
               </Pagination.Item>
             ))}
 
-          <Pagination.Next
-            onClick={() =>
-              setActivePage((prev) => Math.min(prev + 1, totalPages))
-            }
-          />
-          <Pagination.Last onClick={() => setActivePage(totalPages)} />
-        </Pagination>
+            <Pagination.Next
+              onClick={() =>
+                setActivePage((prev) => Math.min(prev + 1, totalPages))
+              }
+            />
+            <Pagination.Last onClick={() => setActivePage(totalPages)} />
+          </Pagination>
         </Stack>
       </Stack>
-      
     </ThemeProvider>
   );
 };

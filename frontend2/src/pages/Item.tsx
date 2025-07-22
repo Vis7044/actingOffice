@@ -14,6 +14,7 @@ import SideCanvas from "../components/SideCanvas";
 import { MdDelete, MdOutlineEdit } from "react-icons/md";
 import { LiaUndoAltSolid } from "react-icons/lia";
 import { Pagination } from "react-bootstrap";
+import { ActionCallout } from "../components/ActionCallout";
 
 interface IService {
   id: string;
@@ -53,6 +54,25 @@ export default function Item() {
   const [activePage, setActivePage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isCalloutOpen, setCalloutOpen] = useState(false);
+  const [actionMode, setActionMode] = useState<"delete" | "restore" | null>(
+    null
+  );
+  const [targetButtonId, setTargetButtonId] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<IService | null>(null);
+  const openDeleteCallout = (item: IService, buttonId: string) => {
+    setActionMode("delete");
+    setActiveItem(item);
+    setTargetButtonId(buttonId);
+    setCalloutOpen(true);
+  };
+
+  const openRestoreCallout = (item: IService, buttonId: string) => {
+    setActionMode("restore");
+    setActiveItem(item);
+    setTargetButtonId(buttonId);
+    setCalloutOpen(true);
+  };
   const updateSearch = (searchTerm: string) => {
     setSearch(searchTerm);
   };
@@ -83,12 +103,8 @@ export default function Item() {
 
   const handleDelete = async (id: string) => {
     try {
-      const resp = await axiosInstance.post(`/Service/delete/${id}`);
-      if (resp.data) {
-        refresh();
-      } else {
-        console.log(resp.data);
-      }
+      await axiosInstance.post(`/Service/delete/${id}`);
+      refresh()
     } catch (error) {
       console.log(error);
     }
@@ -209,27 +225,53 @@ export default function Item() {
             isEdit={true}
             itemId={item.id}
           />
-          {item.isDeleted === "Active" ? (
-            <Text
-              className={deleteButtons}
-              onClick={() => handleDelete(item.id)}
-            >
-              <MdDelete size={18} />
-            </Text>
-          ) : (
-            <Text
-              style={{ cursor: "pointer" }}
-              onClick={async () => {
-                await axiosInstance.put(`/Service/update/${item?.id}`, {
-                  ...item,
-                  isDeleted: "Active",
-                });
-
-                refresh();
+          {item.isDeleted === "Inactive" ? (
+                      <Text
+                        id={`restoreBtn-${item.id}`}
+                        style={{ cursor: "pointer" }}
+                        onClick={() => openRestoreCallout(item, `restoreBtn-${item.id}`)}
+                      >
+                        <LiaUndoAltSolid size={18} />
+                      </Text>
+                    ) : (
+                      <Text
+                        id={`deleteBtn-${item.id}`}
+                        className={deleteButtons}
+                        onClick={() => openDeleteCallout(item, `deleteBtn-${item.id}`)}
+                      >
+                        <MdDelete size={18} />
+                      </Text>
+                    )}
+          {isCalloutOpen && activeItem.id===item.id && targetButtonId && actionMode && (
+            <ActionCallout
+              isOpen={isCalloutOpen}
+              targetId={targetButtonId}
+              message={
+                actionMode === "delete"
+                  ? "Are you sure you want to delete this item?"
+                  : "Are you sure you want to restore this item?"
+              }
+              onConfirm={async () => {
+                if (actionMode === "delete") {
+                  handleDelete(activeItem.id)
+                } else {
+                  await axiosInstance.post(`/Service/update/${activeItem.id}`, {
+                    ...activeItem,
+                    isDeleted: "Active",
+                  });
+                  refresh();
+                }
+                setCalloutOpen(false);
               }}
-            >
-              <LiaUndoAltSolid size={18} />
-            </Text>
+              onClose={() => setCalloutOpen(false)}
+              title={
+                actionMode === "delete"
+                  ? "Delete Confirmation"
+                  : "Restore Confirmation"
+              }
+              confirmText={actionMode === "delete" ? "Delete" : "Restore"}
+              cancelText="Cancel"
+            />
           )}
         </Stack>
       ),

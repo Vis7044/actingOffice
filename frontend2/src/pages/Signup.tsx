@@ -95,7 +95,7 @@ import { useState } from "react";
     const [error, setError] = useState<string | null>(null)
 
     if(user) {
-      navigate('/')
+      navigate('/client')
     }
 
     const formik = useFormik({

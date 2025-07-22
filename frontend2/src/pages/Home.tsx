@@ -131,7 +131,8 @@ const pageSizeOptions: IDropdownOption[] = [
 ];
 
 const dropdownStyles: Partial<IDropdownStyles> = {
-  dropdown: { width: 200,border: "0px" },root: {border: '0px'}
+  dropdown: { width: 200, border: "0px" },
+  root: { border: "0px" },
 };
 
 const Home = () => {
@@ -142,7 +143,6 @@ const Home = () => {
   const [pageSize, setPageSize] = useState<number>(5);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [monthOffset, setMonthOffset] = useState<number>(0);
-  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -157,10 +157,7 @@ const Home = () => {
     fetchData();
   }, [currentPage, pageSize]);
 
-  const handlePageSizeChange = (
-    _,
-    option?: IDropdownOption
-  ) => {
+  const handlePageSizeChange = (_, option?: IDropdownOption) => {
     if (option) {
       setPageSize(Number(option.key));
       setCurrentPage(1);
@@ -169,7 +166,7 @@ const Home = () => {
 
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  const options:IDropdownOption[] = [
+  const options: IDropdownOption[] = [
     { key: 0, text: "This Month" },
     { key: -1, text: "Previous Month" },
   ];
@@ -184,8 +181,9 @@ const Home = () => {
   return (
     <Stack
       tokens={{ childrenGap: 10 }}
-      styles={{ root: { maxHeight: "90vh",overflowY: 'auto',paddingBottom: '30px' } }}
-
+      styles={{
+        root: { maxHeight: "90vh", overflowY: "auto", paddingBottom: "30px" },
+      }}
     >
       <Stack
         horizontal
@@ -193,25 +191,51 @@ const Home = () => {
         styles={{ root: { width: "100%", paddingRight: "5%" } }}
       >
         <Dropdown
-        placeholder="This Month"
-        label="Select Month"
-        options={options}
-        styles={dropdownStyles}
-        onChange={handleMonthChange}
-      />
+          placeholder="This Month"
+          label="Select Month"
+          options={options}
+          styles={dropdownStyles}
+          onChange={handleMonthChange}
+        />
       </Stack>
 
-      <Stack styles={{ root: { height: "350px", width: "90%",margin: 'auto' } }}>
-        <Text variant="large" styles={{root: {fontWeight: 500,paddingBottom: '10px',paddingLeft: '10px'}}}>quote</Text>
+      <Stack
+        styles={{ root: { height: "350px", width: "90%", margin: "auto" } }}
+      >
+        <Text
+          variant="large"
+          styles={{
+            root: {
+              fontWeight: 500,
+              paddingBottom: "10px",
+              paddingLeft: "10px",
+            },
+          }}
+        >
+          quote
+        </Text>
         <AreaQuoteChart offset={monthOffset} />
       </Stack>
-      <Stack styles={{ root: { height: "450px", width: "90%",margin: 'auto'} }}>
-        <Text variant="large" styles={{root: {fontWeight: 500,paddingBottom: '10px',paddingLeft: '10px'}}}>Quotes Detail of Users</Text>
+      <Stack
+        styles={{ root: { height: "450px", width: "90%", margin: "auto" } }}
+      >
+        <Text
+          variant="large"
+          styles={{
+            root: {
+              fontWeight: 500,
+              paddingBottom: "10px",
+              paddingLeft: "10px",
+            },
+          }}
+        >
+          Quotes Detail of Users
+        </Text>
         <BarQuoteChart offset={monthOffset} />
       </Stack>
-      <Stack styles={{root: {width:"90%",margin: 'auto'}}}>
+      <Stack styles={{ root: { width: "50%", margin: 'auto' } }}>
         <ShimmeredDetailsList
-          items={userQuoteData} 
+          items={userQuoteData}
           columns={columns}
           setKey="set"
           layoutMode={DetailsListLayoutMode.fixedColumns}
@@ -222,49 +246,53 @@ const Home = () => {
           ariaLabelForSelectAllCheckbox="Toggle selection for all items"
           checkButtonAriaLabel="select row"
         />
-      </Stack>
-
-      <Stack
-        horizontal
-        horizontalAlign="space-between"
-        tokens={{ childrenGap: 10 }}
-        styles={{ root: { margin: "auto",width: '90%',} }}
-        verticalAlign="center"
-      >
-        <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 10 }}>
-          <Dropdown
-            label="Page Size"
-            options={pageSizeOptions}
-            selectedKey={pageSize}
-            onChange={handlePageSizeChange}
-            styles={{ root: { width: 150 } }}
-          />
-        </Stack>
         <Stack
           horizontal
+          horizontalAlign="space-between"
+          tokens={{ childrenGap: 10 }}
+          styles={{ root: {margin: '2px 5px'}}}
           verticalAlign="center"
-          tokens={{ childrenGap: 5 }}
-          styles={{ root: { margin: "10px" } }}
         >
-          <Button
-            variant="outline-primary"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
+          <Stack
+            horizontal
+            verticalAlign="center"
+            horizontalAlign="space-between"
+            tokens={{ childrenGap: 10 }}
           >
-            Previous
-          </Button>
-          <Text variant="medium">
-            Page {currentPage} of {totalPages}
-          </Text>
-          <Button
-            variant="outline-primary"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
+            <Dropdown
+              label="Page Size"
+              options={pageSizeOptions}
+              selectedKey={pageSize}
+              onChange={handlePageSizeChange}
+              styles={{ root: { width: 150 } }}
+            />
+          </Stack>
+          <Stack
+            horizontal
+            verticalAlign="center"
+            tokens={{ childrenGap: 5 }}
+            styles={{ root: { margin: "10px" } }}
           >
-            Next
-          </Button>
+            <Button
+              variant="outline-primary"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Text variant="medium">
+              Page {currentPage} of {totalPages}
+            </Text>
+            <Button
+              variant="outline-primary"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </Stack>
         </Stack>
       </Stack>
     </Stack>

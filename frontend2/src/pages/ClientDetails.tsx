@@ -183,7 +183,7 @@ export const ClientDetails = () => {
               "data-order": 1,
               "data-title": "Profile",
             }}
-            style={{paddingLeft: "20px"}}
+            style={{padding: "0px 20px"}}
           >
             <Label styles={labelStyles}>
               <Stack
