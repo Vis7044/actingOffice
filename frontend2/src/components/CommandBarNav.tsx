@@ -20,7 +20,8 @@ import { Field, Form, Formik, type FormikProps } from "formik";
 import { useLocation } from "react-router-dom";
 import { FaX } from "react-icons/fa6";
 import axiosInstance from "../utils/axiosInstance";
-import { Types } from "../utils/enum";
+import { QuoteStatus, Types } from "../utils/enum";
+import { LiaDownloadSolid } from "react-icons/lia";
 
 const theme = getTheme();
 const sectionStyle = mergeStyles({
@@ -83,6 +84,30 @@ export const CommandBarNav = ({
   const location = useLocation();
   const [userOptions, setUserOptions] = React.useState<{id:string,name:string}[]>([]);
 
+  const handleDownloadClients = async () => {
+  try {
+    const response = await axiosInstance.get("/Client/clients/download", {
+      responseType: "blob", // Important for file downloads
+    });
+
+    const blob = new Blob([response.data], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Clients.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Download failed", error);
+    
+  }
+};
+
+
   return (
     <Stack horizontal verticalAlign="center" horizontalAlign="space-between" styles={{root: {padding: "0px 20px 3px 20px",
   borderBottom: `1px solid ${theme.palette.neutralQuaternaryAlt}`,paddingBottom: '5px'}}} >
@@ -94,6 +119,10 @@ export const CommandBarNav = ({
         <Stack horizontal verticalAlign="center" styles={{root: {cursor: 'pointer'}}} tokens={{childrenGap: 5}} onClick={refreshLIst}>
           <SlReload className={refreshIcon ? "spin" : ""} />
           <Text>Refresh</Text>
+        </Stack>
+        <Stack horizontal verticalAlign="center" styles={{root: {cursor: 'pointer'}}} tokens={{childrenGap: 5}}>
+          <LiaDownloadSolid />
+          <Text onClick={() => handleDownloadClients()}>Download</Text>
         </Stack>
       </Stack>
 
@@ -260,6 +289,7 @@ export const CommandBarNav = ({
                         >
                           <option value={""}>Select Category</option>
                           <option value="FirstResponse">First Response</option>
+                          <option value="QuoteStatus">Quote Status</option>
                         </Field></>}
                         {activeStatus && <><Text>Values: </Text>
                         <Field
@@ -278,7 +308,7 @@ export const CommandBarNav = ({
                           <option value="Inactive">InActive</option>
                         </Field></>}
                       </Stack>
-                      {props.values.criteria !== "" && userOptions.length>0 && (
+                      {props.values.criteria === "FirstResponse" && userOptions.length>0 && (
                         <Stack styles={{ root: {marginTop: "10px" }}}>
                           <Text>Value: </Text>
                           <Field
@@ -299,6 +329,28 @@ export const CommandBarNav = ({
                           </Field>
                         </Stack>
                       )}
+                      {props.values.criteria === "QuoteStatus" && (
+                        <Stack styles={{ root: {marginTop: "10px" }}}>
+                          <Text>Value: </Text>
+                          <Field
+                            as="select"
+                            name="value"
+                            style={{
+                              width: "100%",
+                              border: "1px solid",
+                              borderColor: "rgba(0,0,0,0.3)",
+                              borderRadius: "5px",
+                              padding: "4px 5px",
+                            }}
+                          >
+                            <option value={""}>Select</option>
+                            <option value={QuoteStatus.Drafted}>Drafted</option>
+                            <option value={QuoteStatus.Accepted}>Accepted</option>
+                            <option value={QuoteStatus.Rejected}>Rejected</option>
+                            
+                          </Field>
+                        </Stack>
+                      )}
                       <FocusZone
                         handleTabKey={FocusZoneTabbableElements.all}
                         isCircularNavigation
@@ -311,11 +363,21 @@ export const CommandBarNav = ({
                           <DefaultButton onClick={toggleIsCalloutVisible}>
                             Cancel
                           </DefaultButton>
-                          {!activeStatus && <PrimaryButton
+                          {!activeStatus && props.values.criteria==="FirstResponse" && <PrimaryButton
                             onClick={() => {
                               updateFilter(props.values);
                               const selectedUser = userOptions.find((u) => u.id == props.values.value);
                               setSelectedFilter({criteria: props.values.criteria, value: selectedUser?.name || ""});
+                              toggleIsCalloutVisible();
+                            }}
+                          >
+                            Done
+                          </PrimaryButton>}
+                          {!activeStatus && props.values.criteria==="QuoteStatus" && <PrimaryButton
+                            onClick={() => {
+                              updateFilter(props.values);
+                              
+                              setSelectedFilter({criteria: props.values.criteria, value: props.values.value});
                               toggleIsCalloutVisible();
                             }}
                           >

@@ -11,7 +11,7 @@ import {
 import axiosInstance from '../utils/axiosInstance';
 
 interface IMonthlyQuote {
-  _id: string;
+  id: string;
   total: number;
 }
 
@@ -44,10 +44,10 @@ export default function AreaQuoteChart({ offset = 0 }: { offset: number }) {
             <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis dataKey="_id" />
+        <XAxis dataKey="id" />
         <YAxis allowDecimals={false} />
         <CartesianGrid  strokeDasharray="3 3" />
-        <Tooltip content={<CustomizedTooltip/>}/>
+        <Tooltip content={<CustomizedTooltip/>} />
         
         <Area
           type="monotone"

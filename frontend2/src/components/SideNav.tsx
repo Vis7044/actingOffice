@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { FaBars, FaSearch } from "react-icons/fa";
-import { Link, Outlet,  useNavigate } from "react-router-dom";
+import { Link, Outlet,  useLocation,  useNavigate } from "react-router-dom";
 import { Callout,  mergeStyles, Text } from "@fluentui/react";
 import Breadcrumb from "./BreadCrumb";
 import { LiaStickyNoteSolid } from "react-icons/lia";
@@ -9,11 +9,10 @@ import { TfiHeadphoneAlt } from "react-icons/tfi";
 import { IoBookmarksOutline, IoKeyOutline } from "react-icons/io5";
 import { TfiAnnouncement } from "react-icons/tfi";
 import { VscFileSubmodule } from "react-icons/vsc";
-import { BsGrid3X3Gap } from "react-icons/bs";
-import { RiDashboardHorizontalLine } from "react-icons/ri";
+import { BsGrid1X2, BsGrid3X3Gap } from "react-icons/bs";
 import { TfiBag } from "react-icons/tfi";
 import { BsCardList } from "react-icons/bs";
-import { PiCalendarDots, PiUserList } from "react-icons/pi";
+import { PiCalendarDots, PiLineVerticalLight, PiUserList } from "react-icons/pi";
 import { LiaCalendarSolid } from "react-icons/lia";
 import { LiaUserCheckSolid } from "react-icons/lia";
 import { HiOutlineCalendarDays } from "react-icons/hi2";
@@ -70,13 +69,29 @@ const buttonStyle = mergeStyles({
   },
 });
 
+const navLinkStyle = mergeStyleSets({
+  base: {
+    textDecoration: "none",
+    color: "inherit",
+    display: "block",
+    
+  },
+  active: {
+    color: "#0078D4",
+    backgroundColor: "#e6f4ff",
+    fontWeight: "bold",
+  },
+});
+
+
 
 
 
 const NavItem: React.FC<NavItemProps> = ({ icon, label, isOpen }) => (
   <Stack horizontal horizontalAlign="start" verticalAlign="center" styles={{root: {
-    padding: '0px 0 10px 20px',
+    padding: '5px 0 5px 20px',
   }}}  tokens={{childrenGap : 20}}>
+    
     <Text>{icon}</Text>
     {isOpen && <Text variant="mediumPlus">{label}</Text>}
   </Stack>
@@ -88,6 +103,8 @@ export const SideNav: React.FC = () => {
     useBoolean(false);
   const buttonId = useId("callout-button");
   const [user, setUser] = useState<IUser | null>(null);
+  const location = useLocation();
+
   const {logout} = useAuth()
   const fetchUser = async () => {
     const resp = await axiosInstance.get("/Auth/me");
@@ -96,6 +113,8 @@ export const SideNav: React.FC = () => {
   useEffect(() => {
     fetchUser();
   }, []);
+  const isActive = (path: string) => location.pathname===path;
+
 
   const navigate = useNavigate();
   const toggleSidebar = () => setIsOpen((prev) => !prev);
@@ -135,9 +154,11 @@ export const SideNav: React.FC = () => {
               paddingBottom: '10px'
             }}}><FaBars size={18} /></Text>
           </Stack>
-          {user?.role==='Admin' && <Link to={"/"} style={{ textDecoration: "none", color: "inherit" }}>
+          {user?.role==='Admin' && <Link to={"/"} className={`${navLinkStyle.base} ${isActive("/") ? navLinkStyle.active : ""}`} style={{position: 'relative'}}>
+          {isActive('/') && <Text><PiLineVerticalLight color="#589bcfff" size={18} style={{position: 'absolute', top: '30%'}} /></Text>}
             <NavItem
-              icon={<RiDashboardHorizontalLine size={18} />}
+              icon={<BsGrid1X2  size={18} />}
+              
               label="Dashboard"
               isOpen={isOpen}
             />
@@ -156,14 +177,18 @@ export const SideNav: React.FC = () => {
           )}
           <Link
             to={"/client"}
-            style={{ textDecoration: "none", color: "inherit", }}
+            className={`${navLinkStyle.base} ${isActive("/client") ? navLinkStyle.active : ""}`}
+            style={{position: 'relative'}}
           >
+            {isActive('/client') && <Text><PiLineVerticalLight color="#589bcfff" size={18} style={{position: 'absolute', top: '30%'}} /></Text>}
             <NavItem icon={<TfiBag size={18}  />} label="Client" isOpen={isOpen} />
           </Link>
           <Link
             to={"/quote"}
-            style={{ textDecoration: "none", color: "inherit" }}
+            className={`${navLinkStyle.base} ${isActive("/quote") ? navLinkStyle.active : ""}`}
+            style={{position: 'relative'}}
           >
+            {isActive('/quote') && <Text><PiLineVerticalLight color="#589bcfff" size={18} style={{position: 'absolute', top: '30%'}} /></Text>}
             <NavItem
               icon={<HiOutlineCalendarDays size={18}  />}
               label="Quotes"
@@ -172,8 +197,10 @@ export const SideNav: React.FC = () => {
           </Link>
           <Link
             to={"/items"}
-            style={{ textDecoration: "none", color: "inherit" }}
+            style={{position: 'relative'}}
+            className={`${navLinkStyle.base} ${isActive("/items") ? navLinkStyle.active : ""}`}
           >
+            {isActive('/items') && <Text><PiLineVerticalLight color="#589bcfff" size={18} style={{position: 'absolute', top: '30%'}} /></Text>}
             <NavItem
               icon={<PiUserList size={18}  />}
               label="Item"
@@ -182,7 +209,8 @@ export const SideNav: React.FC = () => {
           </Link>
           <Link
             to={"/quote"}
-            style={{ textDecoration: "none", color: "inherit" }}
+            style={{position: 'relative'}}
+            className={`${navLinkStyle.base} }`}
           >
             <NavItem
               icon={<PiCalendarDots size={18}  />}

@@ -5,3 +5,10 @@ export enum Types {
   Individual="Individual",
   Partnership="Partnership"
 }
+
+
+export enum QuoteStatus {
+  Accepted="Accepted",
+  Rejected="Rejected",
+  Drafted="Drafted"
+}
