@@ -13,11 +13,11 @@
 
     public class DailyQuoteSummary
     {
-        public string _id { get; set; }
+        public string Id { get; set; }
         public int total { get; set; }
     }
 
-    public class DailyQouteAmountSalary
+    public class DailyQouteAmountStats
     {
 
         public string DraftCountAmount { get; set; } = string.Empty;

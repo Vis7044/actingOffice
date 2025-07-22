@@ -1,10 +1,15 @@
-﻿using backend.Dtos.ClientDto;
+﻿using backend.Data;
+using backend.Dtos.ClientDto;
+using backend.Enums;
 using backend.helper;
+using backend.Models;
 using backend.services.interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using System.Security.Claims;
+using System.Text;
 
 
 namespace backend.Controllers
@@ -15,10 +20,12 @@ namespace backend.Controllers
     public class ClientController : ControllerBase
     {
         private readonly IClientService _clientService;
+        private readonly MongoDbContext _dbContext;
 
-        public ClientController(IClientService clientService)
+        public ClientController(IClientService clientService, MongoDbContext dbContext)
         {
             _clientService = clientService;
+            _dbContext = dbContext;
         }
         /// <summary>
         /// get the user id from the claims
@@ -156,5 +163,61 @@ namespace backend.Controllers
             }
 
         }
+
+        [HttpGet("clients/download")]
+        public async Task<IActionResult> DownloadClient()
+        {
+            try
+            {
+                // Get user details
+                var user = await _dbContext.Users.Find(u => u.Id == GetUserId()).FirstOrDefaultAsync();
+                if (user == null)
+                {
+                    return NotFound("User not found.");
+                }
+
+                // Build the MongoDB filter
+                var builder = Builders<ClientModel>.Filter;
+                var filter = builder.Empty;
+
+                if (user.Role != UserRole.Admin)
+                {
+                    filter = filter & builder.Eq(c => c.CreatedBy.UserId, GetUserId());
+                }
+
+                if (Enum.TryParse<IsDeleted>("Unknown", out var deleted))
+                {
+                    filter = filter & builder.Ne(c => c.IsDeleted, deleted);
+                }
+
+                // Fetch clients from the collection
+                var clients = await _dbContext.Clients.Find(filter).ToListAsync();
+
+                if (clients == null || !clients.Any())
+                {
+                    return NotFound("No clients found.");
+                }
+
+                // Generate CSV content
+                var csvData = new StringBuilder();
+                csvData.AppendLine("ClientId,BusinessName,Type,CreatedBy,CreatedDate");
+
+                foreach (var client in clients)
+                {
+                    var createdBy = $"{client.CreatedBy.FirstName} {client.CreatedBy.LastName}";
+                    var createdDate = client.CreatedBy.DateTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    csvData.AppendLine($"{client.ClientId},{client.BusinessName},{client.Type},{createdBy},{createdDate}");
+                }
+
+                // Convert CSV to byte array and return as downloadable file
+                var csvBytes = Encoding.UTF8.GetBytes(csvData.ToString());
+                return File(csvBytes, "text/csv", "Clients.csv");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error downloading clients: {ex.Message}");
+            }
+        }
+
     }
 }

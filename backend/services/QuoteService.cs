@@ -124,10 +124,28 @@ namespace backend.services
                 filter &= builder.Eq(q => q.CreatedBy.UserId, userId);
             }
 
-            // Criteria filter (e.g., BusinessIdName._id)
+            
             if (!string.IsNullOrEmpty(criteria) && !string.IsNullOrEmpty(value))
             {
-                filter &= builder.Eq($"{criteria}._id", new ObjectId(value)); 
+                if(criteria == "FirstResponse")
+                {
+                    filter &= builder.Eq($"{criteria}._id", new ObjectId(value));
+                }
+                else if(criteria == "QuoteStatus" && value!="All")
+                {
+                    if (Enum.TryParse<QuoteStatus>(value, true, out var status))
+                    {
+                        filter &= builder.Eq(q => q.QuoteStatus, status);
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Invalid QuoteStatus value.");
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid criteria specified.");
+                }
             }
 
             // IsDeleted filter
@@ -509,8 +527,8 @@ namespace backend.services
             var daysInMonth = DateTime.DaysInMonth(year, month);
             var completeResult = Enumerable.Range(1, daysInMonth)
                 .Select(d => d.ToString("D2"))
-                .Select(d => result.FirstOrDefault(r => r._id == d) ?? new DailyQuoteSummary { _id = d, total = 0 })
-                .OrderBy(r => r._id)
+                .Select(d => result.FirstOrDefault(r => r.Id == d) ?? new DailyQuoteSummary { Id = d, total = 0 })
+                .OrderBy(r => r.Id)
                 .ToList();
 
             return completeResult;
@@ -520,7 +538,7 @@ namespace backend.services
         /// </summary>
         /// <param name="offset"></param>
         /// <returns></returns>
-        public async Task<List<DailyQouteAmountSalary>> GetUsersQuoteAmountStatus(int offset)
+        public async Task<List<DailyQouteAmountStats>> GetUsersQuoteAmountStatus(int offset)
         {
             var now = DateTime.UtcNow;
             var targetDate = now.AddMonths(offset);
@@ -609,7 +627,7 @@ namespace backend.services
             
             var result = await _quote.Aggregate<QuoteSummaryDto>(pipeline).ToListAsync();
 
-           return result.Select(r => new DailyQouteAmountSalary
+           return result.Select(r => new DailyQouteAmountStats
            {
                 Name = $"{r.FirstName} {r.LastName}",
                 TotalCountAmount = r.TotalCount.ToString(),
