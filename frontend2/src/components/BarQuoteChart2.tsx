@@ -64,34 +64,77 @@ export default function BarQuoteChart2({ offset }: { offset: number }) {
     type: 'value',
   },
   series: [
-    {
-      name: 'Drafted',
-      type: 'bar',
-      barMaxWidth: 30, 
-      data: dailyQuoteData.map((d) => Number(d.draftCountAmount)),
-      itemStyle: { color: '#8884d8' },
-      markPoint: { data: [{ type: 'max', name: 'Max' }] },
-      markLine: { data: [{ type: 'average', name: 'Avg' }] },
+  {
+    name: 'Drafted',
+    type: 'bar',
+    barMaxWidth: 30,
+    data: dailyQuoteData.map((d) => Number(d.draftCountAmount)),
+    smooth: true,
+    itemStyle: {color: '#0084c2ff'},
+    areaStyle: {
+      color: {
+        type: 'linear',
+        x: 0,
+        y: 0,
+        x2: 0,
+        y2: 1,
+        colorStops: [
+          { offset: 0, color: '#f3f1f8ff' }, // top
+          { offset: 1, color: '#4c8faaff' }, // bottom
+        ],
+      },
     },
-    {
-      name: 'Accepted',
-      type: 'bar',
-      barMaxWidth: 30,
-      data: dailyQuoteData.map((d) => Number(d.acceptedCountAmount)),
-      itemStyle: { color: '#82ca9d' },
-      markPoint: { data: [{ type: 'max', name: 'Max' }] },
-      markLine: { data: [{ type: 'average', name: 'Avg' }] },
+    markPoint: { data: [{ type: 'max', name: 'Max' }] },
+    markLine: { data: [{ type: 'average', name: 'Avg' }] },
+  },
+  {
+    name: 'Accepted',
+    type: 'bar',
+    barMaxWidth: 30,
+    data: dailyQuoteData.map((d) => Number(d.acceptedCountAmount)),
+    smooth: true,
+    itemStyle: {color: '#00443dff'},
+    areaStyle: {
+      color: {
+        type: 'linear',
+        x: 0,
+        y: 0,
+        x2: 0,
+        y2: 1,
+        colorStops: [
+          { offset: 0, color: '#ceecf1ff' },
+          { offset: 1, color: '#22534eff' },
+        ],
+      },
     },
-    {
-      name: 'Rejected',
-      type: 'bar',
-      barMaxWidth: 30,
-      data: dailyQuoteData.map((d) => Number(d.rejectedCountAmount)),
-      itemStyle: { color: '#da5b35' },
-      markPoint: { data: [{ type: 'max', name: 'Max' }] },
-      markLine: { data: [{ type: 'average', name: 'Avg' }] },
+    markPoint: { data: [{ type: 'max', name: 'Max' }] },
+    markLine: { data: [{ type: 'average', name: 'Avg' }] },
+  },
+  {
+    name: 'Rejected',
+    type: 'bar',
+    barMaxWidth: 30,
+    data: dailyQuoteData.map((d) => Number(d.rejectedCountAmount)),
+    smooth: true,
+    itemStyle: {color: '#03a038ff'},
+    areaStyle: {
+      color: {
+        type: 'linear',
+        x: 0,
+        y: 0,
+        x2: 0,
+        y2: 1,
+        colorStops: [
+          { offset: 0, color: '#d2e2e9ff' },
+          { offset: 1, color: '#71d492ff' },
+        ],
+      },
     },
-  ]
+    markPoint: { data: [{ type: 'max', name: 'Max' }] },
+    markLine: { data: [{ type: 'average', name: 'Avg' }] },
+  },
+]
+
 };
 
 
