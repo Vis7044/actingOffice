@@ -15,6 +15,6 @@ namespace backend.services.interfaces
         Task<QuoteStats?> GetQuoteStats(string role, string userId);
         Task<PageResult<QuoteSummaryDto>> GetUsersQuoteStatus(int page, int pageSize);
         Task<List<DailyQuoteSummary>> GetDailyQuoteDetails(int offset);
-        Task<List<DailyQouteAmountSalary>> GetUsersQuoteAmountStatus(int offset);
+        Task<List<DailyQouteAmountStats>> GetUsersQuoteAmountStatus(int offset);
     }
 }
