@@ -14,7 +14,6 @@ interface IQuoteStat {
   draftedPercentage: number;
   acceptedPercentage: number;
   rejectedPercentage: number;
-
   totalAccepted: number;
   totalRejected: number;
 }
