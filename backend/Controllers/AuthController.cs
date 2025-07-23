@@ -23,14 +23,17 @@ namespace backend.Controllers
             _validator = validator;
             _loginValidator = loginValidator;
         }
-
+        /// <summary>
+        /// private method to get the user id from the claims
+        /// </summary>
+        /// <returns></returns>
         private string GetUserId() =>
             User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+        /// <summary>
+        /// get all the users
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("get")]
-
-       
-
-        
         public async Task<IActionResult> GetUsers()
         {
              try
@@ -47,7 +50,11 @@ namespace backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        /// <summary>
+        /// controller to register a new user
+        /// </summary>
+        /// <param name="userRegister"></param>
+        /// <returns></returns>
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUserAsync([FromBody] RegisterUserDto userRegister)
         {
@@ -70,6 +77,11 @@ namespace backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        /// <summary>
+        /// controller to login a user  
+        /// </summary>
+        /// <param name="loginDto"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginDto loginDto)
         {
@@ -92,7 +104,13 @@ namespace backend.Controllers
                 return Unauthorized(ex.Message);
             }
         }
-
+        /// <summary>
+        /// Retrieves the current user's information based on their user ID.
+        /// </summary>
+       
+        /// user's details if the user ID is valid and the user exists in the system.</remarks>
+        /// <returns>An <see cref="IActionResult"/> containing the user's information if found; otherwise, a <see
+        
         [Authorize]
         [HttpGet("me")]
         public async Task<IActionResult> GetUserByIdAsync()

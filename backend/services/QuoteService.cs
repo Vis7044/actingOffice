@@ -73,7 +73,7 @@ namespace backend.services
                 Date = dto.Date,
                 FirstResponse = new FirstResponse
                 {
-                    Id = dto.FirstResponse.Id,
+                    Id = dto.FirstResponse!.Id,
                     FirstName = dto.FirstResponse.FirstName,
                     LastName = dto.FirstResponse.LastName
                 },
@@ -121,7 +121,7 @@ namespace backend.services
             // Role-based filter
             if (role != UserRole.Admin.ToString())
             {
-                filter &= builder.Eq(q => q.CreatedBy.UserId, userId);
+                filter &= builder.Eq(q => q.CreatedBy!.UserId, userId);
             }
 
             
@@ -285,7 +285,7 @@ namespace backend.services
             var filter = Builders<QuoteModel>.Filter.Empty;
             if(role != UserRole.Admin.ToString())
             {
-                filter = Builders<QuoteModel>.Filter.Eq(q => q.CreatedBy.UserId, userId);
+                filter = Builders<QuoteModel>.Filter.Eq(q => q.CreatedBy!.UserId, userId);
             }
             filter = Builders<QuoteModel>.Filter.And(
                 filter,
@@ -340,14 +340,14 @@ namespace backend.services
 
                 if (parsedRole != UserRole.Admin)
                 {
-                    var existingQuote = await _quote.Find(c => c.Id == quoteId && c.CreatedBy.UserId == userId).FirstOrDefaultAsync();
+                    var existingQuote = await _quote.Find(c => c.Id == quoteId && c.CreatedBy!.UserId == userId).FirstOrDefaultAsync();
                     if (existingQuote == null)
                     {
                         return "You do not have permission to update this client.";
                     }
                 }
 
-                var businessIdName = await _context.Clients.Find(c => c.BusinessName == quote.BusinessIdName.Name).Project(c => new IdByName
+                var businessIdName = await _context.Clients.Find(c => c.BusinessName == quote.BusinessIdName!.Name).Project(c => new IdByName
                 {
                     Id = c.Id,
                     Name = c.BusinessName
@@ -405,7 +405,7 @@ namespace backend.services
             {
                 if (role != UserRole.Admin.ToString())
                 {
-                    var existingClient = await _quote.Find(c => c.Id == quoteId && c.CreatedBy.UserId == userId).FirstOrDefaultAsync();
+                    var existingClient = await _quote.Find(c => c.Id == quoteId && c.CreatedBy!.UserId == userId).FirstOrDefaultAsync();
                     if (existingClient == null)
                     {
                         return "You do not have permission to update this client.";

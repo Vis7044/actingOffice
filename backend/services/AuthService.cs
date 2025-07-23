@@ -23,7 +23,7 @@ namespace backend.services
 
         public async Task<string> RegisterUserAsync(RegisterUserDto userDto)
         {
-            // eck if the user already exists
+            // check if the user already exists
             var existingUser = await _user.Find(u => u.Email == userDto.Email).FirstOrDefaultAsync();
             if (existingUser != null) {
                 throw new  Exception("User with this email already exists");
@@ -87,7 +87,7 @@ namespace backend.services
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role)    
             };
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
