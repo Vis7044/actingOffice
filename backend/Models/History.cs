@@ -22,7 +22,7 @@ namespace backend.Models
         /// <summary>
         /// stores the creator information of the history record
         /// </summary>
-        public CreatedBy? CreatedBy { get; set; }
+        public CreatedBy CreatedBy { get; set; } = new CreatedBy();
         /// <summary>
         /// stores the id and name of the target entity (e.g., client or quote) related to the history record
         /// </summary>

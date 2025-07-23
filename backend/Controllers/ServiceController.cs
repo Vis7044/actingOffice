@@ -154,7 +154,7 @@ namespace backend.Controllers
             }
             if (GetRole() != UserRole.Admin.ToString())
             {
-                var existingService = await _serviceCollection.Find(s => s.Id == id && s.CreatedBy.UserId == GetUserId()).FirstOrDefaultAsync();
+                var existingService = await _serviceCollection.Find(s => s.Id == id && s.CreatedBy!.UserId == GetUserId()).FirstOrDefaultAsync();
                 if (existingService == null)
                 {
                     return NotFound("Service not found or you do not have permission to update this service.");
@@ -194,7 +194,7 @@ namespace backend.Controllers
             }
             if (GetRole() != UserRole.Admin.ToString())
             {
-                var service = await _serviceCollection.Find(s => s.Id == id && s.CreatedBy.UserId == GetUserId()).FirstOrDefaultAsync();
+                var service = await _serviceCollection.Find(s => s.Id == id && s.CreatedBy!.UserId == GetUserId()).FirstOrDefaultAsync();
                 if (service == null)
                 {
                     return NotFound("Service not found or you do not have permission to delete this service.");

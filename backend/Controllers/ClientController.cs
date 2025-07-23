@@ -5,7 +5,6 @@ using backend.helper;
 using backend.Models;
 using backend.services.interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
 using System.Security.Claims;
@@ -37,7 +36,7 @@ namespace backend.Controllers
         /// get the role of the user from the claims
         /// </summary>
         /// <returns></returns>
-        private string? GetRole() =>
+        private string GetRole() =>
             User?.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
 
         /// <summary>
@@ -70,11 +69,11 @@ namespace backend.Controllers
         /// <param name="IsDeleted"></param>
         /// <returns></returns>
         [HttpGet("getClient")]
-        public async Task<IActionResult> GetClientAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "", [FromQuery] string criteria="", [FromQuery] string value="", [FromQuery] string IsDeleted="Active")
+        public async Task<IActionResult> GetClientAsync([FromQuery] int page = 1, [FromQuery] int pageSize = 15, [FromQuery] string searchTerm = "", [FromQuery] string criteria = "", [FromQuery] string value = "", [FromQuery] string IsDeleted = "Active")
         {
             try
             {
-                var result = await _clientService.GetClientsAsync(GetRole(), GetUserId(), page, pageSize, searchTerm,criteria, value,IsDeleted);
+                var result = await _clientService.GetClientsAsync(GetRole(), GetUserId(), page, pageSize, searchTerm, criteria, value, IsDeleted);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -103,7 +102,7 @@ namespace backend.Controllers
         /// <summary>
         /// Searches for businesses by their name using the specified query string.
         /// </summary>
-       
+
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string query)
         {
@@ -163,7 +162,10 @@ namespace backend.Controllers
             }
 
         }
-
+        /// <summary>
+        /// controller to download all clients as a CSV file
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("clients/download")]
         public async Task<IActionResult> DownloadClient()
         {
@@ -182,7 +184,7 @@ namespace backend.Controllers
 
                 if (user.Role != UserRole.Admin)
                 {
-                    filter = filter & builder.Eq(c => c.CreatedBy.UserId, GetUserId());
+                    filter = filter & builder.Eq(c => c.CreatedBy!.UserId, GetUserId());
                 }
 
                 if (Enum.TryParse<IsDeleted>("Unknown", out var deleted))
@@ -193,7 +195,7 @@ namespace backend.Controllers
                 // Fetch clients from the collection
                 var clients = await _dbContext.Clients.Find(filter).ToListAsync();
 
-                if (clients == null || !clients.Any())
+                if (clients == null || clients.Count == 0)
                 {
                     return NotFound("No clients found.");
                 }
@@ -204,7 +206,7 @@ namespace backend.Controllers
 
                 foreach (var client in clients)
                 {
-                    var createdBy = $"{client.CreatedBy.FirstName} {client.CreatedBy.LastName}";
+                    var createdBy = $"{client.CreatedBy!.FirstName} {client.CreatedBy.LastName}";
                     var createdDate = client.CreatedBy.DateTime.ToString("yyyy-MM-dd HH:mm:ss");
                     csvData.AppendLine($"{client.ClientId},{client.BusinessName},{client.Type},{createdBy},{createdDate}");
                 }

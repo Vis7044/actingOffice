@@ -58,7 +58,7 @@ namespace backend.services
                 ClientId = $"CL-{sequence:D6}",
                 BusinessName = client.BusinessName,
                 Type = client.Type,
-                Address = client.Address,
+                Address = client.Address!,
                 CreatedBy = new CreatedBy
                 {
                     UserId = userId,
@@ -129,7 +129,7 @@ namespace backend.services
 
             // Role filter
             if (role != UserRole.Admin.ToString())
-                filter &= builder.Eq(c => c.CreatedBy.UserId, userId);
+                filter &= builder.Eq(c => c.CreatedBy!.UserId, userId);
 
             // Business Type filter
             if (!string.IsNullOrEmpty(value) && criteria == "Type")
@@ -176,7 +176,7 @@ namespace backend.services
             {
                 var result = await _client.Find(filter)
                     .Project<ClientModel>(projection)
-                    .SortByDescending(c => c.CreatedBy.DateTime)
+                    .SortByDescending(c => c.CreatedBy!.DateTime)
                     .Skip(skip)
                     .Limit(pageSize)
                     .ToListAsync();
@@ -213,7 +213,7 @@ namespace backend.services
 
             // Get history records
             var history = await _historyDb
-                .Find(h => h.Target.Id == clientId)
+                .Find(h => h.Target!.Id == clientId)
                 .SortByDescending(h=>h.CreatedBy.DateTime)
                 .ToListAsync();
 
@@ -263,7 +263,7 @@ namespace backend.services
             {
                 if(role != "Admin" )
                 {
-                    var existingClient = await _client.Find(c => c.Id == businessId && c.CreatedBy.UserId == userId).FirstOrDefaultAsync();
+                    var existingClient = await _client.Find(c => c.Id == businessId && c.CreatedBy!.UserId == userId).FirstOrDefaultAsync();
                     if (existingClient == null)
                     {
                         return "You do not have permission to update this client.";
@@ -388,7 +388,7 @@ namespace backend.services
                 // Check if the user has permission to delete the client
                 if (role != UserRole.Admin.ToString())
                 {
-                    var existingClient = await _client.Find(c => c.Id == businessId && c.CreatedBy.UserId == userId).FirstOrDefaultAsync();
+                    var existingClient = await _client.Find(c => c.Id == businessId && c.CreatedBy!.UserId == userId).FirstOrDefaultAsync();
                     if (existingClient == null)
                     {
                         return "You do not have permission to update this client.";
