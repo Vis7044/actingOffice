@@ -77,7 +77,7 @@ export const QuoteForm = ({
   const [servicesData, setServices] = useState<IService[]>([]);
 
   const fetchService = async () => {
-    const resp = await axiosInstance.get("/Service/get");
+    const resp = await axiosInstance.get("/Service/get?IsDeleted=Active");
     setServices(resp.data.data);
   };
 

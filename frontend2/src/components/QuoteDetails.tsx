@@ -56,7 +56,7 @@ export default function QuoteDetails({id,handleClose,refreshList}: {id: string, 
         <Stack style={{paddingLeft: '10px', borderBottom: '1px solid', borderColor: 'rgba(0,0,0,0.3)'}}>
             <Stack horizontal horizontalAlign='space-between'>
                 <Text variant='large' styles={{root :{fontWeight : 600}}}>{quote?.businessDetails.businessName}</Text>
-                <Text><Text variant='large' styles={{root: {fontWeight: 600}}}>date: </Text><Text styles={{root: {color: 'rgba(68, 63, 63, 0.51)', fontWeight: 500}}}>{quote?.date}</Text></Text>
+                <Text><Text variant='large' styles={{root: {fontWeight: 600}}}>date: </Text><Text styles={{root: {color: 'rgba(68, 63, 63, 0.51)', fontWeight: 500}}}>{quote?.date.split("T")[0]}</Text></Text>
             </Stack>
             <Stack styles={{root: {
                 

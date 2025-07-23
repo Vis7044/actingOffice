@@ -12,9 +12,8 @@ import "@fluentui/react/dist/css/fabric.css";
 import type { IColumn } from "@fluentui/react/lib/DetailsList";
 import axiosInstance from "../utils/axiosInstance";
 import { Button } from "react-bootstrap";
-import AreaQuoteChart from "../components/AreaQuoteChart";
-import BarQuoteChart from "../components/BarQuoteChart";
 import BarQuoteChart2 from "../components/BarQuoteChart2";
+import AreaQuoteChart2 from "../components/AreaQuoteChar2";
 
 export interface IQuoteSummary {
   firstName: string;
@@ -201,7 +200,7 @@ const Home = () => {
       </Stack>
 
       <Stack
-        styles={{ root: { height: "350px", width: "90%", margin: "auto" } }}
+        styles={{ root: { height: "450px", width: "90%", margin: "auto" } }}
       >
         <Text
           variant="large"
@@ -215,7 +214,7 @@ const Home = () => {
         >
           quote
         </Text>
-        <AreaQuoteChart offset={monthOffset} />
+        <AreaQuoteChart2 offset={monthOffset} />
       </Stack>
       <Stack
         styles={{ root: { height: "450px", width: "90%", margin: "auto" } }}

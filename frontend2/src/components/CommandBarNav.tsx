@@ -92,14 +92,12 @@ export const CommandBarNav = ({
 
     const blob = new Blob([response.data], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-
     const a = document.createElement("a");
     a.href = url;
     a.download = "Clients.csv";
     document.body.appendChild(a);
     a.click();
     a.remove();
-
     window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error("Download failed", error);
@@ -120,10 +118,10 @@ export const CommandBarNav = ({
           <SlReload className={refreshIcon ? "spin" : ""} />
           <Text>Refresh</Text>
         </Stack>
-        <Stack horizontal verticalAlign="center" styles={{root: {cursor: 'pointer'}}} tokens={{childrenGap: 5}}>
+        {window.location.pathname.startsWith("/client") && <Stack horizontal verticalAlign="center" styles={{root: {cursor: 'pointer'}}} tokens={{childrenGap: 5}}>
           <LiaDownloadSolid />
           <Text onClick={() => handleDownloadClients()}>Download</Text>
-        </Stack>
+        </Stack>}
       </Stack>
 
       {/* Right side */}
